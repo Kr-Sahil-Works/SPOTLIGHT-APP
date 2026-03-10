@@ -3,22 +3,28 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 
 export default function InitialLayout() {
-   const {isLoaded,isSignedIn} = useAuth();
 
-   const segments = useSegments();
-   const router = useRouter();
+  const { isLoaded, isSignedIn } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
-   useEffect(() => {
-    if(!isLoaded) return
+  useEffect(() => {
 
-    const inAuthScreen = segments[0] === "(auth)"
+    if (!isLoaded) return;
 
-    if(!isSignedIn && !inAuthScreen) router.replace("/(auth)/login")
-        else if(isSignedIn && inAuthScreen) router.replace("/(tabs)")
-   },[isLoaded, isSignedIn,segments])
+    const inAuthGroup = segments[0] === "(auth)";
 
-   if(!isLoaded) return null
+    if (!isSignedIn && !inAuthGroup) {
+      router.replace("/(auth)/login");
+    }
 
-   return <Stack screenOptions={{headerShown : false}} />
-   
+    if (isSignedIn && inAuthGroup) {
+      router.replace("/(tabs)");
+    }
+
+  }, [isLoaded, isSignedIn]);
+
+  if (!isLoaded) return null;
+
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

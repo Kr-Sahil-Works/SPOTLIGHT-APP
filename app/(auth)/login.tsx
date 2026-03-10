@@ -1,42 +1,115 @@
+import GreenLoader from "@/components/GreenLoader";
 import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/auth.styles";
 import { useSSO } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { Animated, Image, Pressable, Text, View } from "react-native";
 
-export default function login() {
+export default function Login(){
 
-    const {startSSOFlow} = useSSO(); 
-    const router = useRouter();
-    
-    const handleGoogleSignIn = async () => {
-        try {
-          const { createdSessionId, setActive} = await startSSOFlow({ strategy: "oauth_google"})
+  const {startSSOFlow} = useSSO();
+  const router = useRouter();
 
-          if (setActive && createdSessionId) {
-            setActive({session: createdSessionId})
-            router.replace("/(tabs)")
-          }
-        } catch (error) {
-          console.error("Auth Error : ",error);
-        }
+  const [loading,setLoading] = useState(false);
+
+  const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  // reset if user comes back
+  useFocusEffect(
+    useCallback(()=>{
+
+      setLoading(false);
+
+    },[])
+  )
+
+  const pressIn = ()=>{
+
+    Animated.parallel([
+      Animated.spring(scale,{
+        toValue:0.96,
+        speed:40,
+        bounciness:4,
+        useNativeDriver:true
+      }),
+      Animated.timing(opacity,{
+        toValue:0.9,
+        duration:80,
+        useNativeDriver:true
+      })
+    ]).start()
+
+  }
+
+  const pressOut = ()=>{
+
+    Animated.parallel([
+      Animated.spring(scale,{
+        toValue:1,
+        speed:40,
+        bounciness:6,
+        useNativeDriver:true
+      }),
+      Animated.timing(opacity,{
+        toValue:1,
+        duration:80,
+        useNativeDriver:true
+      })
+    ]).start()
+
+  }
+
+const handleGoogleSignIn = async () => {
+
+  if (loading) return
+
+  setLoading(true)
+
+  setTimeout(() => {
+    setLoading(false)
+  }, 600)
+
+  try {
+
+    const { createdSessionId, setActive } = await startSSOFlow({
+      strategy: "oauth_google"
+    })
+
+    if (setActive && createdSessionId) {
+      await setActive({ session: createdSessionId })
     }
 
+  } catch (error) {
 
+    console.error("Auth Error:", error)
+    setLoading(false)
 
-  return (
+  }
+
+}
+
+  return(
+
     <View style={styles.container}>
-      {/* BRAND SECTION */}
+
+      {/* BRAND */}
+
       <View style={styles.brandSection}>
+
         <View style={styles.logoContainer}>
-          <Ionicons name="leaf" size={32} color={COLORS.primary} />
+          <Ionicons name="leaf" size={32} color={COLORS.primary}/>
         </View>
+
         <Text style={styles.appName}>spotlight</Text>
         <Text style={styles.tagline}>don't miss anything</Text>
+
       </View>
 
-      {/* ILLUSTRATION */}
+      {/* IMAGE */}
+
       <View style={styles.illustrationContainer}>
         <Image
           source={require("../../assets/images/loginpage/login1.png")}
@@ -45,23 +118,59 @@ export default function login() {
         />
       </View>
 
-      {/* LOGIN SECTION */}
+      {/* LOGIN */}
+
       <View style={styles.loginSection}>
-        <TouchableOpacity
-          style={styles.googleButton}
-          onPress={handleGoogleSignIn}
-          activeOpacity={0.9}
+
+        <Animated.View
+          style={{
+            transform:[{scale}],
+            opacity
+          }}
         >
-          <View style={styles.googleIconContainer}>
-            <Ionicons name="logo-google" size={20} color={COLORS.surface} />
-          </View>
-          <Text style={styles.googleButtonText}>Continue with Google</Text>
-        </TouchableOpacity>
+
+          <Pressable
+            onPress={handleGoogleSignIn}
+            onPressIn={pressIn}
+            onPressOut={pressOut}
+            disabled={loading}
+            android_ripple={{color:"rgba(255,255,255,0.25)"}}
+            style={[
+              styles.googleButton,
+              {justifyContent:"center",alignItems:"center"}
+            ]}
+          >
+
+            {loading ? (
+
+              <GreenLoader/>
+
+            ) : (
+
+              <View style={{flexDirection:"row",alignItems:"center"}}>
+
+                <View style={styles.googleIconContainer}>
+                  <Ionicons name="logo-google" size={20} color={COLORS.surface}/>
+                </View>
+
+                <Text style={styles.googleButtonText}>
+                  Continue with Google
+                </Text>
+
+              </View>
+
+            )}
+
+          </Pressable>
+
+        </Animated.View>
 
         <Text style={styles.termsText}>
           By continuing, you agree to our Terms and Privacy Policy
         </Text>
+
       </View>
+
     </View>
-  );
+  )
 }

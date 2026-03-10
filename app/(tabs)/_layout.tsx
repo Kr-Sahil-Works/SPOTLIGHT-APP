@@ -5,22 +5,23 @@ import React from 'react'
 
 export default function Tablayout() {
   return (
-  <Tabs 
-    screenOptions={{
-        tabBarShowLabel:false,
-        headerShown: false,
-        tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.grey,
-        tabBarStyle:{
-            backgroundColor: "#000000",
-            borderTopWidth: 0,
-            position: "absolute",
-            elevation: 0,
-            height: 40,
-            paddingBottom: 10,
-        }
-    }}  
-  >
+ <Tabs
+  screenOptions={{
+    sceneStyle: { backgroundColor: "#000" },
+    tabBarShowLabel: false,
+    headerShown: false,
+    tabBarActiveTintColor: COLORS.primary,
+    tabBarInactiveTintColor: COLORS.grey,
+    tabBarStyle: {
+      backgroundColor: "#000000",
+      borderTopWidth: 0,
+      position: "absolute",
+      elevation: 0,
+      height: 60,
+      paddingBottom: 10,
+    },
+  }}
+>
             <Tabs.Screen name="index"
                 options={{
                         tabBarIcon:({size,color}) => <Ionicons name="home" size={size} color={color} />
