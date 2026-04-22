@@ -8,7 +8,12 @@
  * @module
  */
 
+import type * as bookmarks from "../bookmarks.js";
+import type * as comments from "../comments.js";
 import type * as http from "../http.js";
+import type * as messages from "../messages.js";
+import type * as notifications from "../notifications.js";
+import type * as posts from "../posts.js";
 import type * as users from "../users.js";
 
 import type {
@@ -18,7 +23,12 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  bookmarks: typeof bookmarks;
+  comments: typeof comments;
   http: typeof http;
+  messages: typeof messages;
+  notifications: typeof notifications;
+  posts: typeof posts;
   users: typeof users;
 }>;
 

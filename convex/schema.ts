@@ -3,8 +3,8 @@ import { v } from "convex/values";
 
 export default defineSchema({
   users: defineTable({
-    username: v.string(), //johndoe
-    fullname: v.string(), // John Doe
+    username: v.string(),
+    fullname: v.string(),
     email: v.string(),
     bio: v.optional(v.string()),
     image: v.string(),
@@ -12,12 +12,13 @@ export default defineSchema({
     following: v.number(),
     posts: v.number(),
     clerkId: v.string(),
+    pushToken: v.optional(v.string()),
   }).index("by_clerk_id", ["clerkId"]),
 
   posts: defineTable({
     userId: v.id("users"),
     imageUrl: v.string(),
-    storageId: v.id("_storage"), // will be needed when we want to delete a post
+    storageId: v.id("_storage"),
     caption: v.optional(v.string()),
     likes: v.number(),
     comments: v.number(),
@@ -61,4 +62,36 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_post", ["postId"])
     .index("by_user_and_post", ["userId", "postId"]),
-});
+
+  // ✅ FIXED: INSIDE schema
+// 💬 MESSAGES (PRO VERSION)
+messages: defineTable({
+  conversationId: v.string(),
+
+  senderId: v.id("users"),
+  receiverId: v.id("users"),
+
+  text: v.string(),
+
+  createdAt: v.number(),
+
+  seen: v.optional(v.boolean()),
+  
+
+  // 🔥 NEW FEATURES
+  edited: v.optional(v.boolean()),
+  replyTo: v.optional(v.id("messages")), // reply support
+  reactions: v.optional(v.array(v.string())), // ❤️🔥😂
+})
+  .index("by_conversation", ["conversationId"])
+  .index("by_sender", ["senderId"])
+  .index("by_receiver", ["receiverId"]),
+
+
+// ⌨️ TYPING (REAL-TIME)
+typing: defineTable({
+  from: v.id("users"),
+  to: v.id("users"),
+  isTyping: v.boolean(),
+}).index("by_user_pair", ["from", "to"])
+})
