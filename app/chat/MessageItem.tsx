@@ -18,12 +18,13 @@ export default function MessageItem({
   onLongPress,
   onReact,
   onReply,
-  onScrollTo, // 🔥 NEW
-  highlightId, // 🔥 NEW
-  isGrouped, // 🔥 NEW (for grouping)
+  onScrollTo,
+  highlightId,
+  isGrouped,
 }: any) {
   const entryX = useRef(new Animated.Value(isMe ? 40 : -40)).current;
   const panX = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
   const replied = useRef(false);
 
   useEffect(() => {
@@ -34,21 +35,18 @@ export default function MessageItem({
     }).start();
   }, []);
 
-  /* 🔥 OPACITY FADE */
   const opacity = panX.interpolate({
     inputRange: [0, 80],
-    outputRange: [1, 0.6],
+    outputRange: [1, 0.7],
     extrapolate: "clamp",
   });
 
-  /* 🔥 ARROW OPACITY */
   const arrowOpacity = panX.interpolate({
     inputRange: [20, 70],
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
 
-  /* 🔥 PAN */
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10,
@@ -73,7 +71,6 @@ export default function MessageItem({
           friction: 6,
           useNativeDriver: true,
         }).start();
-
         replied.current = false;
       },
     })
@@ -88,137 +85,144 @@ export default function MessageItem({
       {...panResponder.panHandlers}
     >
       <Pressable
+        onPressIn={() => {
+          Animated.spring(scale, {
+            toValue: 0.96,
+            useNativeDriver: true,
+          }).start();
+        }}
+        onPressOut={() => {
+          Animated.spring(scale, {
+            toValue: 1,
+            useNativeDriver: true,
+          }).start();
+        }}
         onLongPress={() => onLongPress(item)}
         onPress={() => onReact(item)}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            alignSelf: isMe ? "flex-end" : "flex-start",
-            alignItems: "flex-end",
-            marginBottom: isGrouped ? 6 : 22, // 🔥 grouping spacing
-          }}
-        >
-          {!isMe && !isGrouped && (
-            <Image
-              source={{ uri: avatar }}
-              style={{
-                width: 26,
-                height: 26,
-                borderRadius: 13,
-                marginRight: 6,
-              }}
-            />
-          )}
-
-          {/* 🔥 REPLY ARROW */}
-          <Animated.View
+        <Animated.View style={{ transform: [{ scale }] }}>
+          <View
             style={{
-              position: "absolute",
-              left: -30,
-              bottom: 10,
-              opacity: arrowOpacity,
+              flexDirection: "row",
+              alignSelf: isMe ? "flex-end" : "flex-start",
+              alignItems: "flex-end",
+              marginBottom: isGrouped ? 6 : 20,
             }}
           >
-            <Ionicons name="arrow-undo" size={18} color="#4ade80" />
-          </Animated.View>
-
-          {/* 🔥 WRAPPER */}
-          <View style={{ position: "relative", maxWidth: "75%" }}>
-
-            {/* 🔗 REPLY CONNECTOR LINE */}
-            {item.replyTo && (
-              <View
+            {!isMe && !isGrouped && (
+              <Image
+                source={{ uri: avatar }}
                 style={{
-                  position: "absolute",
-                  left: -6,
-                  top: 0,
-                  bottom: -6,
-                  width: 2,
-                  backgroundColor: "#4ade80",
-                  opacity: 0.4,
+                  width: 28,
+                  height: 28,
+                  borderRadius: 14,
+                  marginRight: 6,
                 }}
               />
             )}
 
-            {/* 🔁 REPLY PREVIEW (CLICKABLE) */}
-            {item.replyToText&& (
-              <Pressable
-                onPress={() => onScrollTo(item.replyTo)}
-                style={{
-                  borderLeftWidth: 3,
-                  borderLeftColor: "#4ade80",
-                  paddingLeft: 6,
-                  marginBottom: 6,
-                }}
-              >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    fontSize: 11,
-                    color: "#aaa",
-                  }}
-                >
-                  {item.replyToText}
-                </Text>
-              </Pressable>
-            )}
-
-            {/* 💬 BUBBLE */}
-            <View
+            {/* REPLY ARROW */}
+            <Animated.View
               style={{
-                backgroundColor:
-                  highlightId === item._id
-                    ? "#333" // 🔥 highlight flash
-                    : isMe
-                    ? theme.bubbleMe
-                    : theme.bubbleOther,
-
-                paddingVertical: 10,
-                paddingHorizontal: 14,
-                borderRadius: isGrouped ? 14 : 20,
+                position: "absolute",
+                left: -30,
+                bottom: 10,
+                opacity: arrowOpacity,
               }}
             >
-              <Text style={{ color: "#fff" }}>{item.text}</Text>
+              <Ionicons name="arrow-undo" size={18} color="#4ade80" />
+            </Animated.View>
 
-              {item.edited && (
-                <Text
+            <View style={{ maxWidth: "75%" }}>
+
+              {/* REPLY PREVIEW */}
+              {item.replyToText && (
+                <Pressable
+                  onPress={() => onScrollTo(item.replyTo)}
                   style={{
-                    fontSize: 10,
-                    color: "#aaa",
-                    marginTop: 4,
-                    alignSelf: "flex-end",
+                    borderLeftWidth: 3,
+                    borderLeftColor: "#4ade80",
+                    paddingLeft: 8,
+                    marginBottom: 6,
+                    opacity: 0.9,
                   }}
                 >
-                  edited
-                </Text>
+                  <Text numberOfLines={1} style={{ fontSize: 11, color: "#aaa" }}>
+                    {item.replyToText}
+                  </Text>
+                </Pressable>
               )}
-            </View>
 
-            {/* 🔥 REACTIONS */}
-            {item.reactions?.length > 0 && (
+              {/* BUBBLE */}
               <View
                 style={{
-                  position: "absolute",
-                  bottom: -16,
-                  left: isMe ? undefined : 0,
-                  right: isMe ? 0 : undefined,
-                  backgroundColor: "#000",
-                  borderRadius: 12,
-                  paddingHorizontal: 6,
-                  paddingVertical: 2,
-                  flexDirection: "row",
+                  backgroundColor:
+                    highlightId === item._id
+                      ? "#2a2a2a"
+                      : isMe
+                      ? theme.bubbleMe
+                      : theme.bubbleOther,
+
+                  paddingVertical: 10,
+                  paddingHorizontal: 14,
+                  borderRadius: isGrouped ? 16 : 22,
+
+                  shadowColor: isMe ? theme.bubbleMe : "#000",
+                  shadowOpacity: 0.25,
+                  shadowRadius: 6,
+                  elevation: 6,
                 }}
               >
-                {item.reactions.map((r: any, i: number) => (
-                  <Text key={i} style={{ fontSize: 11 }}>
-                    {r.value}
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 14,
+                    lineHeight: 18,
+                  }}
+                >
+                  {item.text}
+                </Text>
+
+                {item.edited && (
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      color: "#aaa",
+                      marginTop: 4,
+                      alignSelf: "flex-end",
+                    }}
+                  >
+                    edited
                   </Text>
-                ))}
+                )}
               </View>
-            )}
+
+              {/* REACTIONS */}
+              {item.reactions?.length > 0 && (
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: -18,
+                    left: isMe ? undefined : 0,
+                    right: isMe ? 0 : undefined,
+
+                    backgroundColor: "rgba(0,0,0,0.6)",
+                    borderRadius: 16,
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    flexDirection: "row",
+                  }}
+                >
+                  {item.reactions.map((r: any, i: number) => (
+                    <Text key={i} style={{ fontSize: 12 }}>
+                      {r.value}
+                    </Text>
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        </Animated.View>
       </Pressable>
     </Animated.View>
   );

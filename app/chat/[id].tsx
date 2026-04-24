@@ -2,21 +2,19 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  ActivityIndicator,
   Animated,
   FlatList,
   Image,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
-import { api } from "@/convex/_generated/api";
-import { useMutation } from "convex/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DeleteModal,
   EditModal,
@@ -76,13 +74,39 @@ export default function ChatScreen() {
     { bg: "#140612", bubbleMe: "#ee2292", bubbleOther: "#d50c4c" },
   ];
 const [highlightId, setHighlightId] = useState<string | null>(null);
-const [themeIndex, setThemeIndex] = useState(user?.themeIndex || 0);
+const [themeIndex, setThemeIndex] = useState(0);
+const wmOpacity = useRef(new Animated.Value(0)).current;
+const [wmText, setWmText] = useState("");
+const showWatermark = (text: string) => {
+  setWmText(text);
+
+  Animated.sequence([
+    Animated.timing(wmOpacity, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }),
+    Animated.delay(1200),
+    Animated.timing(wmOpacity, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }),
+  ]).start();
+};
+
+useEffect(() => {
+  if (user?.themeIndex !== undefined) {
+    setThemeIndex(user.themeIndex);
+  }
+}, [user]);
+
   const theme = themes[themeIndex];
 
   /* 🎬 SMOOTH THEME ANIMATION */
   const bgAnim = useRef(new Animated.Value(0)).current;
 
-const changeTheme = () => {
+const changeTheme = async () => {
   const next = (themeIndex + 1) % themes.length;
 
   Animated.timing(bgAnim, {
@@ -97,6 +121,8 @@ const changeTheme = () => {
       userId,
       themeIndex: next,
     });
+
+    showWatermark(`Theme changed to ${themes[next].bg}`);
   });
 };
 
@@ -117,7 +143,7 @@ const handleScrollTo = (id: string) => {
   }, 1200);
 };
 
-const toggleOnlineVisibility = useMutation(api.messages.toggleOnlineVisibility);
+
 
 
   return (
@@ -149,21 +175,36 @@ const toggleOnlineVisibility = useMutation(api.messages.toggleOnlineVisibility);
           </Text>
 
           <View style={{ marginLeft: "auto", flexDirection: "row" }}>
-            <Ionicons name="call-outline" size={24} color="#fff" />
-<TouchableOpacity
-  onPress={async () => {
-    await toggleOnlineVisibility({});
-  }}
-  style={{ marginLeft: 14 }}
+            <TouchableOpacity
+  onPress={() => Linking.openURL("https://instagram.com/")}
 >
-  <Ionicons name="eye-off-outline" size={22} color="#aaa" />
+  <Ionicons name="call" size={22} color="#fff" />
 </TouchableOpacity>
+
             <TouchableOpacity onPress={changeTheme} style={{ marginLeft: 14 }}>
               <Ionicons name="color-palette" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
         
+<Animated.View
+  style={{
+    position: "absolute",
+    top: 80,
+    alignSelf: "center",
+    opacity: wmOpacity,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    zIndex: 10,
+  }}
+>
+  <Text style={{ color: "#fff", fontSize: 12 }}>
+    {wmText}
+  </Text>
+</Animated.View>
+
 
         {/* 💬 MESSAGES */}
         <FlatList
@@ -268,39 +309,46 @@ onReply={(msg: any) => setReplyMsg(msg)}
         )}
 
         {/* ✏️ GLASS INPUT */}
-        <View style={{
-          flexDirection: "row",
-          padding: 10,
-        }}>
+       <View
+  style={{
+    flexDirection: "row",
+    padding: 10,
+    paddingBottom: 20,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    borderTopWidth: 0.5,
+    borderTopColor: "rgba(255,255,255,0.05)",
+  }}
+>
           <TextInput
             value={text}
             onChangeText={setText}
             placeholder="Message..."
             placeholderTextColor="#777"
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(255,255,255,0.06)",
-              color: "#fff",
-              borderRadius: 25,
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-            }}
+           style={{
+  flex: 1,
+  backgroundColor: "rgba(255,255,255,0.08)",
+  color: "#fff",
+  borderRadius: 30,
+  paddingVertical: 10,
+  paddingHorizontal: 16,
+}}
           />
 
-          <TouchableOpacity onPress={handleSend}>
-            {sending ? (
-              <ActivityIndicator color="#fff" style={{ marginLeft: 10 }} />
-            ) : (
-              <View style={{
-                marginLeft: 10,
-                backgroundColor: "rgba(255,255,255,0.12)",
-                padding: 10,
-                borderRadius: 22,
-              }}>
-                <Ionicons name="send" size={20} color="#fff" />
-              </View>
-            )}
-          </TouchableOpacity>
+        {text.trim().length > 0 && (
+  <TouchableOpacity onPress={handleSend} activeOpacity={0.7}>
+    <Animated.View
+      style={{
+        marginLeft: 10,
+        backgroundColor: theme.bubbleMe,
+        padding: 10,
+        borderRadius: 22,
+        transform: [{ scale: 1 }],
+      }}
+    >
+      <Ionicons name="send" size={18} color="#fff" />
+    </Animated.View>
+  </TouchableOpacity>
+)}
         </View>
 
         <ReactionBar
