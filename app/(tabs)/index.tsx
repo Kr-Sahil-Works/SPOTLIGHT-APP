@@ -112,7 +112,7 @@ const glow = useRef(new Animated.Value(0)).current;
           }),
         ]).start();
       }}
-      onPress={() => router.push("/../components/notifications")}
+      onPress={() => router.push("../components/notifications")}
       style={{
         padding: 8,
         borderRadius: 12,

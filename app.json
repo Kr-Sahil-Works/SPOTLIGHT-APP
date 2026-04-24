@@ -7,18 +7,30 @@
     "icon": "./assets/images/icon.png",
     "scheme": "spotlightapp",
     "userInterfaceStyle": "automatic",
+
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "Allow saving images to your gallery",
+        "NSPhotoLibraryUsageDescription": "Allow access to your photos"
+      }
     },
+
     "android": {
+      "permissions": [
+        "READ_MEDIA_IMAGES"
+      ],
       "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#161616"
       },
       "predictiveBackGestureEnabled": false
     },
+
     "web": {
       "output": "static"
     },
+
     "plugins": [
       "expo-router",
       [
@@ -35,6 +47,7 @@
       ],
       "expo-secure-store"
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

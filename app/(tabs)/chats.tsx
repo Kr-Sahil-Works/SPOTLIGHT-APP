@@ -1,11 +1,9 @@
-import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Text,
@@ -24,7 +22,6 @@ export default function Chats() {
   });
   const allUsers = useQuery(api.users.getAllUsers);
 
-  // 🔥 decide data source
   const dataSource =
     search.trim().length > 0
       ? searchUsers || []
@@ -32,76 +29,97 @@ export default function Chats() {
       ? chats
       : allUsers || [];
 
-  const isLoading = !chats || !allUsers;
-
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
-      
+
       {/* HEADER */}
       <View
         style={{
-          paddingHorizontal: 16,
-          paddingVertical: 14,
-          borderBottomWidth: 0.5,
-          borderBottomColor: "rgba(255,255,255,0.08)",
+          padding: 16,
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        <Text style={{ color: "#fff", fontSize: 22, fontWeight: "700" }}>
+        <Text style={{ color: "#fff", fontSize: 22, fontWeight: "600" }}>
           Chats
         </Text>
 
-        <Ionicons name="create-outline" size={22} color={COLORS.primary} />
-      </View>
+        {/* 🔥 BEAUTIFUL ACTION BUTTONS */}
+        <View style={{ flexDirection: "row", gap: 14 }}>
 
-      {/* SEARCH */}
-      <View style={{ padding: 12 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "#111",
-            borderRadius: 14,
-            paddingHorizontal: 12,
-          }}
-        >
-          <Ionicons name="search" size={18} color="#666" />
-          <TextInput
-            placeholder="Search people..."
-            placeholderTextColor="#666"
-            value={search}
-            onChangeText={setSearch}
+          {/* 📝 Notes */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() =>
+              router.replace("/chat/notes")
+            }
             style={{
-              flex: 1,
-              color: "#fff",
-              paddingVertical: 10,
-              paddingHorizontal: 8,
+              backgroundColor: "#111",
+              padding: 8,
+              borderRadius: 12,
             }}
-          />
+          >
+            <Ionicons name="document-text" size={20} color="#4ade80" />
+          </TouchableOpacity>
+
+          {/* 🧮 Calculator */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() =>
+              router.replace("/chat/calculator")
+            }
+            style={{
+              backgroundColor: "#111",
+              padding: 8,
+              borderRadius: 12,
+            }}
+          >
+            <Ionicons name="calculator" size={20} color="#f59e0b" />
+          </TouchableOpacity>
+
         </View>
       </View>
 
-      {/* LOADING */}
-      {isLoading && (
-        <ActivityIndicator
-          size="small"
-          color={COLORS.primary}
-          style={{ marginTop: 20 }}
+      {/* SEARCH */}
+      <View
+        style={{
+          marginHorizontal: 12,
+          marginBottom: 8,
+          backgroundColor: "#111",
+          borderRadius: 12,
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 10,
+          height: 42,
+        }}
+      >
+        <Ionicons name="search" size={16} color="#888" />
+        <TextInput
+          placeholder="Search..."
+          placeholderTextColor="#666"
+          value={search}
+          onChangeText={setSearch}
+          style={{ color: "#fff", marginLeft: 8, flex: 1 }}
         />
-      )}
+      </View>
 
-      {/* LIST */}
+      {/* CHAT LIST */}
       <FlatList
         data={dataSource}
+        initialNumToRender={6}
+maxToRenderPerBatch={6}
+windowSize={5}
+removeClippedSubviews
         keyExtractor={(item: any) =>
-          (item.userId || item._id).toString()
+          String(item.userId ?? item._id)
         }
         showsVerticalScrollIndicator={false}
         renderItem={({ item }: any) => {
-          const userId = item.userId || item._id;
-          const isChat = !!item.lastMessage;
+          const userId = item.userId ?? item._id;
+
+          const isOnline = item?.isOnline === true;
+          const showOnline = item?.showOnline !== false;
 
           return (
             <TouchableOpacity
@@ -115,94 +133,50 @@ export default function Chats() {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                paddingHorizontal: 14,
-                paddingVertical: 12,
+                paddingVertical: 10,
+                paddingHorizontal: 12,
               }}
             >
-              {/* PROFILE */}
-              <View>
+              {/* PROFILE IMAGE WITH STATUS RING */}
+              <View
+                style={{
+                  padding: 2,
+                  borderWidth: 2,
+                  borderRadius: 30,
+                  borderColor:
+                    showOnline && isOnline
+                      ? "#22c55e"
+                      : "rgba(127,29,29,0.6)",
+                }}
+              >
                 <Image
-                  source={{ uri: item.image }}
+                  source={
+                    item.image
+                      ? { uri: item.image }
+                      : require("@/assets/images/iconbg.png")
+                  }
                   style={{
                     width: 52,
                     height: 52,
                     borderRadius: 26,
-                    backgroundColor: "#111",
+                    backgroundColor: "#222",
                   }}
                 />
-
-                {/* 🔴 UNREAD BADGE */}
-                {(item.unreadCount ?? 0) > 0 && (
-                  <View
-                    style={{
-                      position: "absolute",
-                      right: -4,
-                      top: -4,
-                      backgroundColor: COLORS.primary,
-                      borderRadius: 10,
-                      minWidth: 18,
-                      height: 18,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      paddingHorizontal: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#000",
-                        fontSize: 10,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {item.unreadCount}
-                    </Text>
-                  </View>
-                )}
               </View>
 
-              {/* TEXT */}
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: (item.unreadCount ?? 0) > 0 ? "700" : "500",
-                    fontSize: 15,
-                  }}
-                >
-                  {item.fullname}
-                </Text>
-
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    color: (item.unreadCount ?? 0) > 0 ? "#fff" : "#888",
-                    marginTop: 2,
-                    fontSize: 13,
-                  }}
-                >
-                  {isChat ? item.lastMessage : "Start chatting"}
-                </Text>
-              </View>
-
-              {/* TIME */}
-              {item.createdAt && (
-                <Text style={{ color: "#666", fontSize: 11 }}>
-                  {new Date(item.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </Text>
-              )}
+              {/* NAME */}
+              <Text
+                style={{
+                  color: "#fff",
+                  marginLeft: 12,
+                  fontSize: 15,
+                }}
+              >
+                {item.fullname || "User"}
+              </Text>
             </TouchableOpacity>
           );
         }}
-        ListEmptyComponent={() => (
-          <View style={{ alignItems: "center", marginTop: 40 }}>
-            <Text style={{ color: "#666" }}>
-              {search ? "No users found" : "No conversations yet"}
-            </Text>
-          </View>
-        )}
       />
     </View>
   );

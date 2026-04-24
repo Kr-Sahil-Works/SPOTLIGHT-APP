@@ -40,12 +40,14 @@ export default function UserProfileScreen() {
         <View style={styles.profileInfo}>
           <View style={styles.avatarAndStats}>
             {/* AVATAR */}
-            <Image
-              source={profile.image}
-              style={styles.avatar}
-              contentFit="cover"
-              cachePolicy="memory-disk"
-            />
+         {profile.image && (
+  <Image
+    source={{ uri: profile.image }}
+    style={styles.avatar}
+    contentFit="cover"
+    cachePolicy="memory-disk"
+  />
+)}
 
             {/* STATS */}
             <View style={styles.statsContainer}>

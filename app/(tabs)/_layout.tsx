@@ -4,11 +4,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { Redirect, Tabs } from "expo-router";
-import { useRef } from "react";
-import { Animated, View } from "react-native";
+import React, { memo, useRef } from "react";
+import { Animated, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function TabsLayout() {
+/* 🔥 ICON MAP */
+const iconMap: any = {
+  index: ["home", "home-outline"],
+  bookmarks: ["bookmark", "bookmark-outline"],
+  create: ["add-circle", "add-circle"],
+  chats: ["chatbubbles", "chatbubbles-outline"],
+  profile: ["person", "person-outline"],
+};
+
+function TabsLayout() {
   const { isLoaded, isSignedIn } = useAuth();
   const insets = useSafeAreaInsets();
 
@@ -23,40 +32,41 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: "#000" },
 
         tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: "#777",
+        tabBarInactiveTintColor: "rgba(255,255,255,0.5)",
 
-        // ✅ CLEAN TAB STYLE
+        /* 🔥 TAB STYLE */
         tabBarStyle: {
           position: "absolute",
           height: 60,
           paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
           paddingTop: 6,
           borderTopWidth: 0,
-          backgroundColor: "rgba(15,15,15,0.5)",
+          backgroundColor: "transparent",
         },
 
-        // ✅ EVEN DISTRIBUTION (no hacks)
+        /* 🔥 EVEN DISTRIBUTION */
         tabBarItemStyle: {
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
         },
 
+        /* 🔥 BLUR BACKGROUND */
         tabBarBackground: () => (
           <BlurView
-            intensity={80}
+            intensity={Platform.OS === "ios" ? 80 : 40}
             tint="dark"
-            experimentalBlurMethod="dimezisBlurView" // 👈 ADD THIS
+            experimentalBlurMethod="dimezisBlurView"
             style={{
               flex: 1,
-              backgroundColor: "rgba(0,0,0,0.2)",
+              backgroundColor: "rgba(0,0,0,0.25)",
               borderTopWidth: 0.5,
-              borderTopColor: "rgba(255,255,255,0.12)",
+              borderTopColor: "rgba(255,255,255,0.08)",
             }}
           />
         ),
 
-        // ✅ CLEAN ICON (no scale hacks)
+        /* 🔥 SIMPLE ICON */
         tabBarIcon: ({ size, color, focused }) => (
           <TabIcon
             name={route.name}
@@ -76,87 +86,58 @@ export default function TabsLayout() {
   );
 }
 
-/* 🔥 ICON */
-function TabIcon({ name, size, color, focused }: any) {
+/* 🔥 CLEAN ICON (NO GLOW) */
+const TabIcon = memo(function TabIcon({
+  name,
+  size,
+  color,
+  focused,
+}: any) {
   const scale = useRef(new Animated.Value(1)).current;
-  const glow = useRef(new Animated.Value(0)).current;
-
-  const iconMap: any = {
-    index: focused ? "home" : "home-outline",
-    bookmarks: focused ? "bookmark" : "bookmark-outline",
-    create: "add-circle",
-    chats: focused ? "chatbubbles" : "chatbubbles-outline",
-    profile: focused ? "person" : "person-outline",
-  };
 
   const handlePressIn = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    Animated.parallel([
-      Animated.sequence([
-        Animated.timing(scale, {
-          toValue: 1.15,
-          duration: 120,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scale, {
-          toValue: 1,
-          friction: 5,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.sequence([
-        Animated.timing(glow, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: false,
-        }),
-        Animated.timing(glow, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: false,
-        }),
-      ]),
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 1.05, // very subtle
+        duration: 90,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 7,
+        useNativeDriver: true,
+      }),
     ]).start();
   };
 
-  const glowStyle = {
-    shadowColor: COLORS.primary,
-    shadowOpacity: glow.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 0.7],
-    }),
-    shadowRadius: 8,
-    elevation: 6,
-  };
-
   return (
-    <View
-      style={{
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Animated.View style={[{ transform: [{ scale }] }, glowStyle]}>
+    <View style={{ alignItems: "center", justifyContent: "center" }}>
+      <Animated.View style={{ transform: [{ scale }] }}>
         <Ionicons
-          name={iconMap[name]}
+          name={focused ? iconMap[name][0] : iconMap[name][1]}
           size={name === "create" ? size + 4 : size}
           color={focused ? COLORS.primary : color}
           onPressIn={handlePressIn}
         />
       </Animated.View>
 
+      {/* 🔥 SUBTLE DOT */}
       {focused && (
         <View
           style={{
             marginTop: 3,
-            width: 5,
-            height: 5,
-            borderRadius: 2.5,
+            width: 4,
+            height: 4,
+            borderRadius: 2,
             backgroundColor: COLORS.primary,
+            opacity: 0.7,
           }}
         />
       )}
     </View>
   );
-}
+});
+
+export default memo(TabsLayout);

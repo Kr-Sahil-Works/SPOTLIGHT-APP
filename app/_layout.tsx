@@ -9,7 +9,7 @@ import {
   SafeAreaView,
 } from "react-native-safe-area-context";
 
-import PushHandler from "@/components/PushHandler"; // 👈 NEW
+import { View } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,7 +24,7 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) return null;
+if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: "#000" }} />;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -35,8 +35,15 @@ export default function RootLayout() {
             style={{ flex: 1, backgroundColor: "#000" }}
             onLayout={onLayoutRootView}
           >
-            <PushHandler /> {/* ✅ SAFE PLACE */}
-            <Stack screenOptions={{ headerShown: false }} />
+            {/* <PushHandler /> ✅ SAFE PLACE */}
+            <Stack
+  screenOptions={{
+    headerShown: false,
+    animation: "fade",          // ✅ smooth + fast
+    animationDuration: 180,     // ⚡ no lag
+    gestureEnabled: true,       // ✅ swipe back smooth
+  }}
+/>
           </SafeAreaView>
         </SafeAreaProvider>
       </ClerkAndConvexProvider>

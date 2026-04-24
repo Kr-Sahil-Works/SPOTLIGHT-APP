@@ -1,19 +1,25 @@
-import { COLORS } from '@/constants/theme'
-import { api } from '@/convex/_generated/api'
-import { Id } from '@/convex/_generated/dataModel'
-import { styles } from '@/styles/feed.styles'
-import { useUser } from '@clerk/clerk-expo'
-import { Ionicons } from '@expo/vector-icons'
-import { useMutation, useQuery } from 'convex/react'
-import { formatDistanceToNow } from 'date-fns'
-import { Image } from 'expo-image'
-import { Link } from 'expo-router'
-import React, { useState } from 'react'
-import { Text, TouchableOpacity, View } from 'react-native'
-import CommentsModal from './CommentsModal'
+import { COLORS } from "@/constants/theme";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { styles } from "@/styles/feed.styles";
+import { useUser } from "@clerk/clerk-expo";
+import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQuery } from "convex/react";
+import { formatDistanceToNow } from "date-fns";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import { Link } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import CommentsModal from "./CommentsModal";
 
 type PostProps = {
-  post : {
+  post: {
     _id: Id<"posts">;
     imageUrl: string;
     caption?: string;
@@ -23,155 +29,200 @@ type PostProps = {
     isLiked: boolean;
     isBookmarked: boolean;
     author: {
-        _id: string;
-        username : string;
-        image: string;
+      _id: string;
+      username: string;
+      image: string;
     };
-  }
-}
+  };
+};
 
-export default function Post({post}: PostProps) {
+export default function Post({ post }: PostProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked);
   const [likesCount, setLikesCount] = useState(post.likes);
   const [commentsCount, setCommentsCount] = useState(post.comments);
   const [showComments, setShowComments] = useState(false);
 
+  const [loaded, setLoaded] = useState(false);
 
-  const {user} = useUser();
-  
-const currentUser = useQuery(api.users.getUserByClerkId,user ? {clerkId: user?.id}  : "skip")
+  const shimmer = useRef(new Animated.Value(0)).current;
 
-const toggleLike = useMutation(api.posts.toggleLike)
-const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
-const deletePost = useMutation(api.posts.deletePost);
+  const { user } = useUser();
 
+  const currentUser = useQuery(
+    api.users.getUserByClerkId,
+    user ? { clerkId: user.id } : "skip"
+  );
 
-const handleLike = async () => {
-  try {
-   const newIsLiked = await toggleLike ({postId : post._id})
-   setIsLiked(newIsLiked)
-   setLikesCount((prev) => (newIsLiked ? prev + 1 : prev -1));
+  const toggleLike = useMutation(api.posts.toggleLike);
+  const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
+  const deletePost = useMutation(api.posts.deletePost);
 
-  } catch (error) {
-   console.log("Error handling like on this post");
-  }
-}
+  /* 🔥 SHIMMER ANIMATION */
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmer, {
+        toValue: 1,
+        duration: 1200,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
 
-const handleBookmark = async () => {
+  const translateX = shimmer.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-300, 300],
+  });
+
+  const handleLike = async () => {
+    const newIsLiked = await toggleLike({ postId: post._id });
+    setIsLiked(newIsLiked);
+    setLikesCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
+  };
+
+  const handleBookmark = async () => {
     const newIsBookmarked = await toggleBookmark({ postId: post._id });
     setIsBookmarked(newIsBookmarked);
   };
 
   const handleDelete = async () => {
-    try {
-      await deletePost({ postId: post._id });
-    } catch (error) {
-      console.error("Error deleting post:", error);
-    }
+    await deletePost({ postId: post._id });
   };
 
   return (
     <View style={styles.post}>
-      {/* POST HEADER */}
+      {/* HEADER */}
       <View style={styles.postHeader}>
-       <Link
-  href={
-    currentUser?._id === post.author._id
-      ? "/(tabs)/profile"
-      : {
-          pathname: "/user/[id]",
-          params: { id: post.author._id },
-        }
-  }
-  asChild
->
+        <Link
+          href={
+            currentUser?._id === post.author._id
+              ? "/(tabs)/profile"
+              : { pathname: "/user/[id]", params: { id: post.author._id } }
+          }
+          asChild
+        >
           <TouchableOpacity style={styles.postHeaderLeft}>
             <Image
-              source={post.author.image}
+              source={{ uri: post.author.image }}
               style={styles.postAvatar}
               contentFit="cover"
-              transition={200}
-              cachePolicy="memory-disk"
             />
             <Text style={styles.postUsername}>{post.author.username}</Text>
           </TouchableOpacity>
         </Link>
 
-      
         {post.author._id === currentUser?._id ? (
           <TouchableOpacity onPress={handleDelete}>
             <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity>
-            <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.white} />
-          </TouchableOpacity>
+          <Ionicons name="ellipsis-horizontal" size={20} color={COLORS.white} />
         )}
       </View>
 
+      {/* IMAGE WITH SKELETON */}
+      <View>
+        {!loaded && (
+          <View
+            style={{
+              width: "100%",
+              aspectRatio: 1,
+              backgroundColor: "#111",
+              overflow: "hidden",
+            }}
+          >
+            {/* SHIMMER */}
+            <Animated.View
+              style={{
+                width: "100%",
+                height: "100%",
+                transform: [{ translateX }],
+              }}
+            >
+              <LinearGradient
+                colors={["#111", "#222", "#111"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ flex: 1 }}
+              />
+            </Animated.View>
+          </View>
+        )}
 
-        {/* IMAGE */}
-      <Image
-        source={post.imageUrl}
-        style={styles.postImage}
-        contentFit="cover"
-        transition={200}
-        cachePolicy="memory-disk"
-      />
+        <Image
+          source={{ uri: post.imageUrl }}
+          style={[
+            styles.postImage,
+            {
+              position: loaded ? "relative" : "absolute",
+              opacity: loaded ? 1 : 0,
+            },
+          ]}
+          contentFit="cover"
+          transition={300}
+          placeholder={{ blurhash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH" }} // 🔥 blur
+          onLoadEnd={() => setLoaded(true)}
+        />
+      </View>
 
-       {/* POST ACTIONS */}
+      {/* ACTIONS */}
       <View style={styles.postActions}>
         <View style={styles.postActionsLeft}>
           <TouchableOpacity onPress={handleLike}>
             <Ionicons
-              name={isLiked ? "heart" :"heart-outline"}
+              name={isLiked ? "heart" : "heart-outline"}
               size={24}
               color={isLiked ? COLORS.primary : COLORS.white}
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={()=> setShowComments(true)}>
+
+          <TouchableOpacity onPress={() => setShowComments(true)}>
             <Ionicons name="chatbubble-outline" size={22} color={COLORS.white} />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity  onPress={handleBookmark}>
+
+        <TouchableOpacity onPress={handleBookmark}>
           <Ionicons
-            name = {isBookmarked ? "bookmark" :  "bookmark-outline"}
+            name={isBookmarked ? "bookmark" : "bookmark-outline"}
             size={22}
             color={COLORS.white}
           />
         </TouchableOpacity>
       </View>
-        
-         {/* POST INFO */}
+
+      {/* INFO */}
       <View style={styles.postInfo}>
         <Text style={styles.likesText}>
-          {post.likes > 0 ? `${post.likes.toLocaleString()} likes` : "Be the first to like"}
+          {likesCount > 0
+            ? `${likesCount.toLocaleString()} likes`
+            : "Be the first to like"}
         </Text>
+
         {post.caption && (
-          <View style={styles.captionContainer}>
-            <Text style={styles.captionUsername}>{post.author.username}</Text>
-            <Text style={styles.captionText}>{post.caption}</Text>
-          </View>
+         <Text style={styles.captionText}>
+  {String(post.caption)}
+</Text>
         )}
 
-        {post.comments > 0 && (
-          <TouchableOpacity onPress={() => setShowComments(true)} >
-            <Text style={styles.commentsText}>View all {commentsCount} comments</Text>
+        {commentsCount > 0 && (
+          <TouchableOpacity onPress={() => setShowComments(true)}>
+            <Text style={styles.commentsText}>
+              View all {commentsCount} comments
+            </Text>
           </TouchableOpacity>
         )}
 
         <Text style={styles.timeAgo}>
-         {formatDistanceToNow(post._creationTime, {addSuffix: true})}
+          {formatDistanceToNow(post._creationTime, { addSuffix: true })}
         </Text>
       </View>
 
-<CommentsModal
-  postId = {post._id}
-  visible={showComments}
-  onClose = {() => setShowComments(false)}
-  onCommentAdded = {() => setCommentsCount((prev) => prev + 1)}
-/>
-      </View>
-  )
+      <CommentsModal
+        postId={post._id}
+        visible={showComments}
+        onClose={() => setShowComments(false)}
+        onCommentAdded={() => setCommentsCount((prev) => prev + 1)}
+      />
+    </View>
+  );
 }

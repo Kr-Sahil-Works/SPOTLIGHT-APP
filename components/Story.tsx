@@ -1,24 +1,48 @@
 import { styles } from "@/styles/feed.styles";
-import { Image, ImageSourcePropType, Text, TouchableOpacity, View } from "react-native";
+import { Image } from "expo-image";
+import { useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 type Story = {
   id: string;
   username: string;
-  avatar: ImageSourcePropType; // FIX
+  avatar: any; // supports require()
   hasStory: boolean;
 };
 
-export default function Story({ story }: { story: Story }) {
-  return (
-    <TouchableOpacity style={styles.storyWrapper}>
-      <View style={[styles.storyRing, !story.hasStory && styles.noStory]}>
-        
-        {/* FIX: remove uri wrapper */}
-        <Image source={story.avatar} style={styles.storyAvatar} />
+const FALLBACK =
+  "https://ui-avatars.com/api/?background=random&name=User";
 
+export default function Story({ story }: { story: Story }) {
+  const [error, setError] = useState(false);
+
+  return (
+    <TouchableOpacity style={styles.storyWrapper} activeOpacity={0.8}>
+      
+      {/* 🔥 Ring */}
+      <View
+        style={[
+          styles.storyRing,
+          !story.hasStory && styles.noStory,
+        ]}
+      >
+        <Image
+          source={
+            error
+              ? { uri: FALLBACK }
+              : story.avatar
+          }
+          style={styles.storyAvatar}
+          contentFit="cover"
+          transition={200}
+          blurRadius={error ? 6 : 0}
+          onError={() => setError(true)}
+        />
       </View>
 
-      <Text style={styles.storyUsername}>{story.username}</Text>
+      <Text style={styles.storyUsername} numberOfLines={1}>
+        {story.username}
+      </Text>
     </TouchableOpacity>
   );
 }

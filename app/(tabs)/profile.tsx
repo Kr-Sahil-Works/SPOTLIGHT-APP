@@ -289,14 +289,16 @@ return (
             }).start();
           }}
         >
-          <Image
-            source={selectedPost.imageUrl}
-            style={{
-              width: "100%",
-              aspectRatio: 1,
-            }}
-            contentFit="cover"
-          />
+        {selectedPost?.imageUrl && (
+  <Image
+    source={{ uri: selectedPost.imageUrl }}
+    style={{
+      width: "100%",
+      aspectRatio: 1,
+    }}
+    contentFit="cover"
+  />
+)}
         </TouchableOpacity>
       </Animated.View>
     )}

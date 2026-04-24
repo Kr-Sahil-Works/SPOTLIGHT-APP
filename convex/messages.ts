@@ -16,6 +16,7 @@ export const sendMessage = mutation({
     receiverId: v.id("users"),
     text: v.string(),
     replyTo: v.optional(v.id("messages")), // 🔥 NEW
+      replyToText: v.optional(v.string()), // 🔥 ADD THIS
   },
   handler: async (ctx, args) => {
     const user = await getAuthenticatedUser(ctx);
@@ -25,16 +26,19 @@ export const sendMessage = mutation({
       args.receiverId.toString()
     );
 
-    await ctx.db.insert("messages", {
-      conversationId,
-      senderId: user._id,
-      receiverId: args.receiverId,
-      text: args.text.trim(),
-      createdAt: Date.now(),
-      seen: false,
-      replyTo: args.replyTo, // ✅ NEW
-      reactions: [], // ✅ NEW
-    });
+await ctx.db.insert("messages", {
+  conversationId,
+  senderId: user._id,
+  receiverId: args.receiverId,
+  text: args.text.trim(),
+  createdAt: Date.now(),
+  seen: false,
+
+  replyTo: args.replyTo || undefined,
+  replyToText: args.replyToText || undefined, // 🔥 ADD THIS
+
+  reactions: [],
+});
     // 🔥 SEND PUSH
 const sender = await ctx.db.get(user._id);
 const receiver = await ctx.db.get(args.receiverId);
@@ -65,7 +69,43 @@ if (receiver?.pushToken && sender) {
 }
   },
 });
+export const setTyping = mutation({
+  args: {
+    receiverId: v.id("users"),
+    isTyping: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
 
+    const conversationId = getConversationId(
+      user._id.toString(),
+      args.receiverId.toString()
+    );
+
+    const existing = await ctx.db
+      .query("typing")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", conversationId)
+      )
+      .collect();
+
+  const existingUser = existing.find(
+  (t) => t.userId.toString() === user._id.toString()
+);
+
+if (existingUser) {
+  await ctx.db.patch(existingUser._id, {
+    isTyping: args.isTyping,
+  });
+} else {
+      await ctx.db.insert("typing", {
+        conversationId,
+        userId: user._id,
+        isTyping: args.isTyping,
+      });
+    }
+  },
+});
 /* =========================
    👀 MARK AS SEEN
 ========================= */
@@ -127,13 +167,54 @@ export const getMessages = query({
       .order("desc")
       .take(limit);
 
+   const enriched = await Promise.all(
+  messages.map(async (m) => {
+    let replyToText = m.replyToText;
+
+    if (!replyToText && m.replyTo) {
+      const replied = await ctx.db.get(m.replyTo);
+      replyToText = replied?.text;
+    }
+
     return {
-      messages: messages.reverse(),
-      currentUserId: currentUser._id,
+      ...m,
+      replyToText,
     };
+  })
+);
+
+return {
+  messages: enriched.reverse(),
+  currentUserId: currentUser._id,
+};
   },
 });
+export const getTyping = query({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const currentUser = await getAuthenticatedUser(ctx);
 
+    const conversationId = getConversationId(
+      currentUser._id.toString(),
+      args.userId.toString()
+    );
+
+    const typing = await ctx.db
+      .query("typing")
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", conversationId)
+      )
+      .collect();
+
+    return typing.find(
+      (t) =>
+        t.userId !== currentUser._id &&
+        t.isTyping === true
+    );
+  },
+});
 /* =========================
    ❤️ REACTIONS
 ========================= */
@@ -143,70 +224,34 @@ export const toggleReaction = mutation({
     reaction: v.string(),
   },
   handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
     const msg = await ctx.db.get(args.messageId);
     if (!msg) return;
 
     const reactions = msg.reactions || [];
 
-    const exists = reactions.includes(args.reaction);
+    const existing = reactions.find(
+      (r: any) =>
+        r.userId.toString() === user._id.toString() &&
+        r.value === args.reaction
+    );
 
     await ctx.db.patch(args.messageId, {
-      reactions: exists
-        ? reactions.filter((r) => r !== args.reaction)
-        : [...reactions, args.reaction],
+      reactions: existing
+        ? reactions.filter(
+            (r: any) =>
+              !(
+                r.userId.toString() === user._id.toString() &&
+                r.value === args.reaction
+              )
+          )
+        : [...reactions, { userId: user._id, value: args.reaction }],
     });
   },
 });
 
-/* =========================
-   ⌨️ TYPING SYNC
-========================= */
-export const setTyping = mutation({
-  args: {
-    to: v.id("users"),
-    isTyping: v.boolean(),
-  },
-  handler: async (ctx, args) => {
-    const user = await getAuthenticatedUser(ctx);
 
-    const existing = await ctx.db
-      .query("typing")
-      .withIndex("by_user_pair", (q) =>
-        q.eq("from", user._id).eq("to", args.to)
-      )
-      .first();
-
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        isTyping: args.isTyping,
-      });
-    } else {
-      await ctx.db.insert("typing", {
-        from: user._id,
-        to: args.to,
-        isTyping: args.isTyping,
-      });
-    }
-  },
-});
-
-export const getTyping = query({
-  args: {
-    userId: v.id("users"),
-  },
-  handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUser(ctx);
-
-    const typing = await ctx.db
-      .query("typing")
-      .withIndex("by_user_pair", (q) =>
-        q.eq("from", args.userId).eq("to", currentUser._id)
-      )
-      .first();
-
-    return typing?.isTyping || false;
-  },
-});
 
 /* =========================
    💬 CHAT LIST
@@ -333,5 +378,155 @@ export const deleteMessage = mutation({
     }
 
     await ctx.db.delete(args.messageId);
+  },
+});
+
+export const restoreMessage = mutation({
+  args: {
+    message: v.any(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("messages", {
+      ...args.message,
+      createdAt: Date.now(),
+    });
+  },
+});
+
+export const setTheme = mutation({
+  args: {
+    themeIndex: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    await ctx.db.patch(user._id, {
+      themeIndex: args.themeIndex,
+    });
+  },
+});
+
+export const setOnlineStatus = mutation({
+  args: {
+    isOnline: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    await ctx.db.patch(user._id, {
+      isOnline: args.isOnline,
+      lastSeen: Date.now(),
+    });
+  },
+});
+
+export const toggleOnlineVisibility = mutation({
+  handler: async (ctx) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    const current = user.showOnline ?? true;
+
+    await ctx.db.patch(user._id, {
+      showOnline: !current,
+    });
+  },
+});
+
+export const saveNote = mutation({
+  args: { content: v.string() },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    const existing = await ctx.db
+      .query("notes")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    await ctx.db.insert("notes", {
+      userId: user._id,
+      content: args.content,
+      updatedAt: Date.now(),
+      order: existing.length,
+      pinned: false,
+    });
+  },
+});
+
+export const getNotes = query({
+  handler: async (ctx) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    const notes = await ctx.db
+      .query("notes")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    return notes.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return a.order - b.order;
+    });
+  },
+});
+export const reorderNotes = mutation({
+  args: {
+    notes: v.array(
+      v.object({
+        id: v.id("notes"),
+        order: v.number(),
+      })
+    ),
+  },
+  handler: async (ctx, args) => {
+    for (const n of args.notes) {
+      await ctx.db.patch(n.id, { order: n.order });
+    }
+  },
+});
+
+export const togglePinNote = mutation({
+  args: { id: v.id("notes") },
+  handler: async (ctx, args) => {
+    const note = await ctx.db.get(args.id);
+    if (!note) return;
+
+    await ctx.db.patch(args.id, {
+      pinned: !note.pinned,
+    });
+  },
+});
+
+export const deleteNote = mutation({
+  args: { id: v.id("notes") },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    const note = await ctx.db.get(args.id);
+    if (!note) return;
+
+    // optional safety: only owner can delete
+    if (note.userId.toString() !== user._id.toString()) return;
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+
+
+export const setChatTheme = mutation({
+  args: {
+    userId: v.id("users"),
+    themeIndex: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const current = await getAuthenticatedUser(ctx);
+
+    await ctx.db.patch(current._id, {
+      themeIndex: args.themeIndex,
+    });
+
+    await ctx.db.patch(args.userId, {
+      themeIndex: args.themeIndex,
+    });
   },
 });

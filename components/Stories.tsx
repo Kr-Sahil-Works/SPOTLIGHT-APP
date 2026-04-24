@@ -9,11 +9,14 @@ export default function StoriesSection() {
       <FlatList
         data={STORIES}
         horizontal
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        windowSize={5}
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id.toString()}
+
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+        removeClippedSubviews
+
         renderItem={({ item }) => <Story story={item} />}
       />
     </View>
