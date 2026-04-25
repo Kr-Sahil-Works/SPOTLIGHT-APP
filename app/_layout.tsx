@@ -1,19 +1,49 @@
 import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
+import PushHandler from "@/components/PushHandler";
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
+import { AppState, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   SafeAreaProvider,
   SafeAreaView,
 } from "react-native-safe-area-context";
 
-import PushHandler from "@/components/PushHandler";
-import { View } from "react-native";
-
-
 SplashScreen.preventAutoHideAsync();
+
+/* =========================
+   ✅ ONLINE WRAPPER (FIX)
+========================= */
+function OnlineWrapper({ children }: any) {
+  const setOnline = useMutation(api.messages.setOnlineStatus);
+
+useEffect(() => {
+  const handleState = (state: string) => {
+    if (state === "active") {
+      // 🟢 app open
+      setOnline({ isOnline: true });
+    } else {
+      // 🔴 background / minimized
+      setOnline({ isOnline: false });
+    }
+  };
+
+  const sub = AppState.addEventListener("change", handleState);
+
+  // 🔥 initial state
+  handleState(AppState.currentState);
+
+  return () => {
+    sub.remove();
+  };
+}, []);
+
+  return children;
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -26,28 +56,35 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: "#000" }} />;
+  if (!fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: "#000" }} />;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ClerkAndConvexProvider>
-        <SafeAreaProvider>
-          <SafeAreaView
-            edges={["top", "left", "right"]}
-            style={{ flex: 1, backgroundColor: "#000" }}
-            onLayout={onLayoutRootView}
-          >
-            <PushHandler /> ✅ SAFE PLACE
-            <Stack
-  screenOptions={{
-    headerShown: false,
-    animation: "fade",          // ✅ smooth + fast
-    animationDuration: 180,     // ⚡ no lag
-    gestureEnabled: true,       // ✅ swipe back smooth
-  }}
-/>
-          </SafeAreaView>
-        </SafeAreaProvider>
+        <OnlineWrapper>
+          <SafeAreaProvider>
+            <SafeAreaView
+              edges={["top", "left", "right"]}
+              style={{ flex: 1, backgroundColor: "#000" }}
+              onLayout={onLayoutRootView}
+            >
+              {/* 🔔 PUSH HANDLER */}
+              <PushHandler />
+
+              {/* 🔥 ROUTER */}
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  animation: "fade",
+                  animationDuration: 180,
+                  gestureEnabled: true,
+                }}
+              />
+            </SafeAreaView>
+          </SafeAreaProvider>
+        </OnlineWrapper>
       </ClerkAndConvexProvider>
     </GestureHandlerRootView>
   );

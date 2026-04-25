@@ -21,7 +21,9 @@ function TabsLayout() {
   const { isLoaded, isSignedIn } = useAuth();
   const insets = useSafeAreaInsets();
 
-  if (!isLoaded) return null;
+if (!isLoaded) {
+  return <View style={{ flex: 1, backgroundColor: "#000" }} />;
+}
   if (!isSignedIn) return <Redirect href="/(auth)/login" />;
 
   return (

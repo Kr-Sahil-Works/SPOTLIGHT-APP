@@ -7,6 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "spotlightapp",
     "userInterfaceStyle": "automatic",
+   
+
+    "assetBundlePatterns": ["**/*"],
+
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -14,23 +18,31 @@
         "NSPhotoLibraryUsageDescription": "Allow access to your photos"
       }
     },
+
     "android": {
+      "package": "spotlight.chat",
+      "versionCode": 1,
+
+     
+
       "softwareKeyboardLayoutMode": "resize",
-      "permissions": [
-        "READ_MEDIA_IMAGES"
-      ],
+      "permissions": ["READ_MEDIA_IMAGES"],
+
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#161616"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "Spotlight.chat"
+
+      "predictiveBackGestureEnabled": false
     },
+
     "web": {
       "output": "static"
     },
+
     "plugins": [
       "expo-router",
+
       [
         "expo-splash-screen",
         {
@@ -43,12 +55,15 @@
           }
         }
       ],
+
       "expo-secure-store"
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
+
     "extra": {
       "router": {},
       "eas": {

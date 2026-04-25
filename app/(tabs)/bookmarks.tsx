@@ -86,7 +86,6 @@ Animated.spring(successScale, {
 
 showToast("Image downloaded ✅");
   } catch (e) {
-    console.log("❌ Download error:", e);
     showToast("Download failed ❌");
   } finally {
     setDownloading(false);

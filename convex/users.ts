@@ -216,3 +216,17 @@ export const savePushToken = mutation({
     });
   },
 });
+
+
+export const setActiveChat = mutation({
+  args: {
+    chatWith: v.optional(v.id("users")),
+  },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    await ctx.db.patch(user._id, {
+      activeChatWith: args.chatWith,
+    });
+  },
+});

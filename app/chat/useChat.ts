@@ -40,23 +40,13 @@ export default function useChat(userId: Id<"users">) {
   const editMessage = useMutation(api.messages.editMessage);
   const toggleReaction = useMutation(api.messages.toggleReaction);
   const setChatTheme = useMutation(api.messages.setChatTheme);
+  const setTyping = useMutation(api.messages.setTyping);
   const markAsSeen = useMutation(api.messages.markAsSeen);
 
   const [optimisticMsgs, setOptimisticMsgs] = useState<any[]>([]);
 const messages = [...optimisticMsgs, ...(data?.messages || [])];
 
   const currentUserId = data?.currentUserId;
-
-  /* 🔥 ONLINE STATUS */
-  useEffect(() => {
-    if (!userId) return;
-
-    setOnlineStatus({ isOnline: true });
-
-    return () => {
-      setOnlineStatus({ isOnline: false });
-    };
-  }, []);
 
 
   /* 🔥 MARK SEEN */
@@ -65,12 +55,38 @@ const messages = [...optimisticMsgs, ...(data?.messages || [])];
     markAsSeen({ userId });
   }, [messages]);
 
+
+  /* 🔥 TYPING HANDLER */
+const typingTimeout = useRef<any>(null);
+
+const handleTyping = (t: string) => {
+  setText(t);
+
+  if (typingTimeout.current) {
+    clearTimeout(typingTimeout.current);
+  }
+
+  setTyping({
+    receiverId: userId,
+    isTyping: true,
+  });
+
+  typingTimeout.current = setTimeout(() => {
+    setTyping({
+      receiverId: userId,
+      isTyping: false,
+    });
+  }, 800);
+};
+
   /* 🔥 SEND MESSAGE (CLEAN) */
   const handleSend = async () => {
     if (!text.length) return;
 
     const messageText = text;
-    setText(""); // ✅ instant clear
+  
+
+
 
     const tempId = Date.now().toString();
 
@@ -98,7 +114,10 @@ const messages = [...optimisticMsgs, ...(data?.messages || [])];
     } catch (e) {
       console.log(e);
     }
-
+setTyping({
+  receiverId: userId,
+  isTyping: false,
+});
     setReplyMsg(null);
   };
 
@@ -117,7 +136,7 @@ const messages = [...optimisticMsgs, ...(data?.messages || [])];
 
   return {
     text,
-    setText,
+    setText: handleTyping,
 
     selectedMsg,
     setSelectedMsg,

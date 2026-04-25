@@ -27,7 +27,8 @@ import MessageItem from "./MessageItem";
 import ReactionBar from "./ReactionBar";
 import useChat from "./useChat";
 // ADD THIS IMPORT
-
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
 
 
 
@@ -106,6 +107,16 @@ const [themeIndex, setThemeIndex] = useState(0);
 const wmOpacity = useRef(new Animated.Value(0)).current;
 const [wmText, setWmText] = useState("");
 const [kbOffset, setKbOffset] = useState(30); // default fallback
+
+const setActiveChat = useMutation(api.users.setActiveChat);
+
+useEffect(() => {
+  setActiveChat({ chatWith: userId });
+
+  return () => {
+    setActiveChat({ chatWith: undefined });
+  };
+}, [userId]);
 
 
 const showWatermark = (text: string) => {

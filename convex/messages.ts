@@ -44,31 +44,32 @@ const sender = await ctx.db.get(user._id);
 const receiver = await ctx.db.get(args.receiverId);
 
 if (receiver?.pushToken && sender) {
-  await fetch("https://exp.host/--/api/v2/push/send", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      to: receiver.pushToken,
-      sound: "default",
+  const isInSameChat =
+    receiver.activeChatWith?.toString() === user._id.toString();
 
-      // 🔥 Instagram style
-      title: sender.fullname,
-      body: args.text,
-
-      // 🔥 deep link
-      data: {
-        userId: sender._id,
+  if (!isInSameChat) {
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-
-      // 🔥 Android large icon
-      icon: sender.image,
-    }),
-  });
+      body: JSON.stringify({
+        to: receiver.pushToken,
+        sound: "default",
+        title: sender.fullname,
+        body: args.text,
+        data: {
+          userId: sender._id,
+        },
+      }),
+    });
+  }
 }
   },
 });
+
+
+
 export const setTyping = mutation({
   args: {
     receiverId: v.id("users"),
@@ -82,28 +83,28 @@ export const setTyping = mutation({
       args.receiverId.toString()
     );
 
+    // ⚡ DIRECT lookup (no scan)
     const existing = await ctx.db
       .query("typing")
-      .withIndex("by_conversation", (q) =>
-        q.eq("conversationId", conversationId)
+      .withIndex("by_user_conversation", (q) =>
+        q
+          .eq("conversationId", conversationId)
+          .eq("userId", user._id)
       )
-      .collect();
+      .first();
 
-  const existingUser = existing.find(
-  (t) => t.userId.toString() === user._id.toString()
-);
-
-if (existingUser) {
-  await ctx.db.patch(existingUser._id, {
-    isTyping: args.isTyping,
-  });
-} else {
-      await ctx.db.insert("typing", {
-        conversationId,
-        userId: user._id,
+    if (existing) {
+      await ctx.db.patch(existing._id, {
         isTyping: args.isTyping,
       });
+      return;
     }
+
+    await ctx.db.insert("typing", {
+      conversationId,
+      userId: user._id,
+      isTyping: args.isTyping,
+    });
   },
 });
 /* =========================
@@ -167,28 +168,35 @@ export const getMessages = query({
       .order("desc")
       .take(limit);
 
-   const enriched = await Promise.all(
-  messages.map(async (m) => {
-    let replyToText = m.replyToText;
+    // ⚡ batch reply fetch (avoid many db calls)
+    const replyIds = messages
+      .map((m) => m.replyTo)
+      .filter(Boolean);
 
-    if (!replyToText && m.replyTo) {
-      const replied = await ctx.db.get(m.replyTo);
-      replyToText = replied?.text;
-    }
+    const replyMap = new Map();
+
+    await Promise.all(
+      replyIds.map(async (id) => {
+        const msg = await ctx.db.get(id!);
+        if (msg) replyMap.set(id, msg.text);
+      })
+    );
+
+    const enriched = messages.map((m) => ({
+      ...m,
+      replyToText:
+        m.replyToText ||
+        (m.replyTo ? replyMap.get(m.replyTo) : undefined),
+    }));
 
     return {
-      ...m,
-      replyToText,
+      messages: enriched.reverse(),
+      currentUserId: currentUser._id,
     };
-  })
-);
-
-return {
-  messages: enriched.reverse(),
-  currentUserId: currentUser._id,
-};
   },
 });
+
+
 export const getTyping = query({
   args: {
     userId: v.id("users"),
@@ -201,9 +209,10 @@ export const getTyping = query({
       args.userId.toString()
     );
 
+    // ⚡ use better index (no full scan)
     const typing = await ctx.db
       .query("typing")
-      .withIndex("by_conversation", (q) =>
+      .withIndex("by_user_conversation", (q) =>
         q.eq("conversationId", conversationId)
       )
       .collect();
@@ -215,6 +224,9 @@ export const getTyping = query({
     );
   },
 });
+
+
+
 /* =========================
    ❤️ REACTIONS
 ========================= */
@@ -293,6 +305,9 @@ export const getChatList = query({
       lastMessage: string;
       createdAt: number;
       unreadCount: number;
+        // ✅ ADD THESE
+  isOnline?: boolean;
+  showOnline?: boolean;
     }[] = [];
 
     for (const [_, latestMsg] of latestMap.entries()) {
@@ -323,6 +338,8 @@ export const getChatList = query({
         lastMessage: latestMsg.text,
         createdAt: latestMsg.createdAt,
         unreadCount,
+        isOnline: user.isOnline,
+        showOnline: user.showOnline,
       });
     }
 

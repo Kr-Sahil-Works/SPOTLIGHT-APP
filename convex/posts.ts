@@ -40,46 +40,65 @@ export const createPost = mutation({
 });
 
 export const getFeedPosts = query({
-  handler: async (ctx) => {
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
+    const limit = args.limit ?? 20;
 
-    // get all posts
-    const posts = await ctx.db.query("posts").order("desc").collect();
+    const posts = await ctx.db
+      .query("posts")
+      .order("desc")
+      .take(limit); // ✅ instead of collect
+
     if (posts.length === 0) return [];
 
-    // enhance posts with userdata and interaction status
-    const postsWithInfo = await Promise.all(
-      posts.map(async (post) => {
-        const postAuthor = (await ctx.db.get(post.userId))!;
+    // ⚡ batch authors
+    const userIds = [...new Set(posts.map(p => p.userId))];
+    const users = await Promise.all(userIds.map(id => ctx.db.get(id)));
 
-        const like = await ctx.db
-          .query("likes")
-          .withIndex("by_user_and_post", (q) =>
-            q.eq("userId", currentUser._id).eq("postId", post._id)
-          )
-          .first();
-
-        const bookmark = await ctx.db
-          .query("bookmarks")
-          .withIndex("by_user_and_post", (q) =>
-            q.eq("userId", currentUser._id).eq("postId", post._id)
-          )
-          .first();
-
-        return {
-          ...post,
-          author: {
-            _id: postAuthor?._id,
-            username: postAuthor?.username,
-            image: postAuthor?.image,
-          },
-          isLiked: !!like,
-          isBookmarked: !!bookmark,
-        };
-      })
+    const userMap = new Map(
+      users.map(u => [u?._id.toString(), u])
     );
 
-    return postsWithInfo;
+    // ⚡ batch likes & bookmarks
+    const likeChecks = await Promise.all(
+      posts.map(p =>
+        ctx.db
+          .query("likes")
+          .withIndex("by_user_and_post", q =>
+            q.eq("userId", currentUser._id).eq("postId", p._id)
+          )
+          .first()
+      )
+    );
+
+    const bookmarkChecks = await Promise.all(
+      posts.map(p =>
+        ctx.db
+          .query("bookmarks")
+          .withIndex("by_user_and_post", q =>
+            q.eq("userId", currentUser._id).eq("postId", p._id)
+          )
+          .first()
+      )
+    );
+
+    return posts.map((post, i) => {
+      const author = userMap.get(post.userId.toString());
+
+      return {
+        ...post,
+        author: {
+          _id: author?._id,
+          username: author?.username,
+          image: author?.image,
+        },
+        isLiked: !!likeChecks[i],
+        isBookmarked: !!bookmarkChecks[i],
+      };
+    });
   },
 });
 
@@ -101,7 +120,9 @@ export const toggleLike = mutation({
     if (existing) {
       // remove like
       await ctx.db.delete(existing._id);
-      await ctx.db.patch(args.postId, { likes: post.likes - 1 });
+      await ctx.db.patch(args.postId, {
+  likes: Math.max(0, post.likes - 1),
+});
       return false; // unliked
     } else {
       // add like
@@ -133,55 +154,50 @@ export const deletePost = mutation({
     const post = await ctx.db.get(args.postId);
     if (!post) throw new Error("Post not found");
 
-    // verify ownership
-    if (post.userId !== currentUser._id) throw new Error("Not authorized to delete this post");
-
-    // delete associated likes
-    const likes = await ctx.db
-      .query("likes")
-      .withIndex("by_post", (q) => q.eq("postId", args.postId))
-      .collect();
-
-    for (const like of likes) {
-      await ctx.db.delete(like._id);
+    // ✅ ownership check
+    if (post.userId !== currentUser._id) {
+      throw new Error("Not authorized to delete this post");
     }
 
-    // delete associated comments
-    const comments = await ctx.db
-      .query("comments")
-      .withIndex("by_post", (q) => q.eq("postId", args.postId))
-      .collect();
+    // 🔥 fetch all related data (parallel)
+    const [likes, comments, bookmarks, notifications] =
+      await Promise.all([
+        ctx.db
+          .query("likes")
+          .withIndex("by_post", (q) => q.eq("postId", args.postId))
+          .collect(),
 
-    for (const comment of comments) {
-      await ctx.db.delete(comment._id);
-    }
+        ctx.db
+          .query("comments")
+          .withIndex("by_post", (q) => q.eq("postId", args.postId))
+          .collect(),
 
-    // delete associated bookmarks
-    const bookmarks = await ctx.db
-      .query("bookmarks")
-      .withIndex("by_post", (q) => q.eq("postId", args.postId))
-      .collect();
+        ctx.db
+          .query("bookmarks")
+          .withIndex("by_post", (q) => q.eq("postId", args.postId))
+          .collect(),
 
-    for (const bookmark of bookmarks) {
-      await ctx.db.delete(bookmark._id);
-    }
+        ctx.db
+          .query("notifications")
+          .withIndex("by_post", (q) => q.eq("postId", args.postId))
+          .collect(),
+      ]);
 
-    const notifications = await ctx.db
-      .query("notifications")
-      .withIndex("by_post", (q) => q.eq("postId", args.postId))
-      .collect();
+    // ⚡ delete everything in parallel
+    await Promise.all([
+      ...likes.map((l) => ctx.db.delete(l._id)),
+      ...comments.map((c) => ctx.db.delete(c._id)),
+      ...bookmarks.map((b) => ctx.db.delete(b._id)),
+      ...notifications.map((n) => ctx.db.delete(n._id)),
+    ]);
 
-    for (const notification of notifications) {
-      await ctx.db.delete(notification._id);
-    }
-
-    // delete the storage file
+    // 🗑 delete storage file
     await ctx.storage.delete(post.storageId);
 
-    // delete the post
+    // 🗑 delete post
     await ctx.db.delete(args.postId);
 
-    // decrement user's post count by 1
+    // 📉 update user post count
     await ctx.db.patch(currentUser._id, {
       posts: Math.max(0, (currentUser.posts || 1) - 1),
     });
@@ -200,7 +216,7 @@ export const getPostsByUser = query({
     const posts = await ctx.db
       .query("posts")
       .withIndex("by_user", (q) => q.eq("userId", args.userId || user._id))
-      .collect();
+      .take(30);
 
     return posts;
   },

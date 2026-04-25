@@ -5,7 +5,6 @@ import { useSSO } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router"; // ✅ ADD THIS AT TOP
 import { useRef, useState } from "react";
 import { Animated, Image, Pressable, Text, View } from "react-native";
 
@@ -80,10 +79,6 @@ export default function Login() {
 
     setLoading(true);
 
-    setTimeout(()=>{
-      resetMorph();
-      setLoading(false);
-    },800);
 
     try{
 
@@ -92,9 +87,7 @@ export default function Login() {
 
       if(setActive && createdSessionId){
         await setActive({session:createdSessionId});
-        
-  // 🔥 FORCE NAVIGATION AFTER LOGIN
-  router.replace("/(tabs)");
+        setLoading(false);
       }
 
     }catch(error:any){

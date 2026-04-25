@@ -17,6 +17,8 @@ export default defineSchema({
 lastSeen: v.optional(v.number()),
 showOnline: v.optional(v.boolean()),
 
+activeChatWith: v.optional(v.id("users")),
+
     followers: v.number(),
     following: v.number(),
     posts: v.number(),
@@ -135,9 +137,10 @@ showOnline: v.optional(v.boolean()),
   )
 ),
   })
-    .index("by_conversation", ["conversationId"])
-    .index("by_sender", ["senderId"])
-    .index("by_receiver", ["receiverId"]),
+.index("by_conversation", ["conversationId"])
+.index("by_conversation_time", ["conversationId", "createdAt"])
+.index("by_sender", ["senderId"])
+.index("by_receiver", ["receiverId"]),
 
   /* =========================
      ⌨️ TYPING (REAL-TIME FIXED)
