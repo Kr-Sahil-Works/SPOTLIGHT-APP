@@ -15,6 +15,7 @@ import {
 } from "react-native";
 
 import { useEffect, useRef, useState } from "react";
+import TypingDots from "../../components/TypingDots";
 import {
   DeleteModal,
   EditModal,
@@ -24,6 +25,7 @@ import {
 import MessageItem from "./MessageItem";
 import ReactionBar from "./ReactionBar";
 import useChat from "./useChat";
+// ADD THIS IMPORT
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
@@ -41,7 +43,6 @@ export default function ChatScreen() {
 
   const {
     text, setText,
-    sending,
     messages,
     currentUserId,
     user,
@@ -65,18 +66,23 @@ export default function ChatScreen() {
   } = useChat(userId);
 
   /* 🎨 THEMES */
-  const themes = [
-    { bg: "#090000", bubbleMe: "#FF3B3B", bubbleOther: "#1F1F1F" },
-    { bg: "#0f1702", bubbleMe: "#6dae05", bubbleOther: "#7e941d" },
-    { bg: "#000c1d", bubbleMe: "#3B82F6", bubbleOther: "#000916" },
-    { bg: "#190022", bubbleMe: "#9539eb", bubbleOther: "#1A1625" },
-    { bg: "#00121c", bubbleMe: "#22D3EE", bubbleOther: "#013359" },
-    { bg: "#140612", bubbleMe: "#ee2292", bubbleOther: "#d50c4c" },
-  ];
+const themes = [
+  { bg: "#090000", bubbleMe: "#FF3B3B", bubbleOther: "#1F1F1F", header: "#140000" },
+  { bg: "#0f1702", bubbleMe: "#6dae05", bubbleOther: "#7e941d", header: "#355705" },
+  { bg: "#000c1d", bubbleMe: "#3B82F6", bubbleOther: "#000916", header: "#000814" },
+  { bg: "#190022", bubbleMe: "#9539eb", bubbleOther: "#1A1625", header: "#14001c" },
+  { bg: "#00121c", bubbleMe: "#22D3EE", bubbleOther: "#013359", header: "#0c2533" },
+  { bg: "#140612", bubbleMe: "#ee2292", bubbleOther: "#232323", header: "#0f040c" },
+  { bg: "#080808", bubbleMe: "#000000", bubbleOther: "#181818", header: "#050505" },
+];
+  
 const [highlightId, setHighlightId] = useState<string | null>(null);
 const [themeIndex, setThemeIndex] = useState(0);
 const wmOpacity = useRef(new Animated.Value(0)).current;
 const [wmText, setWmText] = useState("");
+
+
+
 const showWatermark = (text: string) => {
   setWmText(text);
 
@@ -89,7 +95,7 @@ const showWatermark = (text: string) => {
     Animated.delay(1200),
     Animated.timing(wmOpacity, {
       toValue: 0,
-      duration: 300,
+      duration: 180,
       useNativeDriver: true,
     }),
   ]).start();
@@ -101,11 +107,26 @@ useEffect(() => {
   }
 }, [user]);
 
+
   const theme = themes[themeIndex];
 
   /* 🎬 SMOOTH THEME ANIMATION */
   const bgAnim = useRef(new Animated.Value(0)).current;
 
+const sendAnim = useRef(new Animated.Value(1)).current;
+
+
+
+const animateSend = () => {
+  sendAnim.setValue(0.8);
+
+  Animated.spring(sendAnim, {
+    toValue: 1,
+    stiffness: 200,
+    damping: 15,
+    useNativeDriver: true,
+  }).start();
+};
 const changeTheme = async () => {
   const next = (themeIndex + 1) % themes.length;
 
@@ -122,7 +143,7 @@ const changeTheme = async () => {
       themeIndex: next,
     });
 
-    showWatermark(`Theme changed to ${themes[next].bg}`);
+    showWatermark(`Theme changed 🎨`);
   });
 };
 
@@ -144,160 +165,191 @@ const handleScrollTo = (id: string) => {
 };
 
 
+const openInstagram = async () => {
+  const url = "instagram://direct/inbox";
+  const canOpen = await Linking.canOpenURL(url);
+
+  if (canOpen) {
+    Linking.openURL(url);
+  } else {
+    Linking.openURL("https://instagram.com/direct/inbox/");
+  }
+};
 
 
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: theme.bg }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 30}
-    >
-      <View style={{ flex: 1 }}>
 
-        {/* 🔥 HEADER */}
-        <View style={{
+ return (
+  <KeyboardAvoidingView
+    style={{ flex: 1, backgroundColor: theme.bg }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+ keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 40}
+  >
+    <View style={{ flex: 1 }}>
+
+      {/* 🔥 HEADER */}
+      <View
+        style={{
           flexDirection: "row",
           alignItems: "center",
           padding: 14,
-          backgroundColor: "#000",
-        }}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={26} color="#fff" />
+          backgroundColor: theme.header,
+        }}
+      >
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={26} color="#fff" />
+        </TouchableOpacity>
+
+        <Image
+          source={
+            user?.image
+              ? { uri: user.image }
+              : require("@/assets/images/iconbg.png")
+          }
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            marginLeft: 10,
+          }}
+        />
+
+        <Text style={{ color: "#fff", marginLeft: 10, fontSize: 16 }}>
+          {user?.fullname || "User"}
+        </Text>
+
+        <View style={{ marginLeft: "auto", flexDirection: "row" }}>
+          <TouchableOpacity onPress={openInstagram}>
+            <Ionicons name="call" size={22} color="#fff" />
           </TouchableOpacity>
 
-          <Image
-            source={user?.image ? { uri: user.image } : require("@/assets/images/iconbg.png")}
-            style={{ width: 36, height: 36, borderRadius: 18, marginLeft: 10 }}
-          />
-
-          <Text style={{ color: "#fff", marginLeft: 10, fontSize: 16 }}>
-            {user?.fullname || "User"}
-          </Text>
-
-          <View style={{ marginLeft: "auto", flexDirection: "row" }}>
-            <TouchableOpacity
-  onPress={() => Linking.openURL("https://instagram.com/")}
->
-  <Ionicons name="call" size={22} color="#fff" />
-</TouchableOpacity>
-
-            <TouchableOpacity onPress={changeTheme} style={{ marginLeft: 14 }}>
-              <Ionicons name="color-palette" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={changeTheme} style={{ marginLeft: 14 }}>
+            <Ionicons name="color-palette" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
-        
-<Animated.View
-  style={{
-    position: "absolute",
-    top: 80,
-    alignSelf: "center",
-    opacity: wmOpacity,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    zIndex: 10,
-  }}
->
-  <Text style={{ color: "#fff", fontSize: 12 }}>
-    {wmText}
-  </Text>
-</Animated.View>
+      </View>
 
+      {/* WATERMARK */}
+      <Animated.View
+        style={{
+          position: "absolute",
+          top: 80,
+          alignSelf: "center",
+          opacity: wmOpacity,
+          backgroundColor: "rgba(0,0,0,0.4)",
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          borderRadius: 20,
+          zIndex: 10,
+        }}
+      >
+        <Text style={{ color: "#fff", fontSize: 12 }}>{wmText}</Text>
+      </Animated.View>
+
+      {/* 🔥 MAIN CONTENT */}
+      <View style={{ flex: 1 }}>
 
         {/* 💬 MESSAGES */}
         <FlatList
           ref={flatListRef}
           data={messages}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
           keyExtractor={(i) => String(i._id)}
-          contentContainerStyle={{ padding: 12 }}
+          contentContainerStyle={{
+            padding: 12,
+            paddingBottom: 10,
+          }}
+          onContentSizeChange={() => {
+            flatListRef.current?.scrollToEnd({ animated: true });
+          }}
+          onLayout={() => {
+            setTimeout(() => {
+              flatListRef.current?.scrollToEnd({ animated: false });
+            }, 50);
+          }}
           renderItem={({ item }) => (
-   <MessageItem
-  item={item}
-  isMe={item.senderId === currentUserId}
-  theme={theme}
-  avatar={user?.image || ""}
-  onScrollTo={handleScrollTo}
-highlightId={highlightId}
-onReply={(msg: any) => setReplyMsg(msg)}
+            <MessageItem
+              item={item}
+              isMe={item.senderId === currentUserId}
+              theme={theme}
+              avatar={user?.image || ""}
+              onScrollTo={handleScrollTo}
+              highlightId={highlightId}
+              onReply={(msg: any) => setReplyMsg(msg)}
+              onLongPress={(msg: any) => {
+                setReactionMsg(null);
+                setSelectedMsg(msg);
+              }}
+              onReact={(msg: any) => {
+                if (!tapRef.current[msg._id]) {
+                  tapRef.current[msg._id] = { count: 0, timer: null };
+                }
 
-  onLongPress={(msg: any) => {
-    setReactionMsg(null);
-    setSelectedMsg(msg);
-  }}
+                const t = tapRef.current[msg._id];
+                t.count++;
 
-  onReact={(msg: any) => {
-    if (!tapRef.current[msg._id]) {
-      tapRef.current[msg._id] = { count: 0, timer: null };
-    }
+                if (t.timer) clearTimeout(t.timer);
 
-    const t = tapRef.current[msg._id];
-    t.count++;
+                t.timer = setTimeout(() => {
+                  const taps = t.count;
 
-    if (t.timer) clearTimeout(t.timer);
+                  if (taps === 2) {
+                    const already = msg.reactions?.includes("❤️");
+                    if (!already) {
+                      toggleReaction({
+                        messageId: msg._id,
+                        reaction: "❤️",
+                      });
+                    }
+                  }
 
-    t.timer = setTimeout(() => {
-      const taps = t.count;
+                  if (taps === 3) {
+                    setReactionMsg(msg);
+                  }
 
-      if (taps === 2) {
-        const already = msg.reactions?.includes("❤️");
-
-        if (!already) {
-          toggleReaction({
-            messageId: msg._id,
-            reaction: "❤️",
-          });
-        }
-      }
-
-      if (taps === 3) {
-        setReactionMsg(msg);
-      }
-
-      tapRef.current[msg._id] = { count: 0, timer: null };
-    }, 250);
-  }}
-/>
+                  tapRef.current[msg._id] = { count: 0, timer: null };
+                }, 250);
+              }}
+            />
           )}
         />
 
         {/* ✍️ TYPING */}
-        {typing && (
-          <Text style={{ color: "#888", paddingLeft: 12 }}>
-            {user?.fullname} typing...
-          </Text>
-        )}
+        {typing && <TypingDots />}
 
         {/* 🔄 UNDO */}
-   {lastDeleted && (
-  <View style={{
-    backgroundColor: "#222",
-    padding: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  }}>
-    <Text style={{ color: "#fff" }}>Message deleted</Text>
+        {lastDeleted && (
+          <View
+            style={{
+              backgroundColor: "#222",
+              padding: 10,
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text style={{ color: "#fff" }}>Message deleted</Text>
 
-    <TouchableOpacity
-      onPress={async () => {
-        await restoreMessage({ message: lastDeleted });
-        setLastDeleted(null);
-      }}
-    >
-      <Text style={{ color: "#4ade80" }}>UNDO</Text>
-    </TouchableOpacity>
-  </View>
-)}
+            <TouchableOpacity
+              onPress={async () => {
+                await restoreMessage({ message: lastDeleted });
+                setLastDeleted(null);
+              }}
+            >
+              <Text style={{ color: "#4ade80" }}>UNDO</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* 🔁 REPLY BAR */}
         {replyMsg && (
-          <View style={{
-            padding: 8,
-            backgroundColor: "#222",
-            borderLeftWidth: 3,
-            borderLeftColor: "#4ade80",
-          }}>
+          <View
+            style={{
+              padding: 8,
+              backgroundColor: "#222",
+              borderLeftWidth: 3,
+              borderLeftColor: "#4ade80",
+            }}
+          >
             <Text style={{ color: "#aaa" }}>
               Replying to: {replyMsg.text}
             </Text>
@@ -307,94 +359,113 @@ onReply={(msg: any) => setReplyMsg(msg)}
             </TouchableOpacity>
           </View>
         )}
+      </View>
 
-        {/* ✏️ GLASS INPUT */}
-       <View
-  style={{
-    flexDirection: "row",
-    padding: 10,
-    paddingBottom: 20,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderTopWidth: 0.5,
-    borderTopColor: "rgba(255,255,255,0.05)",
-  }}
->
+      {/* ✅ INPUT (FIXED BOTTOM) */}
+      <View
+        style={{
+          borderTopWidth: 0.5,
+          borderColor: "rgba(255,255,255,0.08)",
+          backgroundColor: "rgba(0,0,0,0.4)",
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 10,
+          }}
+        >
           <TextInput
             value={text}
             onChangeText={setText}
             placeholder="Message..."
             placeholderTextColor="#777"
-           style={{
-  flex: 1,
-  backgroundColor: "rgba(255,255,255,0.08)",
-  color: "#fff",
-  borderRadius: 30,
-  paddingVertical: 10,
-  paddingHorizontal: 16,
-}}
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(255,255,255,0.08)",
+              color: "#fff",
+              borderRadius: 30,
+              paddingVertical: 10,
+              paddingHorizontal: 16,
+            }}
           />
 
-        {text.trim().length > 0 && (
-  <TouchableOpacity onPress={handleSend} activeOpacity={0.7}>
-    <Animated.View
-      style={{
-        marginLeft: 10,
-        backgroundColor: theme.bubbleMe,
-        padding: 10,
-        borderRadius: 22,
-        transform: [{ scale: 1 }],
-      }}
-    >
-      <Ionicons name="send" size={18} color="#fff" />
-    </Animated.View>
-  </TouchableOpacity>
-)}
+          <TouchableOpacity
+            disabled={!text.length}
+            onPress={() => {
+              if (!text.length) return;
+              animateSend();
+              handleSend();
+            }}
+            activeOpacity={0.7}
+          >
+            <Animated.View
+              style={{
+                marginLeft: 10,
+                transform: [{ scale: sendAnim }],
+                opacity: text.length ? 1 : 0,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: theme.bubbleMe,
+                  padding: 10,
+                  borderRadius: 50,
+                }}
+              >
+                <Ionicons name="send" size={18} color="#fff" />
+              </View>
+            </Animated.View>
+          </TouchableOpacity>
         </View>
-
-        <ReactionBar
-          reactionMsg={reactionMsg}
-          setReactionMsg={setReactionMsg}
-          toggleReaction={toggleReaction}
-        />
-
-        <DeleteModal
-          visible={deleteConfirm && !!selectedMsg}
-          selectedMsg={selectedMsg}
-          deleteMessage={handleDelete}
-          setSelectedMsg={setSelectedMsg}
-          setDeleteConfirm={setDeleteConfirm}
-          setLastDeleted={setLastDeleted}
-        />
-
-        <EditModal
-          visible={editModal}
-          scaleAnim={scaleAnim}
-          editText={editText}
-          setEditText={setEditText}
-          selectedMsg={selectedMsg}
-          setSelectedMsg={setSelectedMsg}
-          setEditModal={setEditModal}
-          editMessage={editMessage}
-        />
-
-        <InfoModal
-          visible={infoModal}
-          selectedMsg={selectedMsg}
-          setInfoModal={setInfoModal}
-        />
-
-        <MenuModal
-          selectedMsg={selectedMsg}
-          reactionMsg={reactionMsg}
-          scaleAnim={scaleAnim}
-          setSelectedMsg={setSelectedMsg}
-          setEditText={setEditText}
-          setEditModal={setEditModal}
-          setDeleteConfirm={setDeleteConfirm}
-          setInfoModal={setInfoModal}
-          currentUserId={currentUserId}
-        />
       </View>
-    </KeyboardAvoidingView>
-  );
+
+      {/* MODALS */}
+      <ReactionBar
+        reactionMsg={reactionMsg}
+        setReactionMsg={setReactionMsg}
+        toggleReaction={toggleReaction}
+      />
+
+      <DeleteModal
+        visible={deleteConfirm && !!selectedMsg}
+        selectedMsg={selectedMsg}
+        deleteMessage={handleDelete}
+        setSelectedMsg={setSelectedMsg}
+        setDeleteConfirm={setDeleteConfirm}
+        setLastDeleted={setLastDeleted}
+      />
+
+      <EditModal
+        visible={editModal}
+        scaleAnim={scaleAnim}
+        editText={editText}
+        setEditText={setEditText}
+        selectedMsg={selectedMsg}
+        setSelectedMsg={setSelectedMsg}
+        setEditModal={setEditModal}
+        editMessage={editMessage}
+      />
+
+      <InfoModal
+        visible={infoModal}
+        selectedMsg={selectedMsg}
+        setInfoModal={setInfoModal}
+      />
+
+      <MenuModal
+        selectedMsg={selectedMsg}
+        reactionMsg={reactionMsg}
+        scaleAnim={scaleAnim}
+        setSelectedMsg={setSelectedMsg}
+        setEditText={setEditText}
+        setEditModal={setEditModal}
+        setDeleteConfirm={setDeleteConfirm}
+        setInfoModal={setInfoModal}
+        currentUserId={currentUserId}
+      />
+    </View>
+  </KeyboardAvoidingView>
+);
 }

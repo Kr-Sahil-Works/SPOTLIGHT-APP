@@ -7,7 +7,7 @@ import {
   PanResponder,
   Pressable,
   Text,
-  View,
+  View
 } from "react-native";
 
 export default function MessageItem({
@@ -27,12 +27,14 @@ export default function MessageItem({
   const scale = useRef(new Animated.Value(1)).current;
   const replied = useRef(false);
 
+  /* 🚀 ENTRY (simple + smooth) */
   useEffect(() => {
-    Animated.spring(entryX, {
-      toValue: 0,
-      friction: 7,
-      useNativeDriver: true,
-    }).start();
+Animated.spring(entryX, {
+  toValue: 0,
+  friction: 7,
+  tension: 80,
+  useNativeDriver: true,
+}).start();
   }, []);
 
   const opacity = panX.interpolate({
@@ -47,6 +49,7 @@ export default function MessageItem({
     extrapolate: "clamp",
   });
 
+  /* 👉 SWIPE TO REPLY */
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10,
@@ -79,7 +82,10 @@ export default function MessageItem({
   return (
     <Animated.View
       style={{
-        transform: [{ translateX: entryX }, { translateX: panX }],
+        transform: [
+          { translateX: entryX },
+          { translateX: panX },
+        ],
         opacity,
       }}
       {...panResponder.panHandlers}
@@ -87,7 +93,7 @@ export default function MessageItem({
       <Pressable
         onPressIn={() => {
           Animated.spring(scale, {
-            toValue: 0.96,
+            toValue: 0.97,
             useNativeDriver: true,
           }).start();
         }}
@@ -109,6 +115,7 @@ export default function MessageItem({
               marginBottom: isGrouped ? 6 : 20,
             }}
           >
+            {/* Avatar */}
             {!isMe && !isGrouped && (
               <Image
                 source={{ uri: avatar }}
@@ -121,7 +128,7 @@ export default function MessageItem({
               />
             )}
 
-            {/* REPLY ARROW */}
+            {/* Reply Arrow */}
             <Animated.View
               style={{
                 position: "absolute",
@@ -134,8 +141,7 @@ export default function MessageItem({
             </Animated.View>
 
             <View style={{ maxWidth: "75%" }}>
-
-              {/* REPLY PREVIEW */}
+              {/* Reply Preview */}
               {item.replyToText && (
                 <Pressable
                   onPress={() => onScrollTo(item.replyTo)}
@@ -144,16 +150,18 @@ export default function MessageItem({
                     borderLeftColor: "#4ade80",
                     paddingLeft: 8,
                     marginBottom: 6,
-                    opacity: 0.9,
                   }}
                 >
-                  <Text numberOfLines={1} style={{ fontSize: 11, color: "#aaa" }}>
+                  <Text
+                    numberOfLines={1}
+                    style={{ fontSize: 11, color: "#aaa" }}
+                  >
                     {item.replyToText}
                   </Text>
                 </Pressable>
               )}
 
-              {/* BUBBLE */}
+              {/* Message Bubble */}
               <View
                 style={{
                   backgroundColor:
@@ -166,11 +174,6 @@ export default function MessageItem({
                   paddingVertical: 10,
                   paddingHorizontal: 14,
                   borderRadius: isGrouped ? 16 : 22,
-
-                  shadowColor: isMe ? theme.bubbleMe : "#000",
-                  shadowOpacity: 0.25,
-                  shadowRadius: 6,
-                  elevation: 6,
                 }}
               >
                 <Text
@@ -197,7 +200,7 @@ export default function MessageItem({
                 )}
               </View>
 
-              {/* REACTIONS */}
+              {/* Reactions */}
               {item.reactions?.length > 0 && (
                 <View
                   style={{
@@ -205,7 +208,6 @@ export default function MessageItem({
                     bottom: -18,
                     left: isMe ? undefined : 0,
                     right: isMe ? 0 : undefined,
-
                     backgroundColor: "rgba(0,0,0,0.6)",
                     borderRadius: 16,
                     paddingHorizontal: 8,
