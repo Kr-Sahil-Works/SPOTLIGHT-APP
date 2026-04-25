@@ -9,24 +9,35 @@ import { ReactNode } from "react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 
-const convex = new ConvexReactClient(
-  process.env.EXPO_PUBLIC_CONVEX_URL!
-);
-
+// ✅ Read env safely
+const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
 const publishableKey =
-  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+// ✅ Debug logs (will show in release logs too)
+if (!convexUrl) {
+  console.log("❌ Missing EXPO_PUBLIC_CONVEX_URL");
+}
 
 if (!publishableKey) {
-  throw new Error(
-    "Missing Publishable Key. Set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in .env"
-  );
+  console.log("❌ Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY");
 }
+
+// ✅ Create client safely
+const convex = convexUrl
+  ? new ConvexReactClient(convexUrl)
+  : null;
 
 export default function ClerkAndConvexProvider({
   children,
 }: {
   children: ReactNode;
 }) {
+  // ❌ Prevent crash if env missing
+  if (!convex || !publishableKey) {
+    return null; // or show loading screen if you want
+  }
+
   return (
     <ClerkProvider
       publishableKey={publishableKey}
@@ -39,8 +50,6 @@ export default function ClerkAndConvexProvider({
 
           return {
             ...auth,
-
-            // ✅ FIXED: removed template
             getToken: auth.getToken,
           };
         }}
