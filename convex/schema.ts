@@ -124,6 +124,23 @@ activeChatWith: v.optional(v.id("users")),
 
     seen: v.optional(v.boolean()),
 
+    // 🔥 SYSTEM SUPPORT
+type: v.optional(
+  v.union(
+    v.literal("text"),
+    v.literal("system")
+  )
+),
+
+systemType: v.optional(
+  v.union(
+    v.literal("theme_change"),
+    v.literal("date")
+  )
+),
+
+meta: v.optional(v.any()),
+
     // 🔥 FEATURES
     edited: v.optional(v.boolean()),
     replyTo: v.optional(v.id("messages")),
@@ -141,6 +158,15 @@ activeChatWith: v.optional(v.id("users")),
 .index("by_conversation_time", ["conversationId", "createdAt"])
 .index("by_sender", ["senderId"])
 .index("by_receiver", ["receiverId"]),
+
+conversations: defineTable({
+  participants: v.array(v.id("users")),
+  createdAt: v.number(),
+
+  // 🔥 chat-level theme
+  themeIndex: v.optional(v.number()),
+})
+.index("by_participants", ["participants"]),
 
   /* =========================
      ⌨️ TYPING (REAL-TIME FIXED)

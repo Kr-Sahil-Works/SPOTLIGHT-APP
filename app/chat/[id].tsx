@@ -5,7 +5,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  FlatList,
   Keyboard,
   KeyboardAvoidingView,
   Linking,
@@ -27,8 +26,9 @@ import ReactionBar from "./ReactionBar";
 import useChat from "./useChat";
 // ADD THIS IMPORT
 import { api } from "@/convex/_generated/api";
+import { FlashList } from "@shopify/flash-list";
 import { useMutation } from "convex/react";
-
+import React from "react";
 
 
 export default function ChatScreen() {
@@ -57,8 +57,6 @@ export default function ChatScreen() {
     editModal, setEditModal,
     infoModal, setInfoModal,
     editText, setEditText,
-    lastDeleted, setLastDeleted,
-    restoreMessage,
     tapRef,
    setChatTheme,
     flatListRef,
@@ -86,7 +84,7 @@ const themes = [
 { bg: "#14213d", bubbleMe: "#fca311", bubbleOther: "#1b0141", header: "#0f172a" },
 
 { bg: "#0e0e11", bubbleMe: "#ff375f", bubbleOther: "#1c1c22", header: "#141419" },
-{ bg: "#0b0d12", bubbleMe: "#ff5ba8", bubbleOther: "#72c34c", header: "#090a0d" },
+{ bg: "#0b0d12", bubbleMe: "#ff5ba8", bubbleOther: "#205d7d", header: "#090a0d" },
 { bg: "#0c0f0a", bubbleMe: "#7ed957", bubbleOther: "#1d261a", header: "#131a11" },
 { bg: "#0f0b10", bubbleMe: "#c084fc", bubbleOther: "#211a26", header: "#16111a" },
 { bg: "#0a0f14", bubbleMe: "#38bdf8", bubbleOther: "#18222c", header: "#0f1720" },
@@ -104,8 +102,13 @@ const themes = [
 const [highlightId, setHighlightId] = useState<string | null>(null);
 const [themeIndex, setThemeIndex] = useState(0);
 const wmOpacity = useRef(new Animated.Value(0)).current;
+const themeAnim = useRef(new Animated.Value(0)).current;
+const [changingTheme, setChangingTheme] = useState(false);
+const [systemMsg, setSystemMsg] = useState<any | null>(null);
 const [wmText, setWmText] = useState("");
 const [kbOffset, setKbOffset] = useState(30); // default fallback
+
+const isAtBottom = useRef(true);
 
 const setActiveChat = useMutation(api.users.setActiveChat);
 
@@ -144,14 +147,17 @@ useEffect(() => {
 
 
 useEffect(() => {
-  const show = Keyboard.addListener("keyboardDidShow", (e) => {
-    const h = e.endCoordinates.height;
+ const show = Keyboard.addListener("keyboardDidShow", (e) => {
+  const h = e.endCoordinates.height;
 
-    // 🔥 magic logic
   const offset = Math.max(25, Math.min(50, h * 0.07));
+  setKbOffset(offset);
 
-    setKbOffset(offset);
-  });
+  // ✅ ADD THIS
+  setTimeout(() => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, 100);
+});
 
   const hide = Keyboard.addListener("keyboardDidHide", () => {
     setKbOffset(30); // reset
@@ -164,6 +170,59 @@ useEffect(() => {
 }, []);
 
   const theme = themes[themeIndex];
+
+const groupedMessages = React.useMemo(() => {
+  if (!messages?.length) return [];
+
+  const result: any[] = [];
+
+
+  const sorted = [...messages].sort(
+  (a, b) => a.createdAt - b.createdAt
+);
+
+for (let i = 0; i < sorted.length; i++) {
+  const current = sorted[i];
+  const prev = sorted[i - 1];
+
+    const isSameUser = prev?.senderId === current.senderId;
+
+    const isSameMinute =
+      prev &&
+      Math.abs(current.createdAt - prev.createdAt) < 5 * 60 * 1000;
+
+    const isGrouped = isSameUser && isSameMinute;
+
+    const showTime =
+      !prev ||
+      new Date(prev.createdAt).toDateString() !==
+        new Date(current.createdAt).toDateString();
+
+    if (showTime) {
+      result.push({
+        type: "time",
+        id: "time-" + current._id,
+        time: new Date(current.createdAt),
+      });
+    }
+
+    result.push({
+      ...current,
+      type: "message",
+      isGrouped,
+    });
+  }
+
+  return result;
+}, [messages]);
+
+useEffect(() => {
+if (!flatListRef.current || messages.length === 0) return;
+
+if (isAtBottom.current) {
+  flatListRef.current.scrollToEnd({ animated: true });
+}
+}, [messages.length]);
 
   /* 🎬 SMOOTH THEME ANIMATION */
   const bgAnim = useRef(new Animated.Value(0)).current;
@@ -182,26 +241,38 @@ const animateSend = () => {
     useNativeDriver: true,
   }).start();
 };
+
+
+
 const changeTheme = async () => {
+  if (changingTheme) return;
+
+  setChangingTheme(true);
+
   const next = (themeIndex + 1) % themes.length;
 
-  Animated.timing(bgAnim, {
-    toValue: 1,
-    duration: 250,
-    useNativeDriver: false,
-  }).start(async () => {
-    setThemeIndex(next);
-    bgAnim.setValue(0);
+  const now = new Date();
 
-    await setChatTheme({
-      userId,
-      themeIndex: next,
-    });
+  const name =
+    user?.fullname || user?.username || "You";
 
-    showWatermark(`Theme changed 🎨`);
+  setThemeIndex(next);
+
+  await setChatTheme({
+    userId,
+    themeIndex: next,
   });
-};
 
+  // ✅ SYSTEM MESSAGE
+  setSystemMsg({
+    id: "theme-" + now.getTime(),
+    text: `${name} changed the theme`,
+    time: now,
+  });
+
+  setTimeout(() => setSystemMsg(null), 2500);
+  setTimeout(() => setChangingTheme(false), 600);
+};
   const scaleAnim = useRef(new Animated.Value(1)).current;
 const handleScrollTo = (id: string) => {
   const index = messages.findIndex((m) => m._id === id);
@@ -231,13 +302,27 @@ const openInstagram = async () => {
   }
 };
 
+<Animated.View
+  pointerEvents="none"
+  style={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: theme.bubbleMe,
+    opacity: themeAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 0.2],
+    }),
+  }}
+/>
 
-
- return (
+return (
   <KeyboardAvoidingView
     style={{ flex: 1, backgroundColor: theme.bg }}
     behavior={Platform.OS === "ios" ? "padding" : "height"}
-keyboardVerticalOffset={Platform.OS === "ios" ? 80 : kbOffset}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 80 : kbOffset}
   >
     <View style={{ flex: 1 }}>
 
@@ -277,123 +362,184 @@ keyboardVerticalOffset={Platform.OS === "ios" ? 80 : kbOffset}
             <Ionicons name="call" size={22} color="#fff" />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={changeTheme} style={{ marginLeft: 14 }}>
+          <TouchableOpacity onPress={changeTheme}
+disabled={changingTheme} style={{ marginLeft: 14 }}>
             <Ionicons name="color-palette" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* WATERMARK */}
-      <Animated.View
-        style={{
-          position: "absolute",
-          top: 80,
-          alignSelf: "center",
-          opacity: wmOpacity,
-          backgroundColor: "rgba(0,0,0,0.4)",
-          paddingHorizontal: 12,
-          paddingVertical: 6,
-          borderRadius: 20,
-          zIndex: 10,
-        }}
-      >
-        <Text style={{ color: "#fff", fontSize: 12 }}>{wmText}</Text>
-      </Animated.View>
-
       {/* 🔥 MAIN CONTENT */}
       <View style={{ flex: 1 }}>
 
         {/* 💬 MESSAGES */}
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyboardDismissMode="interactive"
-          keyboardShouldPersistTaps="handled"
-          keyExtractor={(i) => String(i._id)}
-          contentContainerStyle={{
-            padding: 12,
-            paddingBottom: 10,
+        {groupedMessages.length === 0 && (
+  <View
+    style={{
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 30,
+    }}
+  >
+    <Text style={{ color: "#aaa", fontSize: 16, marginBottom: 6 }}>
+      Start a conversation
+    </Text>
+    <Text style={{ color: "#666", fontSize: 13 }}>
+      Say “Hi 👋”
+    </Text>
+  </View>
+)}
+     <FlashList
+  ref={flatListRef}
+  data={groupedMessages}
+  {...{
+    estimatedItemSize: 80,
+  }}
+
+  keyExtractor={(item) =>
+    String(item._id || item.id)
+  }
+
+  keyboardDismissMode="interactive"
+  keyboardShouldPersistTaps="handled"
+
+  contentContainerStyle={{
+    padding: 12,
+    paddingBottom: 30,
+  }}
+
+          onScroll={(e) => {
+            const { layoutMeasurement, contentOffset, contentSize } =
+              e.nativeEvent;
+
+            const distanceFromBottom =
+              contentSize.height -
+              (layoutMeasurement.height + contentOffset.y);
+
+            isAtBottom.current = distanceFromBottom < 80;
           }}
-          onContentSizeChange={() => {
-            flatListRef.current?.scrollToEnd({ animated: true });
-          }}
-          onLayout={() => {
-            setTimeout(() => {
-              flatListRef.current?.scrollToEnd({ animated: false });
-            }, 50);
-          }}
-          renderItem={({ item }) => (
-            <MessageItem
-              item={item}
-              isMe={item.senderId === currentUserId}
-              theme={theme}
-              avatar={user?.image || ""}
-              onScrollTo={handleScrollTo}
-              highlightId={highlightId}
-              onReply={(msg: any) => setReplyMsg(msg)}
-              onLongPress={(msg: any) => {
-                setReactionMsg(null);
-                setSelectedMsg(msg);
-              }}
-              onReact={(msg: any) => {
-                if (!tapRef.current[msg._id]) {
-                  tapRef.current[msg._id] = { count: 0, timer: null };
-                }
 
-                const t = tapRef.current[msg._id];
-                t.count++;
+          scrollEventThrottle={16}
 
-                if (t.timer) clearTimeout(t.timer);
+          renderItem={({ item }) => {
+            /* 🔥 TIME SEPARATOR */
+            if (item.type === "system") {
+  return (
+    <View
+      style={{
+        alignSelf: "center",
+        marginVertical: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        backgroundColor: "rgba(255,255,255,0.06)",
+        borderRadius: 12,
+      }}
+    >
+      <Text style={{ color: "#aaa", fontSize: 12 }}>
+        {item.text}
+      </Text>
+    </View>
+  );
+}
+            if (item.type === "time") {
+              return (
+                <View
+                  style={{
+                    alignSelf: "center",
+                    marginVertical: 10,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    borderRadius: 10,
+                  }}
+                >
+                  <Text style={{ color: "#aaa", fontSize: 12 }}>
+                    {item.time.toDateString()}
+                  </Text>
+                </View>
+              );
+            }
 
-                t.timer = setTimeout(() => {
-                  const taps = t.count;
+            /* 💬 MESSAGE */
+            return (
+              <MessageItem
+                item={item}
+                isMe={item.senderId === currentUserId}
+                theme={theme}
+                avatar={user?.image || ""}
+                isGrouped={item.isGrouped} // 🔥 IMPORTANT
+                onScrollTo={handleScrollTo}
+                highlightId={highlightId}
+                onReply={setReplyMsg}
+                onLongPress={(msg: any) => {
+                  setReactionMsg(null);
+                  setSelectedMsg(msg);
+                }}
+                onReact={(msg: any) => {
+                  if (!tapRef.current[msg._id]) {
+                    tapRef.current[msg._id] = { count: 0, timer: null };
+                  }
 
-                  if (taps === 2) {
-                    const already = msg.reactions?.includes("❤️");
-                    if (!already) {
-                      toggleReaction({
-                        messageId: msg._id,
-                        reaction: "❤️",
-                      });
+                  const t = tapRef.current[msg._id];
+                  t.count++;
+
+                  if (t.timer) clearTimeout(t.timer);
+
+                  t.timer = setTimeout(() => {
+                    const taps = t.count;
+
+                    if (taps === 2) {
+                      const already = msg.reactions?.some(
+                        (r: any) => r.value === "❤️"
+                      );
+
+                      if (!already) {
+                        toggleReaction({
+                          messageId: msg._id,
+                          reaction: "❤️",
+                        });
+                      }
                     }
-                  }
 
-                  if (taps === 3) {
-                    setReactionMsg(msg);
-                  }
+                    if (taps === 3) {
+                      setReactionMsg(msg);
+                    }
 
-                  tapRef.current[msg._id] = { count: 0, timer: null };
-                }, 250);
-              }}
-            />
-          )}
+                    tapRef.current[msg._id] = {
+                      count: 0,
+                      timer: null,
+                    };
+                  }, 250);
+                }}
+              />
+            );
+          }}
         />
+
+        {systemMsg && (
+  <View
+    style={{
+      alignSelf: "center",
+      marginVertical: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: "rgba(255,255,255,0.06)",
+      borderRadius: 12,
+    }}
+  >
+    <Text style={{ color: "#aaa", fontSize: 12 }}>
+      {systemMsg.text} •{" "}
+      {systemMsg.time.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}
+    </Text>
+  </View>
+)}
 
         {/* ✍️ TYPING */}
         {typing && <TypingDots />}
-
-        {/* 🔄 UNDO */}
-        {lastDeleted && (
-          <View
-            style={{
-              backgroundColor: "#222",
-              padding: 10,
-              flexDirection: "row",
-              justifyContent: "space-between",
-            }}
-          >
-            <Text style={{ color: "#fff" }}>Message deleted</Text>
-
-            <TouchableOpacity
-              onPress={async () => {
-                await restoreMessage({ message: lastDeleted });
-                setLastDeleted(null);
-              }}
-            >
-              <Text style={{ color: "#4ade80" }}>UNDO</Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
         {/* 🔁 REPLY BAR */}
         {replyMsg && (
@@ -416,12 +562,12 @@ keyboardVerticalOffset={Platform.OS === "ios" ? 80 : kbOffset}
         )}
       </View>
 
-      {/* ✅ INPUT (FIXED BOTTOM) */}
+      {/* ✅ INPUT */}
       <View
         style={{
           borderTopWidth: 0.5,
           borderColor: "rgba(255,255,255,0.08)",
-          backgroundColor: "rgba(0,0,0,0.4)",
+          backgroundColor: theme.header,
         }}
       >
         <View
@@ -434,11 +580,12 @@ keyboardVerticalOffset={Platform.OS === "ios" ? 80 : kbOffset}
           <TextInput
             value={text}
             onChangeText={setText}
+            multiline
             placeholder="Message..."
             placeholderTextColor="#777"
             style={{
               flex: 1,
-              backgroundColor: "rgba(255,255,255,0.08)",
+              backgroundColor: theme.bg,
               color: "#fff",
               borderRadius: 30,
               paddingVertical: 10,
@@ -447,19 +594,24 @@ keyboardVerticalOffset={Platform.OS === "ios" ? 80 : kbOffset}
           />
 
           <TouchableOpacity
-            disabled={!text.length}
+            disabled={!text.trim().length}
+            activeOpacity={0.7}
             onPress={() => {
-              if (!text.length) return;
+              if (!text.trim().length) return;
+
               animateSend();
               handleSend();
+
+              setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+              }, 50);
             }}
-            activeOpacity={0.7}
           >
             <Animated.View
               style={{
                 marginLeft: 10,
                 transform: [{ scale: sendAnim }],
-                opacity: text.length ? 1 : 0,
+                opacity: text.trim().length ? 1 : 0,
               }}
             >
               <View
@@ -489,7 +641,6 @@ keyboardVerticalOffset={Platform.OS === "ios" ? 80 : kbOffset}
         deleteMessage={handleDelete}
         setSelectedMsg={setSelectedMsg}
         setDeleteConfirm={setDeleteConfirm}
-        setLastDeleted={setLastDeleted}
       />
 
       <EditModal

@@ -15,7 +15,6 @@ export default function useChat(userId: Id<"users">) {
   const [infoModal, setInfoModal] = useState(false);
 
   const [editText, setEditText] = useState("");
-  const [lastDeleted, setLastDeleted] = useState<any>(null);
 
   const tapRef = useRef<any>({});
   const flatListRef = useRef<any>(null);
@@ -34,9 +33,7 @@ export default function useChat(userId: Id<"users">) {
 
   /* 🔥 MUTATIONS */
   const sendMessage = useMutation(api.messages.sendMessage);
-  const setOnlineStatus = useMutation(api.messages.setOnlineStatus);
   const deleteMessage = useMutation(api.messages.deleteMessage);
-  const restoreMessage = useMutation(api.messages.restoreMessage);
   const editMessage = useMutation(api.messages.editMessage);
   const toggleReaction = useMutation(api.messages.toggleReaction);
   const setChatTheme = useMutation(api.messages.setChatTheme);
@@ -44,92 +41,87 @@ export default function useChat(userId: Id<"users">) {
   const markAsSeen = useMutation(api.messages.markAsSeen);
 
   const [optimisticMsgs, setOptimisticMsgs] = useState<any[]>([]);
-const messages = [...optimisticMsgs, ...(data?.messages || [])];
+const real = data?.messages || [];
+
+const messages = [
+  ...real,
+  ...optimisticMsgs.filter(
+    (o) => !real.some((r) => r.text === o.text && r.createdAt - o.createdAt < 2000)
+  ),
+];
 
   const currentUserId = data?.currentUserId;
-
 
   /* 🔥 MARK SEEN */
   useEffect(() => {
     if (!userId) return;
     markAsSeen({ userId });
-  }, [messages]);
-
+  }, [messages.length]);
 
   /* 🔥 TYPING HANDLER */
-const typingTimeout = useRef<any>(null);
+  const typingTimeout = useRef<any>(null);
 
-const handleTyping = (t: string) => {
-  setText(t);
+  const handleTyping = (t: string) => {
+    setText(t);
 
-  if (typingTimeout.current) {
-    clearTimeout(typingTimeout.current);
+    if (typingTimeout.current) {
+      clearTimeout(typingTimeout.current);
+    }
+
+    setTyping({
+      receiverId: userId,
+      isTyping: true,
+    });
+
+    typingTimeout.current = setTimeout(() => {
+      setTyping({
+        receiverId: userId,
+        isTyping: false,
+      });
+    }, 800);
+  };
+
+  /* 🔥 SEND MESSAGE */
+const handleSend = async () => {
+  if (!text.trim().length) return;
+
+  const messageText = text.trim();
+  setText("");
+
+  const tempId = Date.now().toString();
+
+  const fakeMsg = {
+    _id: tempId,
+    text: messageText,
+    senderId: currentUserId,
+    createdAt: Date.now(),
+    optimistic: true,
+  };
+
+  setOptimisticMsgs((p) => [...p, fakeMsg]);
+
+  try {
+    await sendMessage({
+      receiverId: userId,
+      text: messageText,
+      replyTo: replyMsg?._id,
+      replyToText: replyMsg?.text,
+    });
+  } catch (e) {
+    console.log(e);
   }
 
   setTyping({
     receiverId: userId,
-    isTyping: true,
+    isTyping: false,
   });
 
-  typingTimeout.current = setTimeout(() => {
-    setTyping({
-      receiverId: userId,
-      isTyping: false,
-    });
-  }, 800);
+  setReplyMsg(null);
 };
 
-  /* 🔥 SEND MESSAGE (CLEAN) */
-  const handleSend = async () => {
-    if (!text.length) return;
-
-    const messageText = text;
-  
-
-
-
-    const tempId = Date.now().toString();
-
-    const fakeMsg = {
-      _id: tempId,
-      text: messageText,
-      senderId: currentUserId,
-      createdAt: Date.now(),
-      optimistic: true,
-    };
-
-    setOptimisticMsgs((p) => [...p, fakeMsg]);
-
-    try {
-      await sendMessage({
-        receiverId: userId,
-        text: messageText,
-        replyTo: replyMsg?._id,
-        replyToText: replyMsg?.text,
-      });
-
-      setOptimisticMsgs((p) =>
-        p.filter((m) => m._id !== tempId)
-      );
-    } catch (e) {
-      console.log(e);
-    }
-setTyping({
-  receiverId: userId,
-  isTyping: false,
-});
-    setReplyMsg(null);
-  };
-
-  /* 🔥 DELETE */
+  /* 🔥 DELETE (CLEAN - NO UNDO) */
   const handleDelete = async (msg: any) => {
     if (!msg?._id) return;
-
-    setLastDeleted(msg);
-
-    setTimeout(() => {
-      setLastDeleted(null);
-    }, 8000);
 
     await deleteMessage({ messageId: msg._id });
   };
@@ -159,9 +151,6 @@ setTyping({
     editText,
     setEditText,
 
-    lastDeleted,
-    setLastDeleted,
-
     tapRef,
     flatListRef,
 
@@ -174,7 +163,6 @@ setTyping({
     handleDelete,
     toggleReaction,
     editMessage,
-    restoreMessage,
     setChatTheme,
   };
 }

@@ -398,17 +398,6 @@ export const deleteMessage = mutation({
   },
 });
 
-export const restoreMessage = mutation({
-  args: {
-    message: v.any(),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.insert("messages", {
-      ...args.message,
-      createdAt: Date.now(),
-    });
-  },
-});
 
 export const setTheme = mutation({
   args: {
@@ -538,12 +527,34 @@ export const setChatTheme = mutation({
   handler: async (ctx, args) => {
     const current = await getAuthenticatedUser(ctx);
 
+    const conversationId = getConversationId(
+      current._id.toString(),
+      args.userId.toString()
+    );
+
+    // ✅ update both users theme
     await ctx.db.patch(current._id, {
       themeIndex: args.themeIndex,
     });
 
     await ctx.db.patch(args.userId, {
       themeIndex: args.themeIndex,
+    });
+
+    // 🔥 INSERT SYSTEM MESSAGE
+    await ctx.db.insert("messages", {
+      conversationId,
+      senderId: current._id,
+      receiverId: args.userId,
+
+      text: `${current.fullname} changed the theme`,
+      createdAt: Date.now(),
+
+      type: "system",
+      systemType: "theme_change",
+      meta: {
+        themeIndex: args.themeIndex,
+      },
     });
   },
 });

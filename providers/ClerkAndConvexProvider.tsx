@@ -9,33 +9,60 @@ import { ReactNode } from "react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 
-// ✅ Read env safely
-const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
+import Constants from "expo-constants";
+import { View, Text } from "react-native";
+
+/* =========================
+   ✅ SAFE ENV (APK + DEV)
+========================= */
+const extra = Constants.expoConfig?.extra;
+
+const convexUrl =
+  process.env.EXPO_PUBLIC_CONVEX_URL ||
+  extra?.convexUrl;
+
 const publishableKey =
-  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ||
+  extra?.clerkPublishableKey;
 
-// ✅ Debug logs (will show in release logs too)
-if (!convexUrl) {
-  console.log("❌ Missing EXPO_PUBLIC_CONVEX_URL");
-}
+/* =========================
+   🔍 DEBUG (CHECK IN APK)
+========================= */
+console.log("Convex URL:", convexUrl);
+console.log("Clerk Key:", publishableKey);
 
-if (!publishableKey) {
-  console.log("❌ Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY");
-}
-
-// ✅ Create client safely
+/* =========================
+   ✅ CREATE CLIENT
+========================= */
 const convex = convexUrl
   ? new ConvexReactClient(convexUrl)
   : null;
 
+/* =========================
+   🚀 PROVIDER
+========================= */
 export default function ClerkAndConvexProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  // ❌ Prevent crash if env missing
+  /* 🚨 NEVER return null */
   if (!convex || !publishableKey) {
-    return null; // or show loading screen if you want
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#000",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text style={{ color: "#fff" }}>Loading app...</Text>
+        <Text style={{ color: "red", marginTop: 10 }}>
+          Missing ENV variables
+        </Text>
+      </View>
+    );
   }
 
   return (
@@ -47,7 +74,6 @@ export default function ClerkAndConvexProvider({
         client={convex}
         useAuth={(...args) => {
           const auth = useAuth(...args);
-
           return {
             ...auth,
             getToken: auth.getToken,

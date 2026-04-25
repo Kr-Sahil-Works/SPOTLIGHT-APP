@@ -1,16 +1,32 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Animated,
   Image,
   PanResponder,
   Pressable,
   Text,
-  View
+  View,
 } from "react-native";
 
-export default function MessageItem({
+/* 🔥 CUSTOM MEMO COMPARE (VERY IMPORTANT) */
+const areEqual = (prev: any, next: any) => {
+  return (
+    prev.item._id === next.item._id &&
+    prev.item.text === next.item.text &&
+    prev.item.edited === next.item.edited &&
+    prev.item.replyToText === next.item.replyToText &&
+    JSON.stringify(prev.item.reactions) === JSON.stringify(next.item.reactions) &&
+    prev.highlightId === next.highlightId &&
+    prev.isGrouped === next.isGrouped &&
+    prev.isMe === next.isMe &&
+    prev.theme?.bubbleMe === next.theme?.bubbleMe &&
+    prev.theme?.bubbleOther === next.theme?.bubbleOther
+  );
+};
+
+const MessageItem = React.memo(function MessageItem({
   item,
   isMe,
   theme,
@@ -27,16 +43,17 @@ export default function MessageItem({
   const scale = useRef(new Animated.Value(1)).current;
   const replied = useRef(false);
 
-  /* 🚀 ENTRY (simple + smooth) */
+  /* 🚀 ENTRY ANIMATION (RUN ONCE) */
   useEffect(() => {
-Animated.spring(entryX, {
-  toValue: 0,
-  friction: 7,
-  tension: 80,
-  useNativeDriver: true,
-}).start();
+    Animated.spring(entryX, {
+      toValue: 0,
+      friction: 7,
+      tension: 80,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
+  /* 🔥 INTERPOLATIONS */
   const opacity = panX.interpolate({
     inputRange: [0, 80],
     outputRange: [1, 0.7],
@@ -82,10 +99,7 @@ Animated.spring(entryX, {
   return (
     <Animated.View
       style={{
-        transform: [
-          { translateX: entryX },
-          { translateX: panX },
-        ],
+        transform: [{ translateX: entryX }, { translateX: panX }],
         opacity,
       }}
       {...panResponder.panHandlers}
@@ -112,7 +126,8 @@ Animated.spring(entryX, {
               flexDirection: "row",
               alignSelf: isMe ? "flex-end" : "flex-start",
               alignItems: "flex-end",
-              marginBottom: isGrouped ? 6 : 20,
+              marginBottom: isGrouped ? 2 : 14,
+              marginLeft: !isMe && isGrouped ? 34 : 0,
             }}
           >
             {/* Avatar */}
@@ -123,7 +138,7 @@ Animated.spring(entryX, {
                   width: 28,
                   height: 28,
                   borderRadius: 14,
-                  marginRight: 6,
+                  marginRight: isGrouped ? 0 : 6
                 }}
               />
             )}
@@ -144,7 +159,9 @@ Animated.spring(entryX, {
               {/* Reply Preview */}
               {item.replyToText && (
                 <Pressable
-                  onPress={() => onScrollTo(item.replyTo)}
+                  onPress={() =>
+                    item.replyTo && onScrollTo(item.replyTo)
+                  }
                   style={{
                     borderLeftWidth: 3,
                     borderLeftColor: "#4ade80",
@@ -170,7 +187,6 @@ Animated.spring(entryX, {
                       : isMe
                       ? theme.bubbleMe
                       : theme.bubbleOther,
-
                   paddingVertical: 10,
                   paddingHorizontal: 14,
                   borderRadius: isGrouped ? 16 : 22,
@@ -228,4 +244,6 @@ Animated.spring(entryX, {
       </Pressable>
     </Animated.View>
   );
-}
+}, areEqual);
+
+export default MessageItem;

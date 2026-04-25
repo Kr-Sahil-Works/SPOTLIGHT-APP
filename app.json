@@ -7,9 +7,13 @@
     "icon": "./assets/images/icon.png",
     "scheme": "spotlightapp",
     "userInterfaceStyle": "automatic",
-   
 
     "assetBundlePatterns": ["**/*"],
+
+    /* 🔥 CRITICAL FIX (APK CRASH FIX) */
+    "updates": {
+      "enabled": false
+    },
 
     "ios": {
       "supportsTablet": true,
@@ -22,17 +26,12 @@
     "android": {
       "package": "spotlight.chat",
       "versionCode": 1,
-
-     
-
       "softwareKeyboardLayoutMode": "resize",
       "permissions": ["READ_MEDIA_IMAGES"],
-
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#161616"
       },
-
       "predictiveBackGestureEnabled": false
     },
 
@@ -42,7 +41,6 @@
 
     "plugins": [
       "expo-router",
-
       [
         "expo-splash-screen",
         {
@@ -55,7 +53,6 @@
           }
         }
       ],
-
       "expo-secure-store"
     ],
 
@@ -66,6 +63,11 @@
 
     "extra": {
       "router": {},
+
+      /* 🔥 SAFE FALLBACK ENV (USED IF process.env FAILS) */
+      "clerkPublishableKey": "pk_test_dHJ1c3R5LXRhcnBvbi02Ni5jbGVyay5hY2NvdW50cy5kZXYk",
+      "convexUrl": "https://reminiscent-duck-506.convex.cloud",
+
       "eas": {
         "projectId": "59f5a6cf-10ee-4edf-bc4c-346d00c2ef9c"
       }
