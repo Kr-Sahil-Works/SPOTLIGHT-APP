@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "spotlightapp",
     "userInterfaceStyle": "automatic",
-
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -15,9 +14,8 @@
         "NSPhotoLibraryUsageDescription": "Allow access to your photos"
       }
     },
-
     "android": {
-        "softwareKeyboardLayoutMode": "resize",
+      "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "READ_MEDIA_IMAGES"
       ],
@@ -27,11 +25,9 @@
       },
       "predictiveBackGestureEnabled": false
     },
-
     "web": {
       "output": "static"
     },
-
     "plugins": [
       "expo-router",
       [
@@ -48,10 +44,15 @@
       ],
       "expo-secure-store"
     ],
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "59f5a6cf-10ee-4edf-bc4c-346d00c2ef9c"
+      }
     }
   }
 }

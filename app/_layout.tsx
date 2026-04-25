@@ -9,7 +9,9 @@ import {
   SafeAreaView,
 } from "react-native-safe-area-context";
 
+import PushHandler from "@/components/PushHandler";
 import { View } from "react-native";
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,7 +37,7 @@ if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: "#000" }} />;
             style={{ flex: 1, backgroundColor: "#000" }}
             onLayout={onLayoutRootView}
           >
-            {/* <PushHandler /> ✅ SAFE PLACE */}
+            <PushHandler /> ✅ SAFE PLACE
             <Stack
   screenOptions={{
     headerShown: false,
