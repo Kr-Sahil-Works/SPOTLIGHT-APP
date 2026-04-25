@@ -3,7 +3,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import React, { memo, useRef } from "react";
 import { Animated, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,7 +24,8 @@ function TabsLayout() {
 if (!isLoaded) {
   return <View style={{ flex: 1, backgroundColor: "#000" }} />;
 }
-  if (!isSignedIn) return <Redirect href="/(auth)/login" />;
+  
+if (!isSignedIn) return null;
 
   return (
     <Tabs

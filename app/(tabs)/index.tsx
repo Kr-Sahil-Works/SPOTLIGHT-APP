@@ -32,7 +32,11 @@ const glow = useRef(new Animated.Value(0)).current;
     isSignedIn ? {} : "skip"
   );
 
-  if (!isSignedIn) return null;
+if (!isSignedIn) {
+  return <View style={{ flex: 1, backgroundColor: "#000" }} />;
+}
+
+
   if (posts === undefined) return <Loader />;
   if (posts.length === 0) return <NoPostsFound />;
 

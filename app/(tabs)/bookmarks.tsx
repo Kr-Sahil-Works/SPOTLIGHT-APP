@@ -23,7 +23,10 @@ import {
 
 /* ========================= */
 export default function Bookmarks() {
-  const bookmarkedPosts = useQuery(api.bookmarks.getBookmarkedPosts);
+ const bookmarkedPosts = useQuery(
+  api.bookmarks.getBookmarkedPosts,
+  { limit: 30 }
+);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 const [downloading, setDownloading] = useState(false);
 const [showSuccess, setShowSuccess] = useState(false);
@@ -109,6 +112,7 @@ showToast("Image downloaded ✅");
         numColumns={3}
         removeClippedSubviews
         initialNumToRender={9}
+        maxToRenderPerBatch={9}
         windowSize={7}
         renderItem={({ item }) => {
           if (!item || !item.imageUrl) return null;
@@ -130,6 +134,7 @@ showToast("Image downloaded ✅");
                   style={{ width: "100%", aspectRatio: 1 }}
                   contentFit="cover"
                   cachePolicy="memory-disk"
+                    allowDownscaling // 🔥 FIX
                 />
               </View>
             </TouchableOpacity>
@@ -174,6 +179,7 @@ showToast("Image downloaded ✅");
                 }}
                 contentFit="contain"
                 transition={200}
+                  allowDownscaling // 🔥 FIX
               />
             </Animated.View>
           )}

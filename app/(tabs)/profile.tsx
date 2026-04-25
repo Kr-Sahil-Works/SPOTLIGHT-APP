@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -21,13 +22,12 @@ import {
   View
 } from 'react-native';
 
-
 const { width } = Dimensions.get("window");
 
 export default function Profile() {
 // ✅ ALL HOOKS FIRST (no conditions, no JSX)
 const { signOut, userId } = useAuth();
-
+const router = useRouter();
 const [showLogoutModal, setShowLogoutModal] = useState(false);
 const [loggingOut, setLoggingOut] = useState(false);
 const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -493,9 +493,12 @@ return (
                 setShowLogoutModal(false);
                 setLoggingOut(true);
 
-                setTimeout(async () => {
-                  await signOut();
-                }, 200);
+              setTimeout(async () => {
+  await signOut();
+
+  // 🚀 FORCE REDIRECT (FIX)c
+  router.replace("/(auth)/login");
+}, 200);
               }}
               style={{
                 flex: 1,

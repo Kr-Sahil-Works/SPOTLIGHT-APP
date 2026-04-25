@@ -1,10 +1,11 @@
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   FlatList,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Linking,
@@ -14,8 +15,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-
-import { useEffect, useRef, useState } from "react";
 import TypingDots from "../../components/TypingDots";
 import {
   DeleteModal,

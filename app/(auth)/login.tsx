@@ -5,8 +5,10 @@ import { useSSO } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { Animated, Image, Pressable, Text, View } from "react-native";
+
 
 export default function Login() {
 
@@ -17,6 +19,8 @@ export default function Login() {
   const pressScale = useRef(new Animated.Value(1)).current;
   const morph = useRef(new Animated.Value(0)).current;
   const sweep = useRef(new Animated.Value(-250)).current;
+
+const router = useRouter();
 
   const pressIn = () => {
     Animated.spring(pressScale,{
@@ -84,11 +88,14 @@ export default function Login() {
 
       const {createdSessionId,setActive} =
         await startSSOFlow({strategy:"oauth_google"});
+if (setActive && createdSessionId) {
+  await setActive({ session: createdSessionId });
 
-      if(setActive && createdSessionId){
-        await setActive({session:createdSessionId});
-        setLoading(false);
-      }
+  // 🚀 FORCE NAVIGATION (FIX)
+  router.replace("/");
+
+  return;
+}
 
     }catch(error:any){
 
