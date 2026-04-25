@@ -23,7 +23,8 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#161616"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "Spotlight.chat"
     },
     "web": {
       "output": "static"
