@@ -33,6 +33,7 @@ export const addComment = mutation({
         receiverId: post.userId,
         senderId: currentUser._id,
         type: "comment",
+        isRead: false,
         postId: args.postId,
         commentId,
       });

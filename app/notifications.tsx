@@ -4,12 +4,19 @@ import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/notifications.styles";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Animated, Easing, FlatList, Text, View } from "react-native";
+import { Animated, Easing, FlatList, Text, TouchableOpacity, View } from "react-native";
+
 
 export default function Notifications() {
-  const notifications = useQuery(api.notifications.getNotifications);
+const notifications = useQuery(api.notifications.getNotifications) ?? [];
+  const markAllAsRead = useMutation(api.notifications.markAllAsRead);
+
+  useEffect(() => {
+  markAllAsRead();
+}, []);
 
   if (notifications === undefined) return <Loader />;
   if (notifications.length === 0) return <NoNotificationsFound />;
@@ -21,9 +28,11 @@ export default function Notifications() {
         <Ionicons name="notifications" size={22} color={COLORS.primary} />
       </View>
 
-      <FlatList
-        data={notifications}
-        renderItem={({ item }) => <Notification notification={item} />}
+<FlatList
+  data={notifications}
+    renderItem={({ item }) => (
+  <Notification notification={item} />
+)}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContainer}
@@ -86,58 +95,101 @@ function AnimatedDots() {
   );
 }
 
+
+
 function NoNotificationsFound() {
+  const router = useRouter();
+
   return (
-    <View style={[styles.container, styles.centered]}>
-      {/* ICON */}
+    <View style={{ flex: 1, backgroundColor: "#000" }}>
+      
+      {/* 🔥 HEADER */}
       <View
         style={{
-          width: 90,
-          height: 90,
-          borderRadius: 45,
-          backgroundColor: "#111",
+          height: 60,
+          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 1,
-          borderColor: COLORS.surface,
+          paddingHorizontal: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: "rgba(255,255,255,0.05)",
         }}
       >
-        <Ionicons
-          name="notifications-outline"
-          size={40}
-          color={COLORS.primary}
-        />
+        {/* ⬅ BACK */}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            padding: 6,
+            marginRight: 10,
+          }}
+        >
+          <Ionicons name="arrow-back" size={22} color="#fff" />
+        </TouchableOpacity>
+
+        {/* TITLE */}
+        <Text
+          style={{
+            fontSize: 18,
+            fontWeight: "600",
+            color: "#fff",
+          }}
+        >
+          Notifications
+        </Text>
       </View>
 
-      {/* TITLE */}
-      <Text
-        style={{
-          marginTop: 20,
-          fontSize: 22,
-          color: COLORS.white,
-          fontWeight: "600",
-        }}
-      >
-        No Notifications Yet
-      </Text>
+      {/* 🔥 EMPTY STATE */}
+      <View style={[styles.container, styles.centered]}>
+        
+        {/* ICON */}
+        <View
+          style={{
+            width: 90,
+            height: 90,
+            borderRadius: 45,
+            backgroundColor: "#111",
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 1,
+            borderColor: COLORS.surface,
+          }}
+        >
+          <Ionicons
+            name="notifications-outline"
+            size={40}
+            color={COLORS.primary}
+          />
+        </View>
 
-      {/* SUBTEXT */}
-      <Text
-        style={{
-          marginTop: 8,
-          fontSize: 14,
-          color: COLORS.grey,
-          textAlign: "center",
-          paddingHorizontal: 30,
-          lineHeight: 20,
-        }}
-      >
-        When someone likes, follows, or comments,
-        {"\n"}you’ll see it here.
-      </Text>
+        {/* TITLE */}
+        <Text
+          style={{
+            marginTop: 20,
+            fontSize: 22,
+            color: COLORS.white,
+            fontWeight: "600",
+          }}
+        >
+          No Notifications Yet
+        </Text>
 
-      {/* 🔥 Animated typing dots */}
-      <AnimatedDots />
+        {/* SUBTEXT */}
+        <Text
+          style={{
+            marginTop: 8,
+            fontSize: 14,
+            color: COLORS.grey,
+            textAlign: "center",
+            paddingHorizontal: 30,
+            lineHeight: 20,
+          }}
+        >
+          When someone likes, follows, or comments,
+          {"\n"}you’ll see it here.
+        </Text>
+
+        {/* 🔥 Animated typing dots */}
+        <AnimatedDots />
+      </View>
     </View>
   );
 }

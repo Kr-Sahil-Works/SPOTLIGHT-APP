@@ -19,6 +19,9 @@ export default function useChat(userId: Id<"users">) {
   const tapRef = useRef<any>({});
   const flatListRef = useRef<any>(null);
 
+  // ✅ prevent double send
+  const sendingRef = useRef(false);
+
   /* 🔥 QUERIES */
   const data = useQuery(api.messages.getMessages, {
     userId,
@@ -31,6 +34,9 @@ export default function useChat(userId: Id<"users">) {
     id: userId,
   });
 
+  // ✅ loading state (IMPORTANT)
+  const isLoading = data === undefined;
+
   /* 🔥 MUTATIONS */
   const sendMessage = useMutation(api.messages.sendMessage);
   const deleteMessage = useMutation(api.messages.deleteMessage);
@@ -40,25 +46,45 @@ export default function useChat(userId: Id<"users">) {
   const setTyping = useMutation(api.messages.setTyping);
   const markAsSeen = useMutation(api.messages.markAsSeen);
 
+  /* 🔥 OPTIMISTIC */
   const [optimisticMsgs, setOptimisticMsgs] = useState<any[]>([]);
-const real = data?.messages || [];
+  const real = data?.messages ?? [];
 
-const messages = [
-  ...real,
-  ...optimisticMsgs.filter(
-    (o) => !real.some((r) => r.text === o.text && r.createdAt - o.createdAt < 2000)
-  ),
-];
+  // ✅ auto remove optimistic when real arrives
+  useEffect(() => {
+    if (!real.length) return;
+
+    setOptimisticMsgs((prev) =>
+      prev.filter(
+        (o) => !real.some((r) => r.clientId === o.clientId)
+      )
+    );
+  }, [real]);
+
+  // ✅ merge safely
+const messages = [...real, ...optimisticMsgs]
+  .filter(
+    (m, i, arr) =>
+      !arr.some(
+        (x, j) =>
+          j !== i &&
+          x.clientId &&
+          m.clientId &&
+          x.clientId === m.clientId
+      )
+  )
+  .sort((a, b) => a.createdAt - b.createdAt);
 
   const currentUserId = data?.currentUserId;
+  const themeIndex = data?.themeIndex ?? 0;
 
   /* 🔥 MARK SEEN */
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || isLoading) return;
     markAsSeen({ userId });
-  }, [messages.length]);
+  }, [messages.length, isLoading]);
 
-  /* 🔥 TYPING HANDLER */
+  /* 🔥 TYPING */
   const typingTimeout = useRef<any>(null);
 
   const handleTyping = (t: string) => {
@@ -82,47 +108,55 @@ const messages = [
   };
 
   /* 🔥 SEND MESSAGE */
-const handleSend = async () => {
-  if (!text.trim().length) return;
+  const handleSend = async () => {
+    if (sendingRef.current) return;
+    if (!text.trim().length) return;
 
-  const messageText = text.trim();
-  setText("");
+    sendingRef.current = true;
 
-  const tempId = Date.now().toString();
+    const messageText = text.trim();
+    setText("");
 
-  const fakeMsg = {
-    _id: tempId,
-    text: messageText,
-    senderId: currentUserId,
-    createdAt: Date.now(),
-    optimistic: true,
+    const clientId = Date.now().toString();
+
+    const fakeMsg = {
+      _id: clientId,
+      clientId,
+      text: messageText,
+      senderId: currentUserId,
+      createdAt: Date.now(),
+      optimistic: true,
+    };
+
+    setOptimisticMsgs((p) => [...p, fakeMsg]);
+
+    try {
+      await sendMessage({
+        receiverId: userId,
+        text: messageText,
+        clientId,
+        replyTo: replyMsg?._id,
+        replyToText: replyMsg?.text,
+      });
+    } catch (e) {
+      console.log(e);
+    }
+
+    setTyping({
+      receiverId: userId,
+      isTyping: false,
+    });
+
+    setReplyMsg(null);
+
+    setTimeout(() => {
+      sendingRef.current = false;
+    }, 300);
   };
 
-  setOptimisticMsgs((p) => [...p, fakeMsg]);
-
-  try {
-    await sendMessage({
-      receiverId: userId,
-      text: messageText,
-      replyTo: replyMsg?._id,
-      replyToText: replyMsg?.text,
-    });
-  } catch (e) {
-    console.log(e);
-  }
-
-  setTyping({
-    receiverId: userId,
-    isTyping: false,
-  });
-
-  setReplyMsg(null);
-};
-
-  /* 🔥 DELETE (CLEAN - NO UNDO) */
+  /* 🔥 DELETE */
   const handleDelete = async (msg: any) => {
     if (!msg?._id) return;
-
     await deleteMessage({ messageId: msg._id });
   };
 
@@ -158,6 +192,8 @@ const handleSend = async () => {
     currentUserId,
     user,
     typing,
+    themeIndex,
+    isLoading, // 🔥 IMPORTANT
 
     handleSend,
     handleDelete,

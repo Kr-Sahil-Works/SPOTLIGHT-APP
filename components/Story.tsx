@@ -6,20 +6,28 @@ import { Text, TouchableOpacity, View } from "react-native";
 type Story = {
   id: string;
   username: string;
-  avatar: any; // supports require()
+  avatar: any;
   hasStory: boolean;
 };
 
 const FALLBACK =
   "https://ui-avatars.com/api/?background=random&name=User";
 
-export default function Story({ story }: { story: Story }) {
+export default function Story({
+  story,
+  onPress,
+}: {
+  story: Story;
+  onPress?: () => void;
+}) {
   const [error, setError] = useState(false);
 
   return (
-    <TouchableOpacity style={styles.storyWrapper} activeOpacity={0.8}>
-      
-      {/* 🔥 Ring */}
+    <TouchableOpacity
+      style={styles.storyWrapper}
+      activeOpacity={0.8}
+      onPress={onPress}
+    >
       <View
         style={[
           styles.storyRing,
@@ -27,11 +35,7 @@ export default function Story({ story }: { story: Story }) {
         ]}
       >
         <Image
-          source={
-            error
-              ? { uri: FALLBACK }
-              : story.avatar
-          }
+          source={error ? { uri: FALLBACK } : story.avatar}
           style={styles.storyAvatar}
           contentFit="cover"
           transition={200}

@@ -138,6 +138,7 @@ export const toggleLike = mutation({
           receiverId: post.userId,
           senderId: currentUser._id,
           type: "like",
+          isRead: false,
           postId: args.postId,
         });
       }

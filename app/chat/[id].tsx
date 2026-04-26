@@ -25,14 +25,16 @@ import MessageItem from "./MessageItem";
 import ReactionBar from "./ReactionBar";
 import useChat from "./useChat";
 // ADD THIS IMPORT
+import ChatSkeleton from "@/components/ChatSkeleton";
 import { api } from "@/convex/_generated/api";
 import { FlashList } from "@shopify/flash-list";
 import { useMutation } from "convex/react";
 import React from "react";
 
 
+
 export default function ChatScreen() {
-  const { id } = useLocalSearchParams();
+ const { id, name, image } = useLocalSearchParams();
   const router = useRouter();
 
   if (!id || typeof id !== "string") {
@@ -43,6 +45,13 @@ export default function ChatScreen() {
     );
   }
 
+  const [forceLoading, setForceLoading] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+useEffect(() => {
+  setTimeout(() => setForceLoading(false), 400);
+}, []);
+
   const userId = id as unknown as Id<"users">;
 
   const {
@@ -51,6 +60,7 @@ export default function ChatScreen() {
     currentUserId,
     user,
     typing,
+      themeIndex: serverThemeIndex, // 🔥 ADD
     reactionMsg, setReactionMsg,
     selectedMsg, setSelectedMsg,
     deleteConfirm, setDeleteConfirm,
@@ -66,6 +76,9 @@ export default function ChatScreen() {
     editMessage,
     replyMsg, setReplyMsg,
   } = useChat(userId);
+ 
+
+
 
   /* 🎨 THEMES */
 const themes = [
@@ -100,15 +113,17 @@ const themes = [
 ];
   
 const [highlightId, setHighlightId] = useState<string | null>(null);
-const [themeIndex, setThemeIndex] = useState(0);
+const [themeIndex, setThemeIndex] = useState(serverThemeIndex);
 const wmOpacity = useRef(new Animated.Value(0)).current;
 const themeAnim = useRef(new Animated.Value(0)).current;
 const [changingTheme, setChangingTheme] = useState(false);
 const [systemMsg, setSystemMsg] = useState<any | null>(null);
 const [wmText, setWmText] = useState("");
 const [kbOffset, setKbOffset] = useState(30); // default fallback
-
+const themeFade = useRef(new Animated.Value(1)).current;
 const isAtBottom = useRef(true);
+const lastMsgIdRef = useRef<string | null>(null);
+const scrollLock = useRef(false);
 
 const setActiveChat = useMutation(api.users.setActiveChat);
 
@@ -120,6 +135,15 @@ useEffect(() => {
   };
 }, [userId]);
 
+useEffect(() => {
+  if (messages !== undefined) {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }
+}, [messages]);
 
 const showWatermark = (text: string) => {
   setWmText(text);
@@ -140,10 +164,8 @@ const showWatermark = (text: string) => {
 };
 
 useEffect(() => {
-  if (user?.themeIndex !== undefined) {
-    setThemeIndex(user.themeIndex);
-  }
-}, [user]);
+  setThemeIndex(serverThemeIndex);
+}, [serverThemeIndex]);
 
 
 useEffect(() => {
@@ -153,10 +175,9 @@ useEffect(() => {
   const offset = Math.max(25, Math.min(50, h * 0.07));
   setKbOffset(offset);
 
-  // ✅ ADD THIS
-  setTimeout(() => {
-    flatListRef.current?.scrollToEnd({ animated: true });
-  }, 100);
+requestAnimationFrame(() => {
+  scrollToBottom(false);
+});
 });
 
   const hide = Keyboard.addListener("keyboardDidHide", () => {
@@ -176,23 +197,22 @@ const groupedMessages = React.useMemo(() => {
 
   const result: any[] = [];
 
-
   const sorted = [...messages].sort(
-  (a, b) => a.createdAt - b.createdAt
-);
+    (a, b) => a.createdAt - b.createdAt
+  );
 
-for (let i = 0; i < sorted.length; i++) {
-  const current = sorted[i];
-  const prev = sorted[i - 1];
+  for (let i = 0; i < sorted.length; i++) {
+    const current = sorted[i];
+    const prev = sorted[i - 1];
 
-    const isSameUser = prev?.senderId === current.senderId;
-
-    const isSameMinute =
+    // ✅ GROUPING (STRICT + SAFE)
+    const isGrouped =
       prev &&
-      Math.abs(current.createdAt - prev.createdAt) < 5 * 60 * 1000;
+      prev.type !== "system" && // ❗ avoid grouping with system
+      prev.senderId === current.senderId &&
+      Math.abs(current.createdAt - prev.createdAt) < 60 * 1000;
 
-    const isGrouped = isSameUser && isSameMinute;
-
+    // ✅ DATE SEPARATOR
     const showTime =
       !prev ||
       new Date(prev.createdAt).toDateString() !==
@@ -206,23 +226,57 @@ for (let i = 0; i < sorted.length; i++) {
       });
     }
 
+    // ✅ SYSTEM MESSAGE (theme change etc)
+    if (current.type === "system") {
+      result.push({
+        ...current,
+        type: "system",
+      });
+      continue; // ❗ don't apply grouping to system
+    }
+
+    // ✅ NORMAL MESSAGE
     result.push({
       ...current,
       type: "message",
-      isGrouped,
+      isGrouped: !!isGrouped,
     });
   }
 
   return result;
 }, [messages]);
+const scrollToBottom = (animated = true) => {
+  if (!flatListRef.current) return;
+  if (scrollLock.current) return;
+
+  scrollLock.current = true;
+
+  requestAnimationFrame(() => {
+    flatListRef.current.scrollToEnd({
+  animated,
+});
+
+    setTimeout(() => {
+      scrollLock.current = false;
+    }, 120);
+  });
+};
 
 useEffect(() => {
-if (!flatListRef.current || messages.length === 0) return;
+  if (!messages.length) return;
 
-if (isAtBottom.current) {
-  flatListRef.current.scrollToEnd({ animated: true });
-}
-}, [messages.length]);
+  const lastMsg = messages[messages.length - 1];
+  if (!lastMsg?._id) return;
+
+  // ❗ prevent re-scroll on same message update
+  if (lastMsgIdRef.current === lastMsg._id) return;
+
+  lastMsgIdRef.current = lastMsg._id;
+
+  if (isAtBottom.current) {
+    scrollToBottom(true);
+  }
+}, [messages]);
 
   /* 🎬 SMOOTH THEME ANIMATION */
   const bgAnim = useRef(new Animated.Value(0)).current;
@@ -302,21 +356,7 @@ const openInstagram = async () => {
   }
 };
 
-<Animated.View
-  pointerEvents="none"
-  style={{
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: theme.bubbleMe,
-    opacity: themeAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 0.2],
-    }),
-  }}
-/>
+
 
 return (
   <KeyboardAvoidingView
@@ -341,10 +381,12 @@ return (
 
         <Image
           source={
-            user?.image
-              ? { uri: user.image }
-              : require("@/assets/images/iconbg.png")
-          }
+  image
+    ? { uri: image }
+    : user?.image
+    ? { uri: user.image }
+    : require("@/assets/images/iconbg.png")
+}
           style={{
             width: 36,
             height: 36,
@@ -354,7 +396,7 @@ return (
         />
 
         <Text style={{ color: "#fff", marginLeft: 10, fontSize: 16 }}>
-          {user?.fullname || "User"}
+          {name || user?.fullname || ""}
         </Text>
 
         <View style={{ marginLeft: "auto", flexDirection: "row" }}>
@@ -373,7 +415,9 @@ disabled={changingTheme} style={{ marginLeft: 14 }}>
       <View style={{ flex: 1 }}>
 
         {/* 💬 MESSAGES */}
-        {groupedMessages.length === 0 && (
+{messages === undefined || forceLoading ? (
+  <ChatSkeleton />
+) : messages.length === 0 ? (
   <View
     style={{
       flex: 1,
@@ -389,24 +433,30 @@ disabled={changingTheme} style={{ marginLeft: 14 }}>
       Say “Hi 👋”
     </Text>
   </View>
-)}
+) : null}
+
+
+{messages !== undefined && messages.length > 0 && (
      <FlashList
   ref={flatListRef}
   data={groupedMessages}
   {...{
     estimatedItemSize: 80,
   }}
-
+getItemType={(item) => item.type}
   keyExtractor={(item) =>
     String(item._id || item.id)
   }
 
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
-
+maintainVisibleContentPosition={{
+  autoscrollToBottomThreshold: 10,
+  animateAutoScrollToBottom: false,
+}}
   contentContainerStyle={{
     padding: 12,
-    paddingBottom: 30,
+    paddingBottom: 25,
   }}
 
           onScroll={(e) => {
@@ -516,6 +566,7 @@ disabled={changingTheme} style={{ marginLeft: 14 }}>
             );
           }}
         />
+        )}
 
         {systemMsg && (
   <View
@@ -539,7 +590,7 @@ disabled={changingTheme} style={{ marginLeft: 14 }}>
 )}
 
         {/* ✍️ TYPING */}
-        {typing && <TypingDots />}
+  <TypingDots typing={!!typing?.isTyping} avatar={user?.image} />
 
         {/* 🔁 REPLY BAR */}
         {replyMsg && (
@@ -601,10 +652,9 @@ disabled={changingTheme} style={{ marginLeft: 14 }}>
 
               animateSend();
               handleSend();
-
-              setTimeout(() => {
-                flatListRef.current?.scrollToEnd({ animated: true });
-              }, 50);
+          setTimeout(() => {
+  scrollToBottom(true);
+}, 40);
             }}
           >
             <Animated.View

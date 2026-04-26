@@ -1,12 +1,10 @@
 import { v } from "convex/values";
+import { api } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
+import { getConversationInternal } from "./conversations";
 import { getAuthenticatedUser } from "./users";
 
-/* 🔥 helper */
-function getConversationId(a: string, b: string) {
-  return [a, b].sort().join("_");
-}
 
 /* =========================
    ✅ SEND MESSAGE
@@ -15,59 +13,58 @@ export const sendMessage = mutation({
   args: {
     receiverId: v.id("users"),
     text: v.string(),
-    replyTo: v.optional(v.id("messages")), // 🔥 NEW
-      replyToText: v.optional(v.string()), // 🔥 ADD THIS
+    replyTo: v.optional(v.id("messages")),
+    replyToText: v.optional(v.string()),
+    clientId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await getAuthenticatedUser(ctx);
+    const current = await getAuthenticatedUser(ctx);
 
-    const conversationId = getConversationId(
-      user._id.toString(),
-      args.receiverId.toString()
+    // 🔥 NEW: get real conversation
+    const conversationId = await ctx.runMutation(
+      api.conversations.getOrCreateConversation,
+      { userId: args.receiverId }
     );
 
-await ctx.db.insert("messages", {
-  conversationId,
-  senderId: user._id,
-  receiverId: args.receiverId,
-  text: args.text.trim(),
-  createdAt: Date.now(),
-  seen: false,
+    await ctx.db.insert("messages", {
+      conversationId,
+      clientId: args.clientId,
+      senderId: current._id,
+      receiverId: args.receiverId,
 
-  replyTo: args.replyTo || undefined,
-  replyToText: args.replyToText || undefined, // 🔥 ADD THIS
+      text: args.text,
+      createdAt: Date.now(),
 
-  reactions: [],
-});
-    // 🔥 SEND PUSH
-const sender = await ctx.db.get(user._id);
-const receiver = await ctx.db.get(args.receiverId);
+      type: "text",
 
-if (receiver?.pushToken && sender) {
-  const isInSameChat =
-    receiver.activeChatWith?.toString() === user._id.toString();
-
-  if (!isInSameChat) {
-    await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to: receiver.pushToken,
-        sound: "default",
-        title: sender.fullname,
-        body: args.text,
-        data: {
-          userId: sender._id,
-        },
-      }),
+      replyTo: args.replyTo,
+      replyToText: args.replyToText,
     });
-  }
-}
+
+    // 🔔 PUSH (unchanged)
+    const sender = await ctx.db.get(current._id);
+    const receiver = await ctx.db.get(args.receiverId);
+
+    if (receiver?.pushToken && sender) {
+      const isInSameChat =
+        receiver.activeChatWith?.toString() === current._id.toString();
+
+      if (!isInSameChat) {
+        await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: receiver.pushToken,
+            sound: "default",
+            title: sender.fullname,
+            body: args.text,
+            data: { userId: sender._id },
+          }),
+        });
+      }
+    }
   },
 });
-
 
 
 export const setTyping = mutation({
@@ -78,18 +75,15 @@ export const setTyping = mutation({
   handler: async (ctx, args) => {
     const user = await getAuthenticatedUser(ctx);
 
-    const conversationId = getConversationId(
-      user._id.toString(),
-      args.receiverId.toString()
+    const conversationId = await ctx.runMutation(
+      api.conversations.getOrCreateConversation,
+      { userId: args.receiverId }
     );
 
-    // ⚡ DIRECT lookup (no scan)
     const existing = await ctx.db
       .query("typing")
       .withIndex("by_user_conversation", (q) =>
-        q
-          .eq("conversationId", conversationId)
-          .eq("userId", user._id)
+        q.eq("conversationId", conversationId).eq("userId", user._id)
       )
       .first();
 
@@ -117,9 +111,9 @@ export const markAsSeen = mutation({
   handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
 
-    const conversationId = getConversationId(
-      currentUser._id.toString(),
-      args.userId.toString()
+    const conversationId = await ctx.runMutation(
+      api.conversations.getOrCreateConversation,
+      { userId: args.userId }
     );
 
     const messages = await ctx.db
@@ -145,6 +139,7 @@ export const markAsSeen = mutation({
 /* =========================
    💬 GET MESSAGES
 ========================= */
+
 export const getMessages = query({
   args: {
     userId: v.id("users"),
@@ -153,49 +148,38 @@ export const getMessages = query({
   handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
 
-    const conversationId = getConversationId(
-      currentUser._id.toString(),
-      args.userId.toString()
-    );
+    const conversation = await getConversationInternal(
+  ctx,
+  currentUser._id.toString(),
+  args.userId.toString()
+);
+
+if (!conversation) {
+  return {
+    messages: [],
+    currentUserId: currentUser._id,
+  };
+}
+
+const conversationId = conversation._id;
 
     const limit = args.limit ?? 30;
 
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_conversation", (q) =>
+      .withIndex("by_conversation_time", (q) =>
         q.eq("conversationId", conversationId)
       )
       .order("desc")
       .take(limit);
 
-    // ⚡ batch reply fetch (avoid many db calls)
-    const replyIds = messages
-      .map((m) => m.replyTo)
-      .filter(Boolean);
-
-    const replyMap = new Map();
-
-    await Promise.all(
-      replyIds.map(async (id) => {
-        const msg = await ctx.db.get(id!);
-        if (msg) replyMap.set(id, msg.text);
-      })
-    );
-
-    const enriched = messages.map((m) => ({
-      ...m,
-      replyToText:
-        m.replyToText ||
-        (m.replyTo ? replyMap.get(m.replyTo) : undefined),
-    }));
-
-    return {
-      messages: enriched.reverse(),
-      currentUserId: currentUser._id,
-    };
+return {
+  messages: messages.reverse(),
+  currentUserId: currentUser._id,
+  themeIndex: conversation.themeIndex ?? 0, // 🔥 ADD
+};
   },
 });
-
 
 export const getTyping = query({
   args: {
@@ -204,12 +188,16 @@ export const getTyping = query({
   handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
 
-    const conversationId = getConversationId(
-      currentUser._id.toString(),
-      args.userId.toString()
-    );
+  const conversation = await getConversationInternal(
+  ctx,
+  currentUser._id.toString(),
+  args.userId.toString()
+);
 
-    // ⚡ use better index (no full scan)
+if (!conversation) return null;
+
+const conversationId = conversation._id;
+
     const typing = await ctx.db
       .query("typing")
       .withIndex("by_user_conversation", (q) =>
@@ -220,11 +208,10 @@ export const getTyping = query({
     return typing.find(
       (t) =>
         t.userId !== currentUser._id &&
-        t.isTyping === true
+        t.isTyping
     );
   },
 });
-
 
 
 /* =========================
@@ -272,31 +259,16 @@ export const getChatList = query({
   handler: async (ctx) => {
     const currentUser = await getAuthenticatedUser(ctx);
 
-    const messages = await ctx.db.query("messages").collect();
+    // 🔥 1. get all conversations of user
+    const conversations = await ctx.db
+      .query("conversations")
+      .collect();
 
-    const latestMap = new Map<string, (typeof messages)[0]>();
-
-    for (const msg of messages) {
-      if (
-        msg.senderId !== currentUser._id &&
-        msg.receiverId !== currentUser._id
+    const myConversations = conversations.filter((c) =>
+      c.participants.some(
+        (p) => p.toString() === currentUser._id.toString()
       )
-        continue;
-
-      const otherUserId =
-        msg.senderId === currentUser._id
-          ? msg.receiverId
-          : msg.senderId;
-
-      const key = otherUserId.toString();
-
-      if (
-        !latestMap.has(key) ||
-        latestMap.get(key)!.createdAt < msg.createdAt
-      ) {
-        latestMap.set(key, msg);
-      }
-    }
+    );
 
     const result: {
       userId: Id<"users">;
@@ -305,48 +277,63 @@ export const getChatList = query({
       lastMessage: string;
       createdAt: number;
       unreadCount: number;
-        // ✅ ADD THESE
-  isOnline?: boolean;
-  showOnline?: boolean;
+      isOnline?: boolean;
+      showOnline?: boolean;
     }[] = [];
 
-    for (const [_, latestMsg] of latestMap.entries()) {
-      const otherUserId =
-        latestMsg.senderId === currentUser._id
-          ? latestMsg.receiverId
-          : latestMsg.senderId;
+    // 🔥 2. loop conversations
+    for (const conv of myConversations) {
+      const otherUserId = conv.participants.find(
+        (p) => p.toString() !== currentUser._id.toString()
+      );
+
+      if (!otherUserId) continue;
 
       const user = await ctx.db.get(otherUserId);
       if (!user) continue;
 
-      let unreadCount = 0;
+      // 🔥 3. last message (FAST)
+      const lastMsg = await ctx.db
+        .query("messages")
+        .withIndex("by_conversation_time", (q) =>
+          q.eq("conversationId", conv._id)
+        )
+        .order("desc")
+        .first();
 
-      for (const msg of messages) {
-        if (
-          msg.senderId === otherUserId &&
-          msg.receiverId === currentUser._id &&
-          !msg.seen
-        ) {
-          unreadCount++;
-        }
-      }
+      if (!lastMsg) continue;
+
+      // 🔥 4. unread count
+      const unreadMessages = await ctx.db
+        .query("messages")
+        .withIndex("by_conversation", (q) =>
+          q.eq("conversationId", conv._id)
+        )
+        .collect();
+
+      const unreadCount = unreadMessages.filter(
+        (m) =>
+          m.senderId.toString() === otherUserId.toString() &&
+          m.receiverId.toString() === currentUser._id.toString() &&
+          !m.seen
+      ).length;
 
       result.push({
         userId: user._id,
         fullname: user.fullname,
         image: user.image,
-        lastMessage: latestMsg.text,
-        createdAt: latestMsg.createdAt,
+        lastMessage: lastMsg.text,
+        createdAt: lastMsg.createdAt,
         unreadCount,
         isOnline: user.isOnline,
         showOnline: user.showOnline,
       });
     }
 
+    // 🔥 5. sort by latest message
     return result.sort((a, b) => b.createdAt - a.createdAt);
   },
 });
-
 
 /* ✅ EDIT MESSAGE (10 MIN LIMIT) */
 export const editMessage = mutation({
@@ -527,23 +514,20 @@ export const setChatTheme = mutation({
   handler: async (ctx, args) => {
     const current = await getAuthenticatedUser(ctx);
 
-    const conversationId = getConversationId(
-      current._id.toString(),
-      args.userId.toString()
+    const conversationId = await ctx.runMutation(
+      api.conversations.getOrCreateConversation,
+      { userId: args.userId }
     );
 
-    // ✅ update both users theme
-    await ctx.db.patch(current._id, {
+    // 🔥 update conversation (NOT users anymore)
+    await ctx.db.patch(conversationId, {
       themeIndex: args.themeIndex,
     });
 
-    await ctx.db.patch(args.userId, {
-      themeIndex: args.themeIndex,
-    });
-
-    // 🔥 INSERT SYSTEM MESSAGE
+    // 🔥 SYSTEM MESSAGE
     await ctx.db.insert("messages", {
       conversationId,
+      
       senderId: current._id,
       receiverId: args.userId,
 

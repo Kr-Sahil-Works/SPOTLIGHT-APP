@@ -14,10 +14,10 @@ export default defineSchema({
 
     themeIndex: v.optional(v.number()),
     isOnline: v.optional(v.boolean()),
-lastSeen: v.optional(v.number()),
-showOnline: v.optional(v.boolean()),
+    lastSeen: v.optional(v.number()),
+    showOnline: v.optional(v.boolean()),
 
-activeChatWith: v.optional(v.id("users")),
+    activeChatWith: v.optional(v.id("users")),
 
     followers: v.number(),
     following: v.number(),
@@ -73,21 +73,24 @@ activeChatWith: v.optional(v.id("users")),
   /* =========================
      🔔 NOTIFICATIONS
   ========================= */
-  notifications: defineTable({
-    receiverId: v.id("users"),
-    senderId: v.id("users"),
+notifications: defineTable({
+  receiverId: v.id("users"),
+  senderId: v.id("users"),
 
-    type: v.union(
-      v.literal("like"),
-      v.literal("comment"),
-      v.literal("follow")
-    ),
+  type: v.union(
+    v.literal("like"),
+    v.literal("comment"),
+    v.literal("follow")
+  ),
 
-    postId: v.optional(v.id("posts")),
-    commentId: v.optional(v.id("comments")),
-  })
-    .index("by_receiver", ["receiverId"])
-    .index("by_post", ["postId"]),
+  postId: v.optional(v.id("posts")),
+  commentId: v.optional(v.id("comments")),
+
+  // 🔥 ADD THIS (REQUIRED)
+  isRead: v.boolean(),
+})
+  .index("by_receiver", ["receiverId"])
+  .index("by_post", ["postId"]),
 
   /* =========================
      🔖 BOOKMARKS
@@ -100,21 +103,34 @@ activeChatWith: v.optional(v.id("users")),
     .index("by_post", ["postId"])
     .index("by_user_and_post", ["userId", "postId"]),
 
+  /* =========================
+     📝 NOTES
+  ========================= */
+  notes: defineTable({
+    userId: v.id("users"),
+    content: v.string(),
+    updatedAt: v.number(),
 
-    notes: defineTable({
-  userId: v.id("users"),
-  content: v.string(),
-  updatedAt: v.number(),
-
-  order: v.number(),        // 🔥 for sorting
-  pinned: v.optional(v.boolean()), // 📌 pin
-}).index("by_user", ["userId"]),
+    order: v.number(),
+    pinned: v.optional(v.boolean()),
+  }).index("by_user", ["userId"]),
 
   /* =========================
-     💬 MESSAGES (PRO)
+     💬 CONVERSATIONS (NEW CORE)
+  ========================= */
+  conversations: defineTable({
+    participants: v.array(v.id("users")),
+    createdAt: v.number(),
+
+    // 🔥 chat-level theme
+    themeIndex: v.optional(v.number()),
+  }).index("by_participants", ["participants"]),
+
+  /* =========================
+     💬 MESSAGES (UPGRADED)
   ========================= */
   messages: defineTable({
-    conversationId: v.string(),
+    conversationId: v.id("conversations"),
 
     senderId: v.id("users"),
     receiverId: v.id("users"),
@@ -122,57 +138,51 @@ activeChatWith: v.optional(v.id("users")),
     text: v.string(),
     createdAt: v.number(),
 
+    clientId: v.optional(v.string()),
+
     seen: v.optional(v.boolean()),
 
     // 🔥 SYSTEM SUPPORT
-type: v.optional(
-  v.union(
-    v.literal("text"),
-    v.literal("system")
-  )
-),
+    type: v.optional(
+      v.union(
+        v.literal("text"),
+        v.literal("system")
+      )
+    ),
 
-systemType: v.optional(
-  v.union(
-    v.literal("theme_change"),
-    v.literal("date")
-  )
-),
+    systemType: v.optional(
+      v.union(
+        v.literal("theme_change"),
+        v.literal("date")
+      )
+    ),
 
-meta: v.optional(v.any()),
+    meta: v.optional(v.any()),
 
     // 🔥 FEATURES
     edited: v.optional(v.boolean()),
     replyTo: v.optional(v.id("messages")),
     replyToText: v.optional(v.string()),
-   reactions: v.optional(
-  v.array(
-    v.object({
-      userId: v.id("users"),
-      value: v.string(),
-    })
-  )
-),
+
+    reactions: v.optional(
+      v.array(
+        v.object({
+          userId: v.id("users"),
+          value: v.string(),
+        })
+      )
+    ),
   })
-.index("by_conversation", ["conversationId"])
-.index("by_conversation_time", ["conversationId", "createdAt"])
-.index("by_sender", ["senderId"])
-.index("by_receiver", ["receiverId"]),
-
-conversations: defineTable({
-  participants: v.array(v.id("users")),
-  createdAt: v.number(),
-
-  // 🔥 chat-level theme
-  themeIndex: v.optional(v.number()),
-})
-.index("by_participants", ["participants"]),
+    .index("by_conversation", ["conversationId"])
+    .index("by_conversation_time", ["conversationId", "createdAt"])
+    .index("by_sender", ["senderId"])
+    .index("by_receiver", ["receiverId"]),
 
   /* =========================
-     ⌨️ TYPING (REAL-TIME FIXED)
+     ⌨️ TYPING
   ========================= */
   typing: defineTable({
-    conversationId: v.string(),
+    conversationId: v.id("conversations"),
     userId: v.id("users"),
     isTyping: v.boolean(),
   })

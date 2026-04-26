@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 18,
-    paddingTop: 52,
+    paddingTop: 25,
     paddingBottom: 12,
     borderBottomWidth: 0.5,
     borderBottomColor: "rgba(255,255,255,0.08)",

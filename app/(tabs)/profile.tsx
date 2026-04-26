@@ -6,17 +6,21 @@ import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
+import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   Dimensions,
   Easing,
   FlatList,
   Modal,
   PanResponder,
-  ScrollView, Text,
+  ScrollView,
+  Share,
+  Text,
   TextInput,
   TouchableOpacity,
   View
@@ -25,6 +29,37 @@ import {
 const { width } = Dimensions.get("window");
 
 export default function Profile() {
+
+
+const WEBSITE_URL = "https://www.sleekchats.com";
+
+const handleShare = async () => {
+  const message =
+    "spotlight ✨\nminimal chats. real people.\n\njoin here ↓\n" +
+    WEBSITE_URL;
+
+  try {
+    const result = await Share.share({
+      message,
+      url: WEBSITE_URL, // iOS support
+    });
+
+    // optional log
+    if (result.action === Share.sharedAction) {
+      console.log("Shared successfully");
+    }
+  } catch (error) {
+    // 🔥 FALLBACK → COPY LINK
+    await Clipboard.setStringAsync(WEBSITE_URL);
+
+    Alert.alert(
+      "Link copied",
+      "Could not open share sheet. Link copied to clipboard."
+    );
+  }
+};
+
+
 // ✅ ALL HOOKS FIRST (no conditions, no JSX)
 const { signOut, userId } = useAuth();
 const router = useRouter();
@@ -192,8 +227,10 @@ return (
           >
             <Text style={styles.editButtonText}>Edit Profile</Text>
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.shareButton}>
+<TouchableOpacity
+  style={styles.shareButton}
+  onPress={handleShare}
+>
             <Ionicons name="share-outline" size={20} color={COLORS.white} />
           </TouchableOpacity>
         </View>

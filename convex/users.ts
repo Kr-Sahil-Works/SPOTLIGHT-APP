@@ -127,11 +127,12 @@ export const toggleFollow = mutation({
       await updateFollowCounts(ctx, currentUser._id, args.followingId, true);
 
       // create a notification
-      await ctx.db.insert("notifications", {
-        receiverId: args.followingId,
-        senderId: currentUser._id,
-        type: "follow",
-      });
+   await ctx.db.insert("notifications", {
+  receiverId: args.followingId,
+  senderId: currentUser._id,
+  type: "follow",
+  isRead: false, // 🔥 FIX
+});
     }
   },
 });

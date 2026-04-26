@@ -31,6 +31,7 @@ const glow = useRef(new Animated.Value(0)).current;
     api.posts.getFeedPosts,
     isSignedIn ? {} : "skip"
   );
+const unreadCount = useQuery(api.notifications.getUnreadCount) ?? 0;
 
 if (!isSignedIn) {
   return <View style={{ flex: 1, backgroundColor: "#000" }} />;
@@ -49,6 +50,7 @@ if (!isSignedIn) {
     setRefreshing(true);
 
     setShuffledPosts(shuffleArray(posts));
+    setRefreshKey((prev) => prev + 1); // 🔥 trigger stories shuffle
 
     await new Promise((r) => setTimeout(r, 400));
 
@@ -116,13 +118,42 @@ if (!isSignedIn) {
           }),
         ]).start();
       }}
-      onPress={() => router.push("../components/notifications")}
+      onPress={() => router.push("/notifications")}
       style={{
         padding: 8,
         borderRadius: 12,
       }}
     >
-      <Ionicons name="heart-outline" size={22} color="#fff" />
+      <View style={{ position: "relative" }}>
+  <Ionicons name="heart-outline" size={22} color="#fff" />
+
+  {(unreadCount ?? 0) > 0 && (
+    <View
+      style={{
+        position: "absolute",
+        top: -4,
+        right: -6,
+        minWidth: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: "#00ff6a",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 4,
+      }}
+    >
+      <Text
+        style={{
+          color: "#000",
+          fontSize: 10,
+          fontWeight: "700",
+        }}
+      >
+        {unreadCount > 9 ? "9+" : unreadCount}
+      </Text>
+    </View>
+  )}
+</View>
     </TouchableOpacity>
   </Animated.View>
 </Animated.View>
@@ -136,7 +167,7 @@ if (!isSignedIn) {
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 80 }}
-        ListHeaderComponent={<StoriesSection />}
+        ListHeaderComponent={<StoriesSection refreshKey={refreshKey} />}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

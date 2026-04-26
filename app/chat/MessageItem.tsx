@@ -44,14 +44,16 @@ const MessageItem = React.memo(function MessageItem({
   const replied = useRef(false);
 
   /* 🚀 ENTRY ANIMATION (RUN ONCE) */
-  useEffect(() => {
-    Animated.spring(entryX, {
-      toValue: 0,
-      friction: 7,
-      tension: 80,
-      useNativeDriver: true,
-    }).start();
-  }, []);
+useEffect(() => {
+  if (item.optimistic) return; // ❗ skip fake message
+
+  Animated.spring(entryX, {
+    toValue: 0,
+    friction: 7,
+    tension: 80,
+    useNativeDriver: true,
+  }).start();
+}, []);
 
   /* 🔥 INTERPOLATIONS */
   const opacity = panX.interpolate({
@@ -193,6 +195,7 @@ const MessageItem = React.memo(function MessageItem({
                 }}
               >
                 <Text
+                numberOfLines={100}
                   style={{
                     color: "#fff",
                     fontSize: 14,
