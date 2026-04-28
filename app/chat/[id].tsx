@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Keyboard,
   KeyboardAvoidingView,
   Linking,
   Text,
@@ -126,6 +127,20 @@ const [showScrollBtn, setShowScrollBtn] = useState(false);
 const [newMsgCount, setNewMsgCount] = useState(0);
 
 const setActiveChat = useMutation(api.users.setActiveChat);
+
+
+
+useEffect(() => {
+  const show = Keyboard.addListener("keyboardDidShow", () => {
+    requestAnimationFrame(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    });
+  });
+
+  return () => {
+    show.remove();
+  };
+}, []);
 
 useEffect(() => {
   setActiveChat({ chatWith: userId });

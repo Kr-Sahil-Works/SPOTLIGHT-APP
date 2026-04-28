@@ -9,8 +9,9 @@ import {
   Text,
   View,
 } from "react-native";
+import { Easing } from "react-native-reanimated";
 
-/* 🔥 CUSTOM MEMO COMPARE (VERY IMPORTANT) */
+/* 🔥 MEMO */
 const areEqual = (prev: any, next: any) => {
   return (
     prev.item._id === next.item._id &&
@@ -39,38 +40,42 @@ const MessageItem = React.memo(function MessageItem({
   isGrouped,
   isLast,
 }: any & { isLast?: boolean }) {
-const entryX = useRef(new Animated.Value(0)).current;
   const hasAnimated = useRef(false);
+
   const panX = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
+
+  // ✅ iMessage animation values
+  const scaleY = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+
   const replied = useRef(false);
 
-useEffect(() => {
-  // ❌ do NOT animate optimistic
-  if (item.optimistic) return;
+  /* 🔥 ONLY NEW MESSAGE ANIMATION */
+  useEffect(() => {
+    if (item.optimistic || !isLast) return;
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
 
-  // ❌ animate ONLY newest message
-  if (!isLast) return;
+    scaleY.setValue(0.85);
+    opacityAnim.setValue(0);
 
-  // ❌ prevent double animation
-  if (hasAnimated.current) return;
-  hasAnimated.current = true;
+    Animated.parallel([
+      Animated.timing(scaleY, {
+        toValue: 1,
+        duration: 180,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 140,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [isLast]);
 
-  // ✅ iMessage style (subtle + no shift)
-  entryX.setValue(0);
-  scale.setValue(0.96);
-
-  Animated.parallel([
-    Animated.spring(scale, {
-      toValue: 1,
-      friction: 7,
-      tension: 90,
-      useNativeDriver: true,
-    }),
-  ]).start();
-}, [isLast]);
-
-  /* 🔥 INTERPOLATIONS */
+  /* 🔥 SWIPE */
   const opacity = panX.interpolate({
     inputRange: [0, 80],
     outputRange: [1, 0.7],
@@ -83,7 +88,6 @@ useEffect(() => {
     extrapolate: "clamp",
   });
 
-  /* 👉 SWIPE TO REPLY */
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10,
@@ -116,8 +120,11 @@ useEffect(() => {
   return (
     <Animated.View
       style={{
-        transform: [{ translateX: entryX }, { translateX: panX }],
-        opacity,
+        transform: [
+          { translateX: panX }, // ✅ ONLY swipe
+          { scaleY },           // ✅ grow animation
+        ],
+        opacity: opacityAnim,   // ✅ fade animation
       }}
       {...panResponder.panHandlers}
     >
@@ -143,12 +150,10 @@ useEffect(() => {
               flexDirection: "row",
               alignSelf: isMe ? "flex-end" : "flex-start",
               alignItems: "flex-end",
-              marginBottom: isGrouped ? 2 : 18,
-              // marginBottom: 8,
+              marginBottom: 8, // ✅ FIXED (no shift)
               marginLeft: !isMe && isGrouped ? 34 : 0,
             }}
           >
-            {/* Avatar */}
             {!isMe && !isGrouped && (
               <Image
                 source={{ uri: avatar }}
@@ -156,12 +161,11 @@ useEffect(() => {
                   width: 28,
                   height: 28,
                   borderRadius: 14,
-                  marginRight: isGrouped ? 0 : 6
+                  marginRight: 6,
                 }}
               />
             )}
 
-            {/* Reply Arrow */}
             <Animated.View
               style={{
                 position: "absolute",
@@ -174,7 +178,6 @@ useEffect(() => {
             </Animated.View>
 
             <View style={{ maxWidth: "75%" }}>
-              {/* Reply Preview */}
               {item.replyToText && (
                 <Pressable
                   onPress={() =>
@@ -187,16 +190,12 @@ useEffect(() => {
                     marginBottom: 6,
                   }}
                 >
-                  <Text
-                    numberOfLines={1}
-                    style={{ fontSize: 11, color: "#aaa" }}
-                  >
+                  <Text numberOfLines={1} style={{ fontSize: 11, color: "#aaa" }}>
                     {item.replyToText}
                   </Text>
                 </Pressable>
               )}
 
-              {/* Message Bubble */}
               <View
                 style={{
                   backgroundColor:
@@ -210,14 +209,7 @@ useEffect(() => {
                   borderRadius: isGrouped ? 16 : 22,
                 }}
               >
-                <Text
-                numberOfLines={100}
-                  style={{
-                    color: "#fff",
-                    fontSize: 14,
-                    lineHeight: 18,
-                  }}
-                >
+                <Text style={{ color: "#fff", fontSize: 14, lineHeight: 18 }}>
                   {item.text}
                 </Text>
 
@@ -235,7 +227,6 @@ useEffect(() => {
                 )}
               </View>
 
-              {/* Reactions */}
               {item.reactions?.length > 0 && (
                 <View
                   style={{
