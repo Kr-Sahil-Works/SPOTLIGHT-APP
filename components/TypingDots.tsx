@@ -76,15 +76,16 @@ export default function TypingDots({
   });
 
   return (
-    <Animated.View
-      style={{
-        opacity: fade,
-        flexDirection: "row",
-        alignItems: "flex-end",
-        marginLeft: 14,
-        marginBottom: 6,
-      }}
-    >
+  <Animated.View
+  style={{
+    opacity: fade,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginLeft: 14,
+    marginBottom: 2,
+    minHeight: 40, // ✅ ADD THIS
+  }}
+>
       {/* AVATAR */}
       <Image
         source={

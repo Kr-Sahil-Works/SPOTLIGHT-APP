@@ -45,24 +45,30 @@ const entryX = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
   const replied = useRef(false);
 
-  /* 🚀 ENTRY ANIMATION (RUN ONCE) */
 useEffect(() => {
-  // ✅ skip ONLY fake message
+  // ❌ do NOT animate optimistic
   if (item.optimistic) return;
 
-  // ✅ run animation ONLY once per mount
+  // ❌ animate ONLY newest message
+  if (!isLast) return;
+
+  // ❌ prevent double animation
   if (hasAnimated.current) return;
   hasAnimated.current = true;
 
-entryX.setValue(isMe ? 20 : -20);
+  // ✅ iMessage style (subtle + no shift)
+  entryX.setValue(0);
+  scale.setValue(0.96);
 
-Animated.spring(entryX, {
-  toValue: 0,
-  friction: 6,
-  tension: 70,
-  useNativeDriver: true,
-}).start();
-}, []);
+  Animated.parallel([
+    Animated.spring(scale, {
+      toValue: 1,
+      friction: 7,
+      tension: 90,
+      useNativeDriver: true,
+    }),
+  ]).start();
+}, [isLast]);
 
   /* 🔥 INTERPOLATIONS */
   const opacity = panX.interpolate({
@@ -137,7 +143,8 @@ Animated.spring(entryX, {
               flexDirection: "row",
               alignSelf: isMe ? "flex-end" : "flex-start",
               alignItems: "flex-end",
-              marginBottom: isGrouped ? 2 : 14,
+              marginBottom: isGrouped ? 2 : 18,
+              // marginBottom: 8,
               marginLeft: !isMe && isGrouped ? 34 : 0,
             }}
           >

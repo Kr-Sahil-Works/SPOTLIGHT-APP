@@ -5,7 +5,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  Keyboard,
   KeyboardAvoidingView,
   Linking,
   Text,
@@ -119,12 +118,12 @@ const [changingTheme, setChangingTheme] = useState(false);
 const [systemMsg, setSystemMsg] = useState<any | null>(null);
 const [wmText, setWmText] = useState("");
 
-
 const themeFade = useRef(new Animated.Value(1)).current;
 const isAtBottom = useRef(true);
 const lastMsgIdRef = useRef<string | null>(null);
-const scrollLock = useRef(false);
-const keyboardOpen = useRef(false);
+
+const [showScrollBtn, setShowScrollBtn] = useState(false);
+const [newMsgCount, setNewMsgCount] = useState(0);
 
 const setActiveChat = useMutation(api.users.setActiveChat);
 
@@ -169,26 +168,7 @@ useEffect(() => {
 }, [serverThemeIndex]);
 
 
-useEffect(() => {
-  const show = Keyboard.addListener("keyboardDidShow", (e) => {
-    keyboardOpen.current = true;
 
-    const h = e.endCoordinates.height; // ✅ ADD THIS
-
-    const offset = Math.max(25, Math.min(50, h * 0.07));
-
-  });
-
-  const hide = Keyboard.addListener("keyboardDidHide", () => {
-    keyboardOpen.current = false; // ✅ ALSO ADD THIS
-  
-  });
-
-  return () => {
-    show.remove();
-    hide.remove();
-  };
-}, []);
 
   const theme = themes[themeIndex];
 
@@ -243,43 +223,38 @@ const groupedMessages = React.useMemo(() => {
 
   return result;
 }, [messages]);
+
+
 const scrollToBottom = (animated = true) => {
-  if (!flatListRef.current) return;
-  if (scrollLock.current) return;
-
-  scrollLock.current = true;
-
-  requestAnimationFrame(() => {
-    flatListRef.current.scrollToEnd({
-  animated,
-});
-
-    setTimeout(() => {
-      scrollLock.current = false;
-    }, 120);
-  });
+if (flatListRef.current) {
+  flatListRef.current.scrollToEnd({ animated });
+}
 };
+
+
 
 useEffect(() => {
   if (!messages.length) return;
 
   const lastMsg = messages[messages.length - 1];
-  if (!lastMsg?._id) return;
+  if (!lastMsg) return;
 
-  // 🔥 ONLY scroll if NEW message (ignore same clientId replace)
-  if (
-    lastMsgIdRef.current === lastMsg._id ||
-    lastMsgIdRef.current === lastMsg.clientId
-  ) {
-    return;
-  }
+  const id = lastMsg.clientId || lastMsg._id;
 
-  lastMsgIdRef.current = lastMsg._id ?? lastMsg.clientId;
+  // ✅ ONLY run if truly new message
+  if (lastMsgIdRef.current === id) return;
 
-if (isAtBottom.current && !keyboardOpen.current) {
-  scrollToBottom(true);
-}
+  lastMsgIdRef.current = id;
+
+  // ✅ ONLY scroll if user at bottom
+  if (!isAtBottom.current && !text.length) return;
+
+  requestAnimationFrame(() => {
+    flatListRef.current?.scrollToEnd({ animated: true });
+  });
 }, [messages]);
+
+
 
   /* 🎬 SMOOTH THEME ANIMATION */
   const bgAnim = useRef(new Animated.Value(0)).current;
@@ -364,8 +339,9 @@ const openInstagram = async () => {
 return (
   <KeyboardAvoidingView
     style={{ flex: 1, backgroundColor: theme.bg }}
-behavior="padding"
-keyboardVerticalOffset={40}
+behavior="height"
+keyboardVerticalOffset={20}
+contentContainerStyle={{ padding: 12 }}
   >
     <View style={{ flex: 1 }}>
 
@@ -429,7 +405,7 @@ disabled={changingTheme} style={{ marginLeft: 14 }}>
       paddingHorizontal: 30,
     }}
   >
-    <Text style={{ color: "#aaa", fontSize: 16, marginBottom: 6 }}>
+    <Text style={{ color: "#aaa", fontSize: 16, marginBottom: 2 }}>
       Start a conversation
     </Text>
     <Text style={{ color: "#666", fontSize: 13 }}>
@@ -444,7 +420,7 @@ disabled={changingTheme} style={{ marginLeft: 14 }}>
   ref={flatListRef}
   data={groupedMessages}
   {...{
-    estimatedItemSize: 72,
+    estimatedItemSize: 90,
   }}
 getItemType={(item) => item.type}
 keyExtractor={(item) =>
@@ -452,29 +428,32 @@ keyExtractor={(item) =>
     ? String(item.clientId || item._id)
     : String(item.id)
 }
-ListFooterComponent={
-  <View style={{ height: typing?.isTyping ? 8 : 4 }} />
-}
+// ListFooterComponent={<View style={{ height: 6 }} />}
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
-maintainVisibleContentPosition={{
-  autoscrollToBottomThreshold: 0,
-  animateAutoScrollToBottom: false, 
-}}
- contentContainerStyle={{
+contentContainerStyle={{
   padding: 12,
+  paddingBottom: 60, // ✅ ADD THIS
 }}
 
-          onScroll={(e) => {
-            const { layoutMeasurement, contentOffset, contentSize } =
-              e.nativeEvent;
+        onScroll={(e) => {
+  const { layoutMeasurement, contentOffset, contentSize } =
+    e.nativeEvent;
 
-            const distanceFromBottom =
-              contentSize.height -
-              (layoutMeasurement.height + contentOffset.y);
+  const distanceFromBottom =
+    contentSize.height -
+    (layoutMeasurement.height + contentOffset.y);
 
-            isAtBottom.current = distanceFromBottom < 80;
-          }}
+  const atBottom = distanceFromBottom < 60;
+
+  isAtBottom.current = atBottom;
+
+  setShowScrollBtn(!atBottom);
+
+  if (atBottom) {
+    setNewMsgCount(0);
+  }
+}}
 
           scrollEventThrottle={16}
 
@@ -519,60 +498,91 @@ maintainVisibleContentPosition={{
 
             /* 💬 MESSAGE */
             return (
-              <MessageItem
-                item={item}
-                isMe={item.senderId === currentUserId}
-                theme={theme}
-                avatar={user?.image || ""}
-                isGrouped={item.isGrouped} // 🔥 IMPORTANT
-                onScrollTo={handleScrollTo}
-                highlightId={highlightId}
-                onReply={setReplyMsg}
-                onLongPress={(msg: any) => {
-                  setReactionMsg(null);
-                  setSelectedMsg(msg);
-                }}
-                onReact={(msg: any) => {
-                  if (!tapRef.current[msg._id]) {
-                    tapRef.current[msg._id] = { count: 0, timer: null };
-                  }
+          <MessageItem
+  item={item}
+  isMe={item.senderId === currentUserId}
+  theme={theme}
+  avatar={user?.image || ""}
+  isGrouped={item.isGrouped}
+  isLast={
+    item.type === "message" &&
+    item._id === (messages[messages.length - 1]?._id)
+  } // ✅ ADD THIS
+  onScrollTo={handleScrollTo}
+  highlightId={highlightId}
+  onReply={setReplyMsg}
+  onLongPress={(msg: any) => {
+    setReactionMsg(null);
+    setSelectedMsg(msg);
+  }}
+  onReact={(msg: any) => {
+    if (!tapRef.current[msg._id]) {
+      tapRef.current[msg._id] = { count: 0, timer: null };
+    }
 
-                  const t = tapRef.current[msg._id];
-                  t.count++;
+    const t = tapRef.current[msg._id];
+    t.count++;
 
-                  if (t.timer) clearTimeout(t.timer);
+    if (t.timer) clearTimeout(t.timer);
 
-                  t.timer = setTimeout(() => {
-                    const taps = t.count;
+    t.timer = setTimeout(() => {
+      const taps = t.count;
 
-                    if (taps === 2) {
-                      const already = msg.reactions?.some(
-                        (r: any) => r.value === "❤️"
-                      );
+      if (taps === 2) {
+        const already = msg.reactions?.some(
+          (r: any) => r.value === "❤️"
+        );
 
-                      if (!already) {
-                        toggleReaction({
-                          messageId: msg._id,
-                          reaction: "❤️",
-                        });
-                      }
-                    }
+        if (!already) {
+          toggleReaction({
+            messageId: msg._id,
+            reaction: "❤️",
+          });
+        }
+      }
 
-                    if (taps === 3) {
-                      setReactionMsg(msg);
-                    }
+      if (taps === 3) {
+        setReactionMsg(msg);
+      }
 
-                    tapRef.current[msg._id] = {
-                      count: 0,
-                      timer: null,
-                    };
-                  }, 250);
-                }}
-              />
+      tapRef.current[msg._id] = {
+        count: 0,
+        timer: null,
+      };
+    }, 250);
+  }}
+/>
             );
           }}
         />
         )}
+
+{newMsgCount > 0 && (
+  <TouchableOpacity
+    onPress={() => {
+      scrollToBottom(true);
+      setNewMsgCount(0);
+    }}
+    style={{
+      position: "absolute",
+      alignSelf: "center",
+      bottom: 70,
+      backgroundColor: "rgba(255,255,255,0.12)",
+      backdropFilter: "blur(10px)",
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 20,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    }}
+  >
+    <Ionicons name="arrow-down" size={16} color="#fff" />
+    <Text style={{ color: "#fff", fontSize: 12 }}>
+      {newMsgCount}
+    </Text>
+  </TouchableOpacity>
+)}
 
         {systemMsg && (
   <View
@@ -596,7 +606,9 @@ maintainVisibleContentPosition={{
 )}
 
         {/* ✍️ TYPING */}
-  <TypingDots typing={!!typing?.isTyping} avatar={user?.image} />
+{typing?.isTyping && (
+  <TypingDots typing avatar={user?.image} />
+)}
 
         {/* 🔁 REPLY BAR */}
         {replyMsg && (

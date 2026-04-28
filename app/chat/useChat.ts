@@ -46,29 +46,31 @@ export default function useChat(userId: Id<"users">) {
   const setTyping = useMutation(api.messages.setTyping);
   const markAsSeen = useMutation(api.messages.markAsSeen);
 
+
+  const isTypingRef = useRef(false);
   /* 🔥 OPTIMISTIC */
   const [optimisticMsgs, setOptimisticMsgs] = useState<any[]>([]);
   const real = data?.messages ?? [];
 
-  // ✅ auto remove optimistic when real arrives
-  useEffect(() => {
-    if (!real.length) return;
 
-    setOptimisticMsgs((prev) =>
-      prev.filter(
-        (o) => !real.some((r) => r.clientId === o.clientId)
-      )
-    );
-  }, [real]);
+  
 const messages = React.useMemo(() => {
-  const merged = [...real];
+  const map = new Map<string, any>();
 
-  for (const o of optimisticMsgs) {
-    const exists = real.find((r) => r.clientId === o.clientId);
-    if (!exists) merged.push(o);
+  // ✅ first add real messages
+  for (const r of real) {
+    const key = r.clientId || r._id;
+    map.set(key, r);
   }
 
-  return merged;
+  // ✅ then add optimistic ONLY if not already replaced
+  for (const o of optimisticMsgs) {
+    if (!map.has(o.clientId)) {
+      map.set(o.clientId, o);
+    }
+  }
+
+  return Array.from(map.values());
 }, [real, optimisticMsgs]);
 
   const currentUserId = data?.currentUserId;
@@ -84,7 +86,8 @@ const messages = React.useMemo(() => {
   const typingTimeout = useRef<any>(null);
 
   const handleTyping = (t: string) => {
-    setText(t);
+setText(t);
+isTypingRef.current = true;
 
     if (typingTimeout.current) {
       clearTimeout(typingTimeout.current);
@@ -101,6 +104,7 @@ const messages = React.useMemo(() => {
         isTyping: false,
       });
     }, 800);
+    isTypingRef.current = false;
   };
 
   /* 🔥 SEND MESSAGE */
