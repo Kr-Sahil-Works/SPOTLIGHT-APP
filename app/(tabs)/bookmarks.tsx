@@ -13,11 +13,10 @@ import {
   Animated,
   FlatList,
   Modal,
-  Platform,
-  Text,
+  Platform, Image as RNImage, Text,
   ToastAndroid,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 
@@ -130,11 +129,12 @@ showToast("Image downloaded ✅");
                 }}
               >
                 <Image
-                  source={item.imageUrl}
+                source={{ uri: item.imageUrl }}
                   style={{ width: "100%", aspectRatio: 1 }}
                   contentFit="cover"
                   cachePolicy="memory-disk"
-                    allowDownscaling // 🔥 FIX
+                    allowDownscaling 
+                    recyclingKey={item._id}
                 />
               </View>
             </TouchableOpacity>
@@ -169,18 +169,17 @@ showToast("Image downloaded ✅");
     alignItems: "center",
     transform: [{ scale }],
   }}
+  renderToHardwareTextureAndroid={false}
 >
-              <Image
-                source={selectedImage}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: 12, // ✅ aesthetics
-                }}
-                contentFit="contain"
-                transition={200}
-                  allowDownscaling // 🔥 FIX
-              />
+             <RNImage
+  source={{ uri: selectedImage }}
+  style={{
+    width: "100%",
+    height: "100%",
+    borderRadius: 12,
+  }}
+  resizeMode="contain"
+/> 
             </Animated.View>
           )}
 {showSuccess && (

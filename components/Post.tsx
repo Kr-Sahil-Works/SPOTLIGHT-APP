@@ -149,20 +149,18 @@ export default function Post({ post }: PostProps) {
           </View>
         )}
 
-        <Image
-          source={{ uri: post.imageUrl }}
-          style={[
-            styles.postImage,
-            {
-              position: loaded ? "relative" : "absolute",
-              opacity: loaded ? 1 : 0,
-            },
-          ]}
-          contentFit="cover"
-          transition={300}
-          placeholder={{ blurhash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH" }} // 🔥 blur
-          onLoadEnd={() => setLoaded(true)}
-        />
+    <Image
+  source={{ uri: post.imageUrl }}
+  style={[
+    styles.postImage,
+    {
+      position: loaded ? "relative" : "absolute",
+      opacity: loaded ? 1 : 0,
+    },
+  ]}
+  contentFit="cover"
+  onLoadEnd={() => setLoaded(true)}
+/>
       </View>
 
       {/* ACTIONS */}

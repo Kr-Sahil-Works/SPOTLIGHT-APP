@@ -22,9 +22,11 @@ export default function Comment({ comment }: { comment: Comment }) {
       
       {/* 🔥 AVATAR */}
       {hasImage ? (
-  <Image
+<Image
   source={{ uri: comment.user.image! }}
   style={styles.commentAvatar}
+  contentFit="cover"
+  cachePolicy="memory-disk"
 />
       ) : (
         <View

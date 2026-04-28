@@ -1,71 +1,66 @@
 {
-"expo": {
-"name": "SPOTLIGHT-APP",
-"slug": "SPOTLIGHT-APP",
-"version": "1.0.0",
-"orientation": "portrait",
-"icon": "./assets/images/icon.png",
-"scheme": "spotlightapp",
-"userInterfaceStyle": "automatic",
-
-"assetBundlePatterns": ["**/*"],
-
-"updates": {
-  "enabled": false
-},
-
-"ios": {
-  "supportsTablet": true,
-  "infoPlist": {
-    "NSPhotoLibraryAddUsageDescription": "Allow saving images to your gallery",
-    "NSPhotoLibraryUsageDescription": "Allow access to your photos"
-  }
-},
-
-"android": {
-  "package": "com.spotlight.chat",
-  "versionCode": 1,
-  "softwareKeyboardLayoutMode": "resize",
-  "permissions": ["READ_MEDIA_IMAGES"],
-  "adaptiveIcon": {
-    "foregroundImage": "./assets/images/icon.png",
-    "backgroundColor": "#161616"
-  },
-  "predictiveBackGestureEnabled": false
-},
-
-"web": {
-  "output": "static"
-},
-
-"plugins": [
-  "expo-router",
-  [
-    "expo-splash-screen",
-    {
-      "image": "./assets/images/splash-icon.png",
-      "imageWidth": 200,
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "dark": {
-        "backgroundColor": "#000000"
+  "expo": {
+    "name": "SPOTLIGHT-APP",
+    "slug": "SPOTLIGHT-APP",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "spotlightapp",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "updates": {
+      "enabled": false
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "Allow saving images to your gallery",
+        "NSPhotoLibraryUsageDescription": "Allow access to your photos"
+      }
+    },
+    "android": {
+      "package": "com.spotlight.chat",
+      "versionCode": 1,
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "READ_MEDIA_IMAGES"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#161616"
+      }
+    },
+    "web": {
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "59f5a6cf-10ee-4edf-bc4c-346d00c2ef9c"
       }
     }
-  ],
-  "expo-secure-store"
-],
-
-"experiments": {
-  "typedRoutes": true,
-  "reactCompiler": true
-},
-
-"extra": {
-  "router": {},
-  "eas": {
-    "projectId": "59f5a6cf-10ee-4edf-bc4c-346d00c2ef9c"
   }
-}
-
-}
 }

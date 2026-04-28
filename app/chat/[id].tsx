@@ -1,14 +1,12 @@
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Keyboard,
   KeyboardAvoidingView,
-  Linking,
-  Text,
+  Linking, Image as RNImage, Text,
   TextInput,
   TouchableOpacity,
   View
@@ -373,21 +371,21 @@ contentContainerStyle={{ padding: 12 }}
           <Ionicons name="arrow-back" size={26} color="#fff" />
         </TouchableOpacity>
 
-        <Image
-          source={
-  image
-    ? { uri: image }
-    : user?.image
-    ? { uri: user.image }
-    : require("@/assets/images/iconbg.png")
-}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            marginLeft: 10,
-          }}
-        />
+   <RNImage
+  source={
+    image
+      ? { uri: image }
+      : user?.image
+      ? { uri: user.image }
+      : require("@/assets/images/iconbg.png")
+  }
+  style={{
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginLeft: 10,
+  }}
+/>
 
         <Text style={{ color: "#fff", marginLeft: 10, fontSize: 16 }}>
           {name || user?.fullname || ""}

@@ -17,6 +17,13 @@
     },
     "production": {
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_dHJ1c3R5LXRhcnBvbi02Ni5jbGVyay5hY2NvdW50cy5kZXYk",
+        "EXPO_PUBLIC_CLERK_ISSUER_URL": "https://trusty-tarpon-66.clerk.accounts.dev",
+        "EXPO_PUBLIC_CONVEX_DEPLOYMENT": "dev:reminiscent-duck-506",
+        "EXPO_PUBLIC_CONVEX_URL": "https://reminiscent-duck-506.convex.cloud",
+        "EXPO_PUBLIC_CONVEX_SITE_URL": "https://reminiscent-duck-506.convex.site"
+      },
       "android": {
         "buildType": "apk"
       }

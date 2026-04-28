@@ -1,12 +1,10 @@
-import { Image } from "expo-image";
 import { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    Modal,
-    PanResponder,
-    Pressable,
-    View,
+  Animated,
+  Dimensions,
+  Modal,
+  PanResponder,
+  Pressable, Image as RNImage, View
 } from "react-native";
 
 const { height } = Dimensions.get("window");
@@ -145,11 +143,11 @@ export default function StoryViewer({
         </View>
 
         {/* 🔥 STORY IMAGE */}
-        <Image
-          source={story.story}
-          style={{ width: "100%", height: height * 0.85 }}
-          contentFit="cover"
-        />
+       <RNImage
+  source={{ uri: story.story }}
+  style={{ width: "100%", height: height * 0.85 }}
+  resizeMode="cover"
+/>
 
         {/* 🔥 TAP ZONES (FIXED + HOLD SUPPORT) */}
         <View

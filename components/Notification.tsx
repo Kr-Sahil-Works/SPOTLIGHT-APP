@@ -18,12 +18,12 @@ export default function Notification({ notification }: any) {
   asChild
 >
           <TouchableOpacity style={styles.avatarContainer} activeOpacity={0.8}>
-            <Image
-              source={notification.sender.image}
-              style={styles.avatar}
-              contentFit="cover"
-              transition={200}
-            />
+         <Image
+  source={{ uri: notification.sender.image }}
+  style={styles.avatar}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+/>
             <View style={styles.iconBadge}>
               {notification.type === "like" ? (
                 <Ionicons name="heart" size={12} color={COLORS.primary} />
@@ -68,12 +68,12 @@ export default function Notification({ notification }: any) {
       </View>
 
       {notification.post && (
-        <Image
-          source={notification.post.imageUrl}
-          style={styles.postImage}
-          contentFit="cover"
-          transition={200}
-        />
+      <Image
+  source={{ uri: notification.post.imageUrl }}
+  style={styles.postImage}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+/>
       )}
     </View>
   );

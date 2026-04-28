@@ -15,8 +15,8 @@ import {
   View,
 } from "react-native";
 
-import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
+import { Image as RNImage } from "react-native";
 
 import { api } from "@/convex/_generated/api";
 import { useMutation } from "convex/react";
@@ -131,7 +131,7 @@ export default function CreateScreen() {
   return (
 
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior="padding"
       style={styles.container}
       keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
@@ -192,12 +192,11 @@ export default function CreateScreen() {
 
             <View style={styles.imageSection}>
 
-              <Image
-                source={selectedImage}
-                style={styles.previewImage}
-                contentFit="cover"
-                transition={200}
-              />
+              <RNImage
+  source={{ uri: selectedImage }}
+  style={styles.previewImage}
+  resizeMode="cover"
+/>
 
               <TouchableOpacity
                 style={styles.changeImageButton}
@@ -223,12 +222,11 @@ export default function CreateScreen() {
 
               <View style={styles.captionContainer}>
 
-                <Image
-                  source={user?.imageUrl}
-                  style={styles.userAvatar}
-                  contentFit="cover"
-                  transition={200}
-                />
+               <RNImage
+  source={{ uri: user?.imageUrl }}
+  style={styles.userAvatar}
+  resizeMode="cover"
+/>
 
                 <TextInput
                   style={styles.captionInput}

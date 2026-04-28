@@ -18,6 +18,7 @@ import {
   FlatList,
   Modal,
   PanResponder,
+  Image as RNImage,
   ScrollView,
   Share,
   Text,
@@ -195,7 +196,10 @@ return (
     shadowRadius: 12,
   }}
 >
-  <Image source={currentUser.image} style={styles.avatar} />
+<RNImage
+  source={{ uri: currentUser.image }}
+  style={styles.avatar}
+/>
 </Animated.View>
 
           <View style={styles.statsContainer}>
@@ -248,10 +252,9 @@ return (
             onPress={() => setSelectedPost(item)}
           >
             <Image
-              source={item.imageUrl}
+              source={{ uri: item.imageUrl }}
               style={styles.gridImage}
               contentFit="cover"
-              transition={200}
             />
           </TouchableOpacity>
         )}
@@ -327,14 +330,14 @@ return (
           }}
         >
         {selectedPost?.imageUrl && (
-  <Image
-    source={{ uri: selectedPost.imageUrl }}
-    style={{
-      width: "100%",
-      aspectRatio: 1,
-    }}
-    contentFit="cover"
-  />
+<RNImage
+  source={{ uri: selectedPost.imageUrl }}
+  style={{
+    width: "100%",
+    aspectRatio: 1,
+  }}
+  resizeMode="cover"
+/>
 )}
         </TouchableOpacity>
       </Animated.View>

@@ -34,14 +34,14 @@ export default function Story({
           !story.hasStory && styles.noStory,
         ]}
       >
-        <Image
-          source={error ? { uri: FALLBACK } : story.avatar}
-          style={styles.storyAvatar}
-          contentFit="cover"
-          transition={200}
-          blurRadius={error ? 6 : 0}
-          onError={() => setError(true)}
-        />
+       <Image
+  source={error ? { uri: FALLBACK } : story.avatar}
+  style={styles.storyAvatar}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  blurRadius={error ? 6 : 0}
+  onError={() => setError(true)}
+/>
       </View>
 
       <Text style={styles.storyUsername} numberOfLines={1}>

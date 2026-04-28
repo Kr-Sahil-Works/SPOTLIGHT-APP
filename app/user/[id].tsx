@@ -5,9 +5,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { styles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
-import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { FlatList, Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Pressable, Image as RNImage, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -41,12 +40,10 @@ export default function UserProfileScreen() {
           <View style={styles.avatarAndStats}>
             {/* AVATAR */}
          {profile.image && (
-  <Image
-    source={{ uri: profile.image }}
-    style={styles.avatar}
-    contentFit="cover"
-    cachePolicy="memory-disk"
-  />
+<RNImage
+  source={{ uri: profile.image }}
+  style={styles.avatar}
+/>
 )}
 
             {/* STATS */}
@@ -107,15 +104,12 @@ export default function UserProfileScreen() {
               numColumns={3}
               scrollEnabled={false}
               renderItem={({ item }) => (
-                <TouchableOpacity style={styles.gridItem}>
-                  <Image
-                    source={item.imageUrl}
-                    style={styles.gridImage}
-                    contentFit="cover"
-                    transition={200}
-                    cachePolicy="memory-disk"
-                  />
-                </TouchableOpacity>
+               <TouchableOpacity style={styles.gridItem}>
+<RNImage
+  source={{ uri: item.imageUrl }}
+  style={styles.gridImage}
+/>
+</TouchableOpacity>
               )}
               keyExtractor={(item) => item._id}
             />

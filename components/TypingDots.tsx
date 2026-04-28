@@ -87,19 +87,21 @@ export default function TypingDots({
   }}
 >
       {/* AVATAR */}
-      <Image
-        source={
-          avatar
-            ? { uri: avatar }
-            : require("@/assets/images/iconbg.png")
-        }
-        style={{
-          width: 28,
-          height: 28,
-          borderRadius: 14,
-          marginRight: 6,
-        }}
-      />
+  <Image
+  source={
+    avatar
+      ? { uri: avatar }
+      : require("@/assets/images/iconbg.png")
+  }
+  style={{
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginRight: 6,
+  }}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+/>
 
       {/* BUBBLE */}
       <View
