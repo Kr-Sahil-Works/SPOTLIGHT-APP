@@ -37,22 +37,31 @@ const MessageItem = React.memo(function MessageItem({
   onScrollTo,
   highlightId,
   isGrouped,
-}: any) {
-  const entryX = useRef(new Animated.Value(isMe ? 40 : -40)).current;
+  isLast,
+}: any & { isLast?: boolean }) {
+const entryX = useRef(new Animated.Value(0)).current;
+  const hasAnimated = useRef(false);
   const panX = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(1)).current;
   const replied = useRef(false);
 
   /* 🚀 ENTRY ANIMATION (RUN ONCE) */
 useEffect(() => {
-  if (item.optimistic) return; // ❗ skip fake message
+  // ✅ skip ONLY fake message
+  if (item.optimistic) return;
 
-  Animated.spring(entryX, {
-    toValue: 0,
-    friction: 7,
-    tension: 80,
-    useNativeDriver: true,
-  }).start();
+  // ✅ run animation ONLY once per mount
+  if (hasAnimated.current) return;
+  hasAnimated.current = true;
+
+entryX.setValue(isMe ? 20 : -20);
+
+Animated.spring(entryX, {
+  toValue: 0,
+  friction: 6,
+  tension: 70,
+  useNativeDriver: true,
+}).start();
 }, []);
 
   /* 🔥 INTERPOLATIONS */

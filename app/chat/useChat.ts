@@ -1,7 +1,7 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function useChat(userId: Id<"users">) {
   const [text, setText] = useState("");
@@ -60,20 +60,16 @@ export default function useChat(userId: Id<"users">) {
       )
     );
   }, [real]);
+const messages = React.useMemo(() => {
+  const merged = [...real];
 
-  // ✅ merge safely
-const messages = [...real, ...optimisticMsgs]
-  .filter(
-    (m, i, arr) =>
-      !arr.some(
-        (x, j) =>
-          j !== i &&
-          x.clientId &&
-          m.clientId &&
-          x.clientId === m.clientId
-      )
-  )
-  .sort((a, b) => a.createdAt - b.createdAt);
+  for (const o of optimisticMsgs) {
+    const exists = real.find((r) => r.clientId === o.clientId);
+    if (!exists) merged.push(o);
+  }
+
+  return merged;
+}, [real, optimisticMsgs]);
 
   const currentUserId = data?.currentUserId;
   const themeIndex = data?.themeIndex ?? 0;

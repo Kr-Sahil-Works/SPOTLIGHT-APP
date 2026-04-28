@@ -8,7 +8,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Linking,
-  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -119,11 +118,13 @@ const themeAnim = useRef(new Animated.Value(0)).current;
 const [changingTheme, setChangingTheme] = useState(false);
 const [systemMsg, setSystemMsg] = useState<any | null>(null);
 const [wmText, setWmText] = useState("");
-const [kbOffset, setKbOffset] = useState(30); // default fallback
+
+
 const themeFade = useRef(new Animated.Value(1)).current;
 const isAtBottom = useRef(true);
 const lastMsgIdRef = useRef<string | null>(null);
 const scrollLock = useRef(false);
+const keyboardOpen = useRef(false);
 
 const setActiveChat = useMutation(api.users.setActiveChat);
 
@@ -169,19 +170,18 @@ useEffect(() => {
 
 
 useEffect(() => {
- const show = Keyboard.addListener("keyboardDidShow", (e) => {
-  const h = e.endCoordinates.height;
+  const show = Keyboard.addListener("keyboardDidShow", (e) => {
+    keyboardOpen.current = true;
 
-  const offset = Math.max(25, Math.min(50, h * 0.07));
-  setKbOffset(offset);
+    const h = e.endCoordinates.height; // ✅ ADD THIS
 
-requestAnimationFrame(() => {
-  scrollToBottom(false);
-});
-});
+    const offset = Math.max(25, Math.min(50, h * 0.07));
+
+  });
 
   const hide = Keyboard.addListener("keyboardDidHide", () => {
-    setKbOffset(30); // reset
+    keyboardOpen.current = false; // ✅ ALSO ADD THIS
+  
   });
 
   return () => {
@@ -197,9 +197,7 @@ const groupedMessages = React.useMemo(() => {
 
   const result: any[] = [];
 
-  const sorted = [...messages].sort(
-    (a, b) => a.createdAt - b.createdAt
-  );
+ const sorted = messages;
 
   for (let i = 0; i < sorted.length; i++) {
     const current = sorted[i];
@@ -268,14 +266,19 @@ useEffect(() => {
   const lastMsg = messages[messages.length - 1];
   if (!lastMsg?._id) return;
 
-  // ❗ prevent re-scroll on same message update
-  if (lastMsgIdRef.current === lastMsg._id) return;
-
-  lastMsgIdRef.current = lastMsg._id;
-
-  if (isAtBottom.current) {
-    scrollToBottom(true);
+  // 🔥 ONLY scroll if NEW message (ignore same clientId replace)
+  if (
+    lastMsgIdRef.current === lastMsg._id ||
+    lastMsgIdRef.current === lastMsg.clientId
+  ) {
+    return;
   }
+
+  lastMsgIdRef.current = lastMsg._id ?? lastMsg.clientId;
+
+if (isAtBottom.current && !keyboardOpen.current) {
+  scrollToBottom(true);
+}
 }, [messages]);
 
   /* 🎬 SMOOTH THEME ANIMATION */
@@ -361,8 +364,8 @@ const openInstagram = async () => {
 return (
   <KeyboardAvoidingView
     style={{ flex: 1, backgroundColor: theme.bg }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    keyboardVerticalOffset={Platform.OS === "ios" ? 80 : kbOffset}
+behavior="padding"
+keyboardVerticalOffset={40}
   >
     <View style={{ flex: 1 }}>
 
@@ -441,23 +444,26 @@ disabled={changingTheme} style={{ marginLeft: 14 }}>
   ref={flatListRef}
   data={groupedMessages}
   {...{
-    estimatedItemSize: 80,
+    estimatedItemSize: 72,
   }}
 getItemType={(item) => item.type}
-  keyExtractor={(item) =>
-    String(item._id || item.id)
-  }
-
+keyExtractor={(item) =>
+  item.type === "message"
+    ? String(item.clientId || item._id)
+    : String(item.id)
+}
+ListFooterComponent={
+  <View style={{ height: typing?.isTyping ? 8 : 4 }} />
+}
   keyboardDismissMode="interactive"
   keyboardShouldPersistTaps="handled"
 maintainVisibleContentPosition={{
-  autoscrollToBottomThreshold: 10,
-  animateAutoScrollToBottom: false,
+  autoscrollToBottomThreshold: 0,
+  animateAutoScrollToBottom: false, 
 }}
-  contentContainerStyle={{
-    padding: 12,
-    paddingBottom: 25,
-  }}
+ contentContainerStyle={{
+  padding: 12,
+}}
 
           onScroll={(e) => {
             const { layoutMeasurement, contentOffset, contentSize } =
@@ -652,9 +658,6 @@ maintainVisibleContentPosition={{
 
               animateSend();
               handleSend();
-          setTimeout(() => {
-  scrollToBottom(true);
-}, 40);
             }}
           >
             <Animated.View

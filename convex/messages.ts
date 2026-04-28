@@ -542,3 +542,24 @@ export const setChatTheme = mutation({
     });
   },
 });
+
+export const updateNote = mutation({
+  args: {
+    id: v.id("notes"),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    const note = await ctx.db.get(args.id);
+    if (!note) return;
+
+    // safety
+    if (note.userId.toString() !== user._id.toString()) return;
+
+    await ctx.db.patch(args.id, {
+      content: args.content,
+      updatedAt: Date.now(),
+    });
+  },
+});

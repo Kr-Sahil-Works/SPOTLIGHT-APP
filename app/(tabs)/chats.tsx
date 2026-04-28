@@ -49,8 +49,8 @@ export default function Chats() {
       >
         <Text
           style={{
-            color: "#fff",
-            fontSize: 26,
+            color: "#22c55e",
+            fontSize: 22,
             fontWeight: "700",
             letterSpacing: 0.5,
           }}
@@ -72,7 +72,13 @@ export default function Chats() {
               borderColor: "rgba(255,255,255,0.06)",
             }}
           >
-            <Ionicons name="document-text-outline" size={20} color="#4ade80" />
+           <Image
+  source={require("@/assets/images/notes.png")}
+  style={{
+    width: 20,
+    height: 20,
+  }}
+/>
           </TouchableOpacity>
 
           {/* CALCULATOR */}
@@ -87,7 +93,13 @@ export default function Chats() {
               borderColor: "rgba(255,255,255,0.06)",
             }}
           >
-            <Ionicons name="calculator-outline" size={20} color="#f59e0b" />
+          <Image
+  source={require("@/assets/images/calc.png")}
+  style={{
+    width: 20,
+    height: 20,
+  }}
+/>
           </TouchableOpacity>
         </View>
       </View>
@@ -163,9 +175,14 @@ export default function Chats() {
                 marginHorizontal: 10,
                 marginBottom: 6,
                 borderRadius: 16,
-                backgroundColor: "rgba(255,255,255,0.025)",
                 borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.04)",
+
+                backgroundColor: "#0f0f0f",
+borderColor: "rgba(255,255,255,0.08)",
+shadowColor: "#000",
+shadowOpacity: 0.4,
+shadowRadius: 10,
+elevation: 3,
               }}
             >
               {/* 🔥 AVATAR */}
@@ -208,16 +225,18 @@ export default function Chats() {
                 </Text>
 
                 {/* OPTIONAL subtitle */}
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    color: "#777",
-                    fontSize: 12,
-                    marginTop: 2,
-                  }}
-                >
-                  Tap to chat
-                </Text>
+              <Text
+  numberOfLines={1}
+  style={{
+    color: item.lastMessage ? "#ccc" : "#777",
+    fontSize: 12,
+    marginTop: 2,
+  }}
+>
+  {item.lastMessage?.text
+    ? item.lastMessage.text
+    : "Tap to chat"}
+</Text>
               </View>
 
               {/* 🔥 RIGHT ICON */}

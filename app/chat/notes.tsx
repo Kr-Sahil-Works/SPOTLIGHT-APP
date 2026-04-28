@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Dimensions,
   FlatList,
@@ -10,11 +11,14 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from "react-native";
 
+import { Id } from "@/convex/_generated/dataModel";
 import { BlurView } from "expo-blur";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
+import { KeyboardAvoidingView } from "react-native";
 
 const { height } = Dimensions.get("window");
 
@@ -24,12 +28,17 @@ export default function Notes() {
   const notes: any = useQuery(api.messages.getNotes) || [];
   const saveNote = useMutation(api.messages.saveNote);
   const deleteNote = useMutation(api.messages.deleteNote);
+  const updateNote = useMutation(api.messages.updateNote);
+const inputRef = useRef<TextInput>(null);
 
   const [text, setText] = useState("");
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const [pinned, setPinned] = useState<string[]>([]);
+
+  
+
+const [pinned, setPinned] = useState<Id<"notes">[]>([]);
 
   const translateY = useRef(new Animated.Value(height)).current;
   const toastAnim = useRef(new Animated.Value(0)).current;
@@ -44,17 +53,41 @@ export default function Notes() {
     ]).start();
   };
 
-  const openSheet = (note?: any) => {
-    if (note) {
-      setEditing(note);
-      setText(note.content);
-    }
-    setOpen(true);
-    Animated.spring(translateY, {
-      toValue: 0,
-      useNativeDriver: true,
-    }).start();
+  const confirmDelete = (id: Id<"notes">) => {
+    Alert.alert(
+      "Delete Note",
+      "Are you sure?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteNote({ id });
+            showToast("Deleted");
+          },
+        },
+      ]
+    );
   };
+
+const openSheet = (note?: any) => {
+  if (note) {
+    setEditing(note);
+    setText(note.content);
+  }
+  setOpen(true);
+
+  Animated.spring(translateY, {
+    toValue: 0,
+    useNativeDriver: true,
+  }).start();
+
+  // ✅ OPEN KEYBOARD
+  setTimeout(() => {
+    inputRef.current?.focus();
+  }, 100);
+};
 
   const closeSheet = () => {
     Animated.timing(translateY, {
@@ -81,30 +114,61 @@ export default function Notes() {
   return (
     <View style={{ flex: 1, backgroundColor: "#000", padding: 16 }}>
 
-      {/* CLOSE */}
-      <TouchableOpacity onPress={() => router.replace("/(tabs)/chats")}>
-        <Ionicons name="close" size={28} color="#fff" />
-      </TouchableOpacity>
+    <View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  }}
+>
+  {/* LEFT - Notes */}
+  <Text
+    style={{
+      color: "#22c55e",
+      fontSize: 18,
+      fontWeight: "600",
+    }}
+  >
+    Notes
+  </Text>
 
-      {/* 🔥 GLASS SEARCH */}
-      <BlurView
-        intensity={40}
-        tint="dark"
-        style={{
-          marginTop: 12,
-          borderRadius: 30,
-          overflow: "hidden",
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 14,
-            height: 44,
-            backgroundColor: "rgba(255,255,255,0.05)",
-          }}
-        >
+  {/* RIGHT - Back Arrow */}
+  <TouchableOpacity
+    onPress={() => router.replace("/(tabs)/chats")}
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    }}
+  >
+    <Ionicons name="chevron-back" size={22} color="#22c55e" />
+    <Text
+      style={{
+        color: "#22c55e",
+        fontSize: 16,
+        fontWeight: "500",
+      }}
+    >
+      Back
+    </Text>
+  </TouchableOpacity>
+</View>
+
+      {/* SEARCH (GLASS) */}
+      <BlurView intensity={50} tint="dark" style={{
+        marginTop: 12,
+        borderRadius: 30,
+        marginBottom:20,
+        overflow: "hidden",
+      }}>
+        <View style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 14,
+          height: 44,
+          backgroundColor: "rgba(255,255,255,0.06)",
+        }}>
           <Ionicons name="search" size={18} color="#aaa" />
           <TextInput
             placeholder="Search"
@@ -124,57 +188,69 @@ export default function Notes() {
           const isPinned = pinned.includes(item._id);
 
           return (
-            <TouchableOpacity
-              onLongPress={async () => {
-                await deleteNote({ id: item._id });
-                showToast("Deleted");
-              }}
-              style={{
-                backgroundColor: "#111",
-                padding: 14,
-                borderRadius: 16,
-                marginTop: 12,
-              }}
-            >
-              <Text style={{ color: "#fff" }}>{item.content}</Text>
+           <TouchableOpacity
+  activeOpacity={0.9}
+  onLongPress={() => confirmDelete(item._id)}
+  style={{
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 20,
+    marginTop: 12,
+    marginBottom: 4,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  }}
+>
+  <Text style={{ color: "#fff", fontSize: 15 }}>
+    {item.content}
+  </Text>
 
-              <View style={{ flexDirection: "row", gap: 16, marginTop: 10 }}>
+  {/* ACTIONS */}
+  <View
+    style={{
+      flexDirection: "row",
+      position: "absolute",
+      bottom: 10,
+      right: 10,
+      gap: 10,
+    }}
+  >
+    <TouchableOpacity
+      onPress={async () => {
+        await Clipboard.setStringAsync(item.content);
+        showToast("Copied");
+      }}
+      style={actionBtn("#4ade80")}
+    >
+      <Ionicons name="copy-outline" size={20} color="#4ade80" />
+    </TouchableOpacity>
 
-                {/* COPY */}
-                <Ionicons
-                  name="copy-outline"
-                  size={18}
-                  color="#4ade80"
-                  onPress={async () => {
-                    await Clipboard.setStringAsync(item.content);
-                    showToast("Copied");
-                  }}
-                />
+    <TouchableOpacity
+      onPress={() => {
+        setPinned((prev) =>
+          prev.includes(item._id)
+            ? prev.filter((id) => id !== item._id)
+            : [...prev, item._id]
+        );
+        showToast(isPinned ? "Unpinned" : "Pinned");
+      }}
+      style={actionBtn("#facc15")}
+    >
+      <Ionicons
+        name={isPinned ? "bookmark" : "bookmark-outline"}
+        size={20}
+        color="#facc15"
+      />
+    </TouchableOpacity>
 
-                {/* PIN */}
-                <Ionicons
-                  name={isPinned ? "bookmark" : "bookmark-outline"}
-                  size={18}
-                  color="#facc15"
-                  onPress={() => {
-                    setPinned((prev) =>
-                      prev.includes(item._id)
-                        ? prev.filter((id) => id !== item._id)
-                        : [...prev, item._id]
-                    );
-                    showToast(isPinned ? "Unpinned" : "Pinned");
-                  }}
-                />
-
-                {/* EDIT */}
-                <Ionicons
-                  name="create-outline"
-                  size={18}
-                  color="#60a5fa"
-                  onPress={() => openSheet(item)}
-                />
-              </View>
-            </TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => openSheet(item)}
+      style={actionBtn("#60a5fa")}
+    >
+      <Ionicons name="create-outline" size={20} color="#60a5fa" />
+    </TouchableOpacity>
+  </View>
+</TouchableOpacity>
           );
         }}
       />
@@ -197,64 +273,99 @@ export default function Notes() {
         <Ionicons name="add" size={28} color="#000" />
       </TouchableOpacity>
 
-      {/* 🔥 BOTTOM SHEET */}
-      {open && (
-        <Animated.View
-          style={{
-            position: "absolute",
-            bottom: 0,
-            width: "100%",
-            height: height * 0.5,
-            transform: [{ translateY }],
-            backgroundColor: "#111",
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            padding: 16,
-          }}
-        >
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            placeholder="Write note..."
-            placeholderTextColor="#666"
-            multiline
-            style={{
-              color: "#fff",
-              backgroundColor: "#1a1a1a",
-              padding: 12,
-              borderRadius: 14,
-            }}
-          />
+      {/* SHEET */}
+   {open && (
+ <KeyboardAvoidingView
+  behavior="padding"
+  keyboardVerticalOffset={0}
+  style={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "flex-end",
+  }}
+>
+    <Animated.View
+      style={{
+        transform: [{ translateY }],
 
-          <TouchableOpacity
-            onPress={async () => {
-              if (!text.trim()) return;
-              await saveNote({ content: text });
-              showToast(editing ? "Updated" : "Saved");
-              closeSheet();
-            }}
-            style={{
-              marginTop: 14,
-              backgroundColor: "#22c55e",
-              padding: 12,
-              borderRadius: 14,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: "#000" }}>
-              {editing ? "Update" : "Save"}
-            </Text>
-          </TouchableOpacity>
+        backgroundColor: "#111",
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
 
-          <TouchableOpacity onPress={closeSheet}>
-            <Text style={{ color: "#888", marginTop: 10, textAlign: "center" }}>
-              Cancel
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+        paddingHorizontal: 12,
+        paddingTop: 14,
+        paddingBottom: 20,
+      }}
+    >
+      {/* INPUT */}
+      <TextInput
+        ref={inputRef}
+        value={text}
+        onChangeText={setText}
+        placeholder="Write note..."
+        placeholderTextColor="#666"
+        multiline
+        scrollEnabled
+        textAlignVertical="top"
 
-      {/* 🔥 TOAST */}
+        style={{
+          color: "#fff",
+          fontSize: 16,
+          minHeight: 60,
+          maxHeight: 180,
+          width: "100%",
+          backgroundColor: "#1a1a1a",
+          borderRadius: 16,
+          padding: 14,
+        }}
+      />
+
+      {/* SAVE */}
+      <TouchableOpacity
+        onPress={async () => {
+          if (!text.trim()) return;
+
+          if (editing) {
+            await updateNote({
+              id: editing._id,
+              content: text,
+            });
+          } else {
+            await saveNote({
+              content: text,
+            });
+          }
+
+          showToast(editing ? "Updated" : "Saved");
+          closeSheet();
+        }}
+        style={{
+          marginTop: 12,
+          backgroundColor: "#22c55e",
+          padding: 14,
+          borderRadius: 16,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ color: "#000", fontWeight: "600" }}>
+          {editing ? "Update" : "Save"}
+        </Text>
+      </TouchableOpacity>
+
+      {/* CANCEL */}
+      <TouchableOpacity onPress={closeSheet}>
+        <Text style={{ color: "#888", marginTop: 10, textAlign: "center" }}>
+          Cancel
+        </Text>
+      </TouchableOpacity>
+    </Animated.View>
+  </KeyboardAvoidingView>
+)}
+
+      {/* TOAST */}
       <Animated.View
         style={{
           position: "absolute",
@@ -280,3 +391,13 @@ export default function Notes() {
     </View>
   );
 }
+
+/* ACTION BUTTON STYLE */
+const actionBtn = (color: string): ViewStyle => ({
+  width: 38,
+  height: 38,
+  borderRadius: 19,
+  backgroundColor: "rgba(255,255,255,0.08)",
+  alignItems: "center",
+  justifyContent: "center",
+});
