@@ -143,8 +143,12 @@ export default function StoryViewer({
         </View>
 
         {/* 🔥 STORY IMAGE */}
-       <RNImage
-  source={{ uri: story.story }}
+ <RNImage
+  source={
+    typeof story.story === "number"
+      ? story.story   // local require()
+      : { uri: story.story } // remote URL
+  }
   style={{ width: "100%", height: height * 0.85 }}
   resizeMode="cover"
 />
