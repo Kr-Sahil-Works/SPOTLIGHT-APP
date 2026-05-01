@@ -3,12 +3,16 @@ import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/auth.styles";
 import { useSSO } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
+import * as AuthSession from "expo-auth-session";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { useRef, useState } from "react";
 import { Animated, Image, Pressable, Text, View } from "react-native";
 
+WebBrowser.maybeCompleteAuthSession();
+const redirectUrl = AuthSession.makeRedirectUri();
 
 export default function Login() {
 
@@ -72,45 +76,40 @@ const router = useRouter();
 
   };
 
-  const handleGoogleSignIn = async () => {
+const handleGoogleSignIn = async () => {
+  if (loading) return;
 
-    if(loading) return;
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  runSweep();
+  startMorph();
+  setLoading(true);
 
-    runSweep();
-    startMorph();
+  try {
+    const { createdSessionId, setActive, signIn } =
+      await startSSOFlow({
+        strategy: "oauth_google",
+      });
 
-    setLoading(true);
-
-
-    try{
-
-      const {createdSessionId,setActive} =
-        await startSSOFlow({strategy:"oauth_google"});
-if (setActive && createdSessionId) {
-  await setActive({ session: createdSessionId });
-
-  // 🚀 FORCE NAVIGATION (FIX)
-  router.replace("/");
-
-  return;
-}
-
-    }catch(error:any){
-
-      if(String(error).includes("already signed in")){
-        return;
-      }
-
-      console.error("OAuth error:",error);
-
-      resetMorph();
-      setLoading(false);
-
+    // 🔥 IMPORTANT: trigger external auth if needed
+    if (signIn?.firstFactorVerification?.externalVerificationRedirectURL) {
+      await WebBrowser.openAuthSessionAsync(
+        signIn.firstFactorVerification.externalVerificationRedirectURL.toString(),
+        "spotlightapp://"
+      );
     }
 
-  };
+    if (setActive && createdSessionId) {
+      await setActive({ session: createdSessionId });
+      router.replace("/");
+      return;
+    }
+  } catch (error: any) {
+    console.error("OAuth error:", error);
+    resetMorph();
+    setLoading(false);
+  }
+};
 
   const textOpacity = morph.interpolate({
     inputRange:[0,1],

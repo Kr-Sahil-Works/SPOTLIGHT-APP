@@ -1,5 +1,5 @@
-import { Loader } from "@/components/Loader";
 import Notification from "@/components/Notification";
+import NotificationsSkeleton from "@/components/NotificationsSkeleton";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/notifications.styles";
@@ -11,14 +11,14 @@ import { Animated, Easing, FlatList, Text, TouchableOpacity, View } from "react-
 
 
 export default function Notifications() {
-const notifications = useQuery(api.notifications.getNotifications) ?? [];
+const notifications = useQuery(api.notifications.getNotifications);
   const markAllAsRead = useMutation(api.notifications.markAllAsRead);
 
   useEffect(() => {
   markAllAsRead();
 }, []);
 
-  if (notifications === undefined) return <Loader />;
+  if (notifications === undefined) return <NotificationsSkeleton />;
   if (notifications.length === 0) return <NoNotificationsFound />;
 
   return (

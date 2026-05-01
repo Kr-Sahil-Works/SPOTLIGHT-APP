@@ -20,6 +20,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "../app/(app)/activity.tsx"],
   "exclude": ["./_generated"]
 }

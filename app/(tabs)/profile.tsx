@@ -8,7 +8,7 @@ import { useMutation, useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
 import * as Clipboard from "expo-clipboard";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -26,6 +26,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+
 
 const { width } = Dimensions.get("window");
 
@@ -74,20 +75,79 @@ type Post = {
 };
 
 const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+const [activeTab, setActiveTab] = useState<"grid" | "reels" | "tags">("grid");
+
+const tabIndex = useRef(new Animated.Value(0)).current;
+const [tabLayouts, setTabLayouts] = useState<{ x: number; width: number }[]>([]);
+const containerX = useRef(new Animated.Value(0)).current;
 
 const scale = useRef(new Animated.Value(1)).current;
 const translateY = useRef(new Animated.Value(0)).current;
 const btnScale = useRef(new Animated.Value(1)).current;
 const glow = useRef(new Animated.Value(0)).current;
+const menuAnim = useRef(new Animated.Value(0)).current;
+const backAnim = useRef(new Animated.Value(0)).current;
+const [menuOpen, setMenuOpen] = useState(false);
 
+const [showSecure, setShowSecure] = useState(false);
+const secureAnim = useRef(new Animated.Value(0)).current;
+const pressScale = useRef(new Animated.Value(1)).current;
+const tickScale = useRef(new Animated.Value(0)).current;
 
+const switchTab = (index: number) => {
+  Animated.spring(tabIndex, {
+    toValue: index,
+    stiffness: 180,
+    damping: 18,
+    mass: 0.6,
+    useNativeDriver: true,
+  }).start();
+
+  Animated.spring(containerX, {
+    toValue: -index * width,
+    stiffness: 140,
+    damping: 16,
+    mass: 0.7,
+    useNativeDriver: true,
+  }).start();
+
+  setActiveTab(index === 0 ? "grid" : index === 1 ? "reels" : "tags");
+};
+
+const tabPan = useRef(
+  PanResponder.create({
+    onStartShouldSetPanResponder: () => false,
+
+    onMoveShouldSetPanResponder: (_, g) =>
+      Math.abs(g.dx) > 12 && Math.abs(g.dy) < 8,
+
+    onPanResponderTerminationRequest: () => true,
+
+    onPanResponderRelease: (_, g) => {
+      const velocity = g.vx;
+
+      if (Math.abs(g.dx) < 25 && Math.abs(velocity) < 0.2) return;
+
+      if (velocity < -0.4 || g.dx < -50) {
+        if (activeTab === "grid") switchTab(1);
+        else if (activeTab === "reels") switchTab(2);
+      } else if (velocity > 0.4 || g.dx > 50) {
+        if (activeTab === "tags") switchTab(1);
+        else if (activeTab === "reels") switchTab(0);
+      }
+    },
+  })
+).current;
 
 /* 🔥 PAN GESTURE (swipe down to close) */
 const panResponder = useRef(
   PanResponder.create({
-    onMoveShouldSetPanResponder: (_, gesture) => {
-      return Math.abs(gesture.dy) > 5;
-    },
+    onStartShouldSetPanResponder: () => false,
+
+    onMoveShouldSetPanResponder: (_, gesture) =>
+      Math.abs(gesture.dy) > 12 && Math.abs(gesture.dx) < 10,
+
+    onPanResponderTerminationRequest: () => true,
 
     onPanResponderMove: (_, gesture) => {
       translateY.setValue(gesture.dy);
@@ -95,7 +155,6 @@ const panResponder = useRef(
 
     onPanResponderRelease: (_, gesture) => {
       if (gesture.dy > 120) {
-        // close
         Animated.timing(translateY, {
           toValue: 500,
           duration: 200,
@@ -105,7 +164,6 @@ const panResponder = useRef(
           translateY.setValue(0);
         });
       } else {
-        // bounce back
         Animated.spring(translateY, {
           toValue: 0,
           useNativeDriver: true,
@@ -132,7 +190,37 @@ useEffect(() => {
   }
 }, [currentUser]);
 
+useFocusEffect(
+  React.useCallback(() => {
+    setMenuOpen(false);
+backAnim.setValue(0);
+    Animated.timing(menuAnim, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  }, [])
+);
  
+
+useEffect(() => {
+  if (!showSecure) return;
+
+  // 🔥 auto close after 5s
+  const timer = setTimeout(() => {
+    Animated.timing(secureAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowSecure(false);
+    });
+  }, 5000);
+
+  return () => clearTimeout(timer);
+}, [showSecure]);
+
+
   const posts = useQuery(api.posts.getPostsByUser, {});
 
   const updateProfile = useMutation(api.users.updateProfile);
@@ -168,20 +256,205 @@ return (
   <View style={styles.container}>
     
     {/* HEADER */}
-    <View style={styles.header}>
-      <Text style={styles.username}>{currentUser.username}</Text>
+<View
+  style={[
+    styles.header,
+    {
+      zIndex: 100,
+      elevation: 100,
+      flexDirection: "row",
+      justifyContent: "space-between", // 🔥 important
+      alignItems: "center",
+    },
+  ]}
+>
+{/* LEFT LOCK */}
+<TouchableOpacity
+  disabled={showSecure}
+  activeOpacity={0.6}
+  onPress={() => {
+    if (showSecure) return;
 
-      <View style={styles.headerRight}>
-        <TouchableOpacity
-          style={styles.headerIcon}
-          onPress={() => setShowLogoutModal(true)}
-        >
-          <Ionicons name="log-out-outline" size={24} color={COLORS.white} />
-        </TouchableOpacity>
-      </View>
-    </View>
+    setShowSecure(true);
+    tickScale.setValue(0);
+Animated.spring(tickScale, {
+  toValue: 1,
+  friction: 5,
+  useNativeDriver: true,
+}).start();
 
-    <ScrollView showsVerticalScrollIndicator={false}>
+    secureAnim.setValue(0);
+
+    Animated.timing(secureAnim, {
+      toValue: 1,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+
+    // auto close
+    setTimeout(() => {
+      Animated.timing(secureAnim, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start(() => setShowSecure(false));
+    }, 2000);
+  }}
+  onPressIn={() => {
+    Animated.spring(pressScale, {
+      toValue: 0.92,
+      useNativeDriver: true,
+    }).start();
+  }}
+  onPressOut={() => {
+    Animated.spring(pressScale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  }}
+style={{
+  width: 38,
+  height: 38,
+  borderRadius: 10, // 🔥 perfect circle
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "#0000000f",
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.08)",
+}}
+  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+>
+  <Animated.View style={{ transform: [{ scale: pressScale }] }}>
+    <Ionicons name="lock-closed-outline" size={22} color="#22c55e" />
+  </Animated.View>
+</TouchableOpacity>
+
+{/* CENTER USERNAME */}
+<Text
+  pointerEvents="none"
+  style={[
+    styles.username,
+    {
+      position: "absolute",
+      left: 60,   // 🔥 avoid left button
+      right: 60,  // 🔥 avoid right button
+      textAlign: "center",
+    },
+  ]}
+>
+  @{currentUser.username}
+</Text>
+
+{/* RIGHT MENU */}
+<View style={styles.headerRight}>
+<TouchableOpacity
+style={[
+  styles.headerIcon,
+  {
+    width: 38,
+    height: 38,
+    borderRadius: 14, // 🔥 square rounded
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0000000f",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+]}
+  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    onPress={() => {
+      if (menuOpen) return;
+
+      setMenuOpen(true);
+
+      Animated.spring(menuAnim, {
+        toValue: 1,
+        tension: 300,
+        useNativeDriver: true,
+      }).start();
+
+      setTimeout(() => {
+        router.push("/settings");
+      }, 140);
+    }}
+  >
+
+
+  <View style={{ width: 16, height: 14, justifyContent: "center", alignItems: "center" }}>
+  
+  {/* TOP */}
+  <Animated.View
+    style={{
+      position: "absolute",
+      width: 16,
+      height: 2,
+      backgroundColor: "#22c55e",
+      borderRadius: 2,
+      transform: [
+        {
+          translateY: menuAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-5, 0],
+          }),
+        },
+        {
+          rotate: menuAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: ["0deg", "45deg"],
+          }),
+        },
+      ],
+    }}
+  />
+
+  {/* MIDDLE */}
+  <Animated.View
+    style={{
+      width: 16,
+      height: 2,
+      backgroundColor: "#22c55e",
+      borderRadius: 2,
+      opacity: menuAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 0],
+      }),
+    }}
+  />
+
+  {/* BOTTOM */}
+  <Animated.View
+    style={{
+      position: "absolute",
+      width: 16,
+      height: 2,
+      backgroundColor: "#22c55e",
+      borderRadius: 2,
+      transform: [
+        {
+          translateY: menuAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [5, 0],
+          }),
+        },
+        {
+          rotate: menuAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: ["0deg", "-45deg"],
+          }),
+        },
+      ],
+    }}
+  />
+
+</View>
+    </TouchableOpacity>
+  </View>
+</View>
+
+    <ScrollView
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingTop: 20 }}
+>
       <View style={styles.profileInfo}>
         
         {/* AVATAR & STATS */}
@@ -220,8 +493,8 @@ return (
           </View>
         </View>
 
-        <Text style={styles.name}>{currentUser.fullname}</Text>
-        {currentUser.bio && <Text style={styles.bio}>{currentUser.bio}</Text>}
+        <Text style={[styles.name, { marginLeft: 2 }]}>{currentUser.fullname}</Text>
+        {currentUser.bio && <Text style={[styles.bio, { marginLeft: 2 }]}>{currentUser.bio}</Text>}
 
         {/* ACTIONS */}
         <View style={styles.actionButtons}>
@@ -240,26 +513,207 @@ return (
         </View>
       </View>
 
-      {posts.length === 0 && <NoPostsFound />}
+      {/* 🔥 TABS */}
+<View
+  style={{
+    flexDirection: "row",
+    justifyContent: "space-between",
+paddingHorizontal: width / 6 - 12,
+    paddingVertical: 10,
+    borderTopWidth: 0.5,
+    borderBottomWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.06)",
+    marginTop: 10,
+    position: "relative",
+  }}
+>
+  <TouchableOpacity
+  onPress={() => switchTab(0)}
+  onLayout={(e) => {
+    const { x, width } = e.nativeEvent.layout;
+    setTabLayouts((prev) => {
+      const copy = [...prev];
+      copy[0] = { x, width };
+      return copy;
+    });
+  }}
+>
+    <Ionicons
+      name="grid-outline"
+      size={22}
+      color={activeTab === "grid" ? "#fff" : "#555"}
+    />
+  </TouchableOpacity>
 
-      <FlatList
-        data={posts}
-        numColumns={3}
-        scrollEnabled={false}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.gridItem}
-            onPress={() => setSelectedPost(item)}
-          >
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={styles.gridImage}
-              contentFit="cover"
-            />
-          </TouchableOpacity>
-        )}
-      />
+  <TouchableOpacity
+  onPress={() => switchTab(1)}
+  onLayout={(e) => {
+    const { x, width } = e.nativeEvent.layout;
+    setTabLayouts((prev) => {
+      const copy = [...prev];
+      copy[1] = { x, width };
+      return copy;
+    });
+  }}
+>
+    <Ionicons
+      name="play-outline"
+      size={22}
+      color={activeTab === "reels" ? "#fff" : "#555"}
+    />
+  </TouchableOpacity>
+
+  <TouchableOpacity
+  onPress={() => switchTab(2)}
+  onLayout={(e) => {
+    const { x, width } = e.nativeEvent.layout;
+    setTabLayouts((prev) => {
+      const copy = [...prev];
+      copy[2] = { x, width };
+      return copy;
+    });
+  }}
+>
+    <Ionicons
+      name="person-outline"
+      size={22}
+      color={activeTab === "tags" ? "#fff" : "#555"}
+    />
+  </TouchableOpacity>
+
+  {/* 🔥 UNDERLINE (NOW INSIDE) */}
+{tabLayouts.length === 3 && (
+  <Animated.View
+    style={{
+      position: "absolute",
+      bottom: 0,
+      height: 2,
+      width: 28,
+      borderRadius: 2,
+      backgroundColor: "#fff",
+      transform: [
+        {
+          translateX: tabIndex.interpolate({
+            inputRange: [0, 1, 2],
+            outputRange: tabLayouts.map(
+              (l) => l.x + l.width / 2 - 14
+            ),
+          }),
+        },
+      ],
+    }}
+  />
+)}
+</View>
+
+
+
+<View style={{ flex: 1 }}>
+<Animated.View
+  {...tabPan.panHandlers}
+  style={{
+    flexDirection: "row",
+    width: width * 3,
+    transform: [{ translateX: containerX }],
+  }}
+>
+  {/* GRID */}
+  <View style={{ width }}>
+    {posts.length === 0 && <NoPostsFound />}
+    <FlatList
+      data={posts}
+      numColumns={3}
+      scrollEnabled={false}
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          style={styles.gridItem}
+          onPress={() => setSelectedPost(item)}
+        >
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.gridImage}
+            contentFit="cover"
+          />
+        </TouchableOpacity>
+      )}
+    />
+  </View>
+
+  {/* REELS */}
+  <View style={{ width, justifyContent: "center", alignItems: "center" }}>
+    <Ionicons name="play-outline" size={44} color="#555" />
+    <Text style={styles.noPostsText}>No reels yet</Text>
+  </View>
+
+  {/* TAGS */}
+  <View style={{ width, justifyContent: "center", alignItems: "center" }}>
+    <Ionicons name="person-outline" size={44} color="#555" />
+    <Text style={styles.noPostsText}>No tagged posts</Text>
+  </View>
+</Animated.View>
+</View>
+
+
+{showSecure && (
+  <View
+    pointerEvents="none"
+    style={{
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: "rgba(0, 0, 0, 0.47)",
+    }}
+  >
+    <BlurView intensity={55} tint="dark" style={{ flex: 1 }}>
+  <Animated.View
+    pointerEvents="none"
+    style={{
+      position: "absolute",
+      bottom: 90,
+      left: 40,
+      right: 40,
+      padding: 14,
+      borderRadius: 16,
+      backgroundColor: "rgba(10,10,10,0.85)",
+      borderWidth: 1,
+      borderColor: "rgba(34,197,94,0.4)",
+flexDirection: "row",
+alignItems: "center",
+justifyContent: "center",
+
+ transform: [
+  {
+    translateY: secureAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [20, -40], // 🔥 center lift
+    }),
+  },
+],
+      opacity: secureAnim,
+    }}
+  >
+    <Animated.View style={{ transform: [{ scale: tickScale }] }}>
+  <Ionicons name="checkmark-circle" size={22} color="#22c55e" />
+</Animated.View>
+
+    <View style={{ flex: 1, alignItems: "center" }}>
+      <Text style={{ color: "#22c55e", fontWeight: "600" }}>
+        Verified Secure
+      </Text>
+      <Text style={{ color: "#aaa", fontSize: 12 }}>
+        End-to-end encrypted
+      </Text>
+    </View>
+  </Animated.View>
+    </BlurView>
+  </View>
+)}
+
+
     </ScrollView>
+    
 
     {/* ✨ IMAGE PREVIEW MODAL */}
 <Modal visible={!!selectedPost} transparent animationType="fade">
@@ -511,7 +965,7 @@ return (
             You will need to login again to continue.
           </Text>
 
-          <View style={{ flexDirection: "row", gap: 10 }}>
+<View style={{ flex: 1, alignItems: "center" }}>
             
             {/* CANCEL */}
             <TouchableOpacity

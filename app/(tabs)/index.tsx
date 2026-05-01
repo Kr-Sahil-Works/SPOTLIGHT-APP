@@ -1,4 +1,4 @@
-import { Loader } from "@/components/Loader";
+import FeedSkeleton from "@/components/FeedSkeleton";
 import Post from "@/components/Post";
 import StoriesSection from "@/components/Stories";
 import { COLORS } from "@/constants/theme";
@@ -26,6 +26,9 @@ const glow = useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [shuffledPosts, setShuffledPosts] = useState<any[]>([]);
+  const handleDeletePost = (id: string) => {
+  setShuffledPosts((prev) => prev.filter((p) => p._id !== id));
+};
 
   const posts = useQuery(
     api.posts.getFeedPosts,
@@ -38,7 +41,7 @@ if (!isSignedIn) {
 }
 
 
-  if (posts === undefined) return <Loader />;
+ if (posts === undefined) return <FeedSkeleton />;
   if (posts.length === 0) return <NoPostsFound />;
 
   // 🔥 shuffle
@@ -163,7 +166,7 @@ if (!isSignedIn) {
       <FlatList
         key={refreshKey}
         data={shuffledPosts.length ? shuffledPosts : posts}
-        renderItem={({ item }) => <Post post={item} />}
+        renderItem={({ item }) => <Post post={item} onDelete={handleDeletePost} />}
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 80 }}
