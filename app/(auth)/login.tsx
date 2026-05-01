@@ -98,12 +98,17 @@ const handleGoogleSignIn = async () => {
         "spotlightapp://"
       );
     }
+if (setActive && createdSessionId) {
+  await setActive({ session: createdSessionId });
+resetMorph();
+setLoading(false);
+  // small delay avoids race condition
+  setTimeout(() => {
+    router.replace("/");
+  }, 100);
 
-    if (setActive && createdSessionId) {
-      await setActive({ session: createdSessionId });
-      router.replace("/");
-      return;
-    }
+  return;
+}
   } catch (error: any) {
     console.error("OAuth error:", error);
     resetMorph();

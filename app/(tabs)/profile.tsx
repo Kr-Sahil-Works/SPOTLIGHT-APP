@@ -174,7 +174,7 @@ const panResponder = useRef(
 ).current;
 
 
-  const currentUser = useQuery(api.users.getUserByClerkId, userId ? { clerkId: userId } : "skip");
+const currentUser = useQuery(api.users.index.getCurrentUser);
 
   const [editedProfile, setEditedProfile] = useState({
   fullname: "",
@@ -221,9 +221,9 @@ useEffect(() => {
 }, [showSecure]);
 
 
-  const posts = useQuery(api.posts.getPostsByUser, {});
+  const posts = useQuery(api.posts.index.getPostsByUser, {});
 
-  const updateProfile = useMutation(api.users.updateProfile);
+const updateProfile = useMutation(api.users.index.updateProfile);
 
   const handleSaveProfile = async () => {
     await updateProfile(editedProfile);
@@ -470,7 +470,7 @@ style={[
   }}
 >
 <RNImage
-  source={{ uri: currentUser.image }}
+  source={{ uri: currentUser.image || "" }}
   style={styles.avatar}
 />
 </Animated.View>
@@ -619,10 +619,11 @@ paddingHorizontal: width / 6 - 12,
 >
   {/* GRID */}
   <View style={{ width }}>
-    {posts.length === 0 && <NoPostsFound />}
+    {(!posts || posts.length === 0) && <NoPostsFound />}
     <FlatList
-      data={posts}
+      data={posts || []}
       numColumns={3}
+      keyExtractor={(item) => item._id.toString()}
       scrollEnabled={false}
       renderItem={({ item }) => (
         <TouchableOpacity

@@ -71,8 +71,8 @@ useEffect(() => {
   ).start();
 }, []);
 
-  const generateUploadUrl = useMutation(api.posts.generateUploadUrl);
-  const createPost = useMutation(api.posts.createPost);
+  const generateUploadUrl = useMutation(api.posts.index.generateUploadUrl);
+  const createPost = useMutation(api.posts.index.createPost);
   
 
   const pickImage = async () => {
@@ -89,6 +89,7 @@ useEffect(() => {
   };
 
   const handleShare = async () => {
+    if (isSharing) return;
     if (!selectedImage) return;
 
     try {
@@ -102,7 +103,7 @@ useEffect(() => {
       const uploadResult = await fetch(uploadUrl, {
         method: "POST",
         headers: {
-          "Content-Type": "image/jpeg",
+          "Content-Type": blob.type || "image/jpeg",
         },
         body: blob,
       });
@@ -111,12 +112,15 @@ useEffect(() => {
 
       const { storageId } = await uploadResult.json();
 
-      await createPost({ storageId, caption });
+      await createPost({
+  storageId,
+  caption: caption.trim(),
+});
 
       setSelectedImage(null);
       setCaption("");
 
-      router.push("/(tabs)");
+      router.replace("/(tabs)");
     } catch (error) {
       console.log("Error sharing post:", error);
     } finally {
@@ -381,7 +385,7 @@ if (!selectedImage) {
             <View style={styles.inputSection}>
               <View style={styles.captionContainer}>
                 <RNImage
-                  source={{ uri: user?.imageUrl }}
+                  source={{ uri: user?.imageUrl || "" }}
                   style={styles.userAvatar}
                   resizeMode="cover"
                 />

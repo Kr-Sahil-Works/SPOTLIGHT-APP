@@ -12,11 +12,12 @@ import type * as bookmarks from "../bookmarks.js";
 import type * as comments from "../comments.js";
 import type * as conversations from "../conversations.js";
 import type * as http from "../http.js";
-import type * as messages from "../messages.js";
+import type * as messages_index from "../messages/index.js";
+import type * as notes_index from "../notes/index.js";
+import type * as notes_notes from "../notes/notes.js";
 import type * as notifications from "../notifications.js";
-import type * as posts from "../posts.js";
-import type * as stats from "../stats.js";
-import type * as users from "../users.js";
+import type * as posts_index from "../posts/index.js";
+import type * as users_index from "../users/index.js";
 
 import type {
   ApiFromModules,
@@ -29,11 +30,12 @@ declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   conversations: typeof conversations;
   http: typeof http;
-  messages: typeof messages;
+  "messages/index": typeof messages_index;
+  "notes/index": typeof notes_index;
+  "notes/notes": typeof notes_notes;
   notifications: typeof notifications;
-  posts: typeof posts;
-  stats: typeof stats;
-  users: typeof users;
+  "posts/index": typeof posts_index;
+  "users/index": typeof users_index;
 }>;
 
 /**

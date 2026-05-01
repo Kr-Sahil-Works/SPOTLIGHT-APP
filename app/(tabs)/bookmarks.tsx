@@ -22,10 +22,10 @@ import {
 
 /* ========================= */
 export default function Bookmarks() {
- const bookmarkedPosts = useQuery(
+const bookmarkedPosts = useQuery(
   api.bookmarks.getBookmarkedPosts,
   { limit: 30 }
-);
+) ?? [];
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 const [downloading, setDownloading] = useState(false);
 const [showSuccess, setShowSuccess] = useState(false);
@@ -70,7 +70,13 @@ const downloadImage = async () => {
     const res = await FileSystem.downloadAsync(selectedImage, fileUri);
 
     const asset = await MediaLibrary.createAssetAsync(res.uri);
-    await MediaLibrary.createAlbumAsync("Download", asset, false);
+    const album = await MediaLibrary.getAlbumAsync("Download");
+
+if (album) {
+  await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+} else {
+  await MediaLibrary.createAlbumAsync("Download", asset, false);
+}
 
    // 🔥 success animation
 setShowSuccess(true);
@@ -94,8 +100,8 @@ showToast("Image downloaded ✅");
   }
 };
 
-  if (!bookmarkedPosts) return <Loader />;
-  if (bookmarkedPosts.length === 0) return <NoBookmarksFound />;
+  if (bookmarkedPosts === undefined) return <Loader />;
+  if (!bookmarkedPosts || bookmarkedPosts.length === 0) return <NoBookmarksFound />;
 
   return (
     <View style={styles.container}>
@@ -107,7 +113,7 @@ showToast("Image downloaded ✅");
       {/* GRID */}
       <FlatList
         data={bookmarkedPosts ?? []}
-        keyExtractor={(item, i) => item?._id ?? i.toString()}
+        keyExtractor={(item, i) => item?._id?.toString() || i.toString()}
         numColumns={3}
         removeClippedSubviews
         initialNumToRender={9}
@@ -134,7 +140,7 @@ showToast("Image downloaded ✅");
                   contentFit="cover"
                   cachePolicy="memory-disk"
                     allowDownscaling 
-                    recyclingKey={item._id}
+                    recyclingKey={item._id.toString()}
                 />
               </View>
             </TouchableOpacity>

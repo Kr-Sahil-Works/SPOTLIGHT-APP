@@ -1,4 +1,3 @@
-import FeedSkeleton from "@/components/FeedSkeleton";
 import Post from "@/components/Post";
 import StoriesSection from "@/components/Stories";
 import { COLORS } from "@/constants/theme";
@@ -7,7 +6,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated, FlatList,
   RefreshControl,
@@ -27,22 +26,31 @@ const glow = useRef(new Animated.Value(0)).current;
   const [refreshKey, setRefreshKey] = useState(0);
   const [shuffledPosts, setShuffledPosts] = useState<any[]>([]);
   const handleDeletePost = (id: string) => {
-  setShuffledPosts((prev) => prev.filter((p) => p._id !== id));
+  setShuffledPosts((prev) => prev.filter((p) => p._id.toString() !== id.toString()));
 };
 
   const posts = useQuery(
-    api.posts.getFeedPosts,
+api.posts.index.getFeedPosts,
     isSignedIn ? {} : "skip"
   );
-const unreadCount = useQuery(api.notifications.getUnreadCount) ?? 0;
+
+  useEffect(() => {
+  if (posts && shuffledPosts.length === 0) {
+    setShuffledPosts(posts);
+  }
+}, [posts]);
+
+
+const unreadCount = useQuery(
+api.notifications.getUnreadCount,
+  isSignedIn ? {} : "skip"
+) ?? 0;
 
 if (!isSignedIn) {
   return <View style={{ flex: 1, backgroundColor: "#000" }} />;
 }
 
-
- if (posts === undefined) return <FeedSkeleton />;
-  if (posts.length === 0) return <NoPostsFound />;
+  if (!posts || posts.length === 0) return <NoPostsFound />;
 
   // 🔥 shuffle
   const shuffleArray = (array: any[]) => {
@@ -167,7 +175,7 @@ if (!isSignedIn) {
         key={refreshKey}
         data={shuffledPosts.length ? shuffledPosts : posts}
         renderItem={({ item }) => <Post post={item} onDelete={handleDeletePost} />}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item._id.toString()}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 80 }}
         ListHeaderComponent={<StoriesSection refreshKey={refreshKey} />}

@@ -12,7 +12,7 @@ export default defineSchema({
     bio: v.optional(v.string()),
     image: v.string(),
 
-    themeIndex: v.optional(v.number()),
+    isPrivate: v.optional(v.boolean()),
     isOnline: v.optional(v.boolean()),
     lastSeen: v.optional(v.number()),
     showOnline: v.optional(v.boolean()),
@@ -25,8 +25,23 @@ export default defineSchema({
 
     clerkId: v.string(),
     pushToken: v.optional(v.string()),
-  }).index("by_clerk_id", ["clerkId"]),
 
+    // 🔥 NEW
+    createdAt: v.number(),
+  })
+    .index("by_clerk_id", ["clerkId"])
+    .index("by_username", ["username"]),
+
+
+    followRequests: defineTable({
+  senderId: v.id("users"),
+  receiverId: v.id("users"),
+  createdAt: v.number(),
+})
+  .index("by_receiver", ["receiverId"])
+  .index("by_sender_receiver", ["senderId", "receiverId"]),
+
+  
   /* =========================
      📸 POSTS
   ========================= */
@@ -38,6 +53,9 @@ export default defineSchema({
 
     likes: v.number(),
     comments: v.number(),
+
+    // 🔥 NEW
+    createdAt: v.number(),
   }).index("by_user", ["userId"]),
 
   /* =========================
@@ -57,6 +75,9 @@ export default defineSchema({
     userId: v.id("users"),
     postId: v.id("posts"),
     content: v.string(),
+
+    // 🔥 NEW
+    createdAt: v.number(),
   }).index("by_post", ["postId"]),
 
   /* =========================
@@ -65,6 +86,9 @@ export default defineSchema({
   follows: defineTable({
     followerId: v.id("users"),
     followingId: v.id("users"),
+
+    // 🔥 NEW
+    createdAt: v.number(),
   })
     .index("by_follower", ["followerId"])
     .index("by_following", ["followingId"])
@@ -73,36 +97,40 @@ export default defineSchema({
   /* =========================
      🔔 NOTIFICATIONS
   ========================= */
-notifications: defineTable({
-  receiverId: v.id("users"),
-  senderId: v.id("users"),
+  notifications: defineTable({
+    receiverId: v.id("users"),
+    senderId: v.id("users"),
 
-  type: v.union(
-    v.literal("like"),
-    v.literal("comment"),
-    v.literal("follow")
-  ),
+    type: v.union(
+      v.literal("like"),
+      v.literal("comment"),
+      v.literal("follow")
+    ),
 
-  postId: v.optional(v.id("posts")),
-  commentId: v.optional(v.id("comments")),
+    postId: v.optional(v.id("posts")),
+    commentId: v.optional(v.id("comments")),
 
-  // 🔥 ADD THIS (REQUIRED)
-  isRead: v.boolean(),
-})
-  .index("by_receiver", ["receiverId"])
-  .index("by_post", ["postId"]),
+    isRead: v.boolean(),
+
+    // 🔥 NEW
+    createdAt: v.number(),
+  })
+    .index("by_receiver", ["receiverId"])
+    .index("by_post", ["postId"])
+    .index("by_receiver_read", ["receiverId", "isRead"]),
 
   /* =========================
      🔖 BOOKMARKS
   ========================= */
-  bookmarks: defineTable({
-    userId: v.id("users"),
-    postId: v.id("posts"),
-  })
-    .index("by_user", ["userId"])
-    .index("by_post", ["postId"])
-    .index("by_user_and_post", ["userId", "postId"]),
-
+bookmarks: defineTable({
+  userId: v.id("users"),
+  postId: v.id("posts"),
+  createdAt: v.number(), // ✅ ADD THIS
+})
+  .index("by_user", ["userId"])
+  .index("by_post", ["postId"])
+  .index("by_user_and_post", ["userId", "postId"])
+  .index("by_user_time", ["userId", "createdAt"]), // ✅ ADD THIS
   /* =========================
      📝 NOTES
   ========================= */
@@ -116,18 +144,22 @@ notifications: defineTable({
   }).index("by_user", ["userId"]),
 
   /* =========================
-     💬 CONVERSATIONS (NEW CORE)
+     💬 CONVERSATIONS
   ========================= */
   conversations: defineTable({
+    conversationKey: v.optional(v.string()),
     participants: v.array(v.id("users")),
     createdAt: v.number(),
+    lastMessage: v.optional(v.string()),
+lastMessageAt: v.optional(v.number()),
 
-    // 🔥 chat-level theme
+    // ✅ CORRECT PLACE FOR THEME
     themeIndex: v.optional(v.number()),
-  }).index("by_participants", ["participants"]),
+  }).index("by_participants", ["participants"])
+  .index("by_key", ["conversationKey"]),
 
   /* =========================
-     💬 MESSAGES (UPGRADED)
+     💬 MESSAGES
   ========================= */
   messages: defineTable({
     conversationId: v.id("conversations"),
@@ -139,10 +171,8 @@ notifications: defineTable({
     createdAt: v.number(),
 
     clientId: v.optional(v.string()),
-
     seen: v.optional(v.boolean()),
 
-    // 🔥 SYSTEM SUPPORT
     type: v.optional(
       v.union(
         v.literal("text"),
@@ -159,7 +189,6 @@ notifications: defineTable({
 
     meta: v.optional(v.any()),
 
-    // 🔥 FEATURES
     edited: v.optional(v.boolean()),
     replyTo: v.optional(v.id("messages")),
     replyToText: v.optional(v.string()),
@@ -185,6 +214,9 @@ notifications: defineTable({
     conversationId: v.id("conversations"),
     userId: v.id("users"),
     isTyping: v.boolean(),
+
+    // 🔥 NEW (important for expiry later)
+    updatedAt: v.optional(v.number()),
   })
     .index("by_conversation", ["conversationId"])
     .index("by_user_conversation", ["conversationId", "userId"]),

@@ -12,11 +12,11 @@ export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const profile = useQuery(api.users.getUserProfile, { id: id as Id<"users"> });
-  const posts = useQuery(api.posts.getPostsByUser, { userId: id as Id<"users"> });
-  const isFollowing = useQuery(api.users.isFollowing, { followingId: id as Id<"users"> });
+  const profile = useQuery(api.users.index.getUserProfile, { id: id as Id<"users"> });
+  const posts = useQuery(api.posts.index.getPostsByUser, { userId: id as Id<"users"> });
+  const isFollowing = useQuery(api.users.index.isFollowing, { followingId: id as Id<"users"> });
 
-  const toggleFollow = useMutation(api.users.toggleFollow);
+  const toggleFollow = useMutation(api.users.index.toggleFollow);
 
   const handleBack = () => {
     if (router.canGoBack()) router.back();

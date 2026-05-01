@@ -276,18 +276,17 @@ export default function Chats() {
   const router = useRouter();
   const [search, setSearch] = useState("");
 
-  const chats = useQuery(api.messages.getChatList);
-  const searchUsers = useQuery(api.users.searchUsers, {
+  const chats = useQuery(api.messages.index.getChatList);
+  const searchUsers = useQuery(api.users.index.searchUsers, {
     search: search || "",
   });
-  const allUsers = useQuery(api.users.getAllUsers);
 
   const dataSource =
     search.trim().length > 0
       ? searchUsers || []
       : chats && chats.length > 0
       ? chats
-      : allUsers || [];
+      : [];
 
   return (
     <View style={{ flex: 1, backgroundColor: "#030405" }}>

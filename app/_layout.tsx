@@ -5,9 +5,8 @@ import { useCallback, useEffect } from "react";
 
 import PushHandler from "@/components/PushHandler";
 import { api } from "@/convex/_generated/api";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useMutation } from "convex/react";
-
 import { AppState, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
@@ -21,41 +20,58 @@ SplashScreen.preventAutoHideAsync();
    ✅ ONLINE WRAPPER
 ========================= */
 function OnlineWrapper({ children }: any) {
-  const setOnline = useMutation(api.messages.setOnlineStatus);
+  const setOnline = useMutation(
+    api.messages.index.setOnlineStatus
+  );
   const { isLoaded, isSignedIn } = useAuth();
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
 
-    const handleState = (state: string) => {
+  const handleState = (state: string) => {
+  try {
+    if (isSignedIn) {
       setOnline({ isOnline: state === "active" });
-    };
+    }
+  } catch {}
+};
 
     const sub = AppState.addEventListener("change", handleState);
 
-    // initial
+    // initial state
     handleState(AppState.currentState);
 
     return () => {
       sub.remove();
-      setOnline({ isOnline: false });
+      if (isSignedIn) {
+        setOnline({ isOnline: false });
+      }
     };
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, setOnline]);
 
   return children;
 }
 
 /* =========================
-   ✅ APP CONTENT (FIXED)
+   ✅ APP CONTENT
 ========================= */
 function AppContent({ onLayoutRootView }: any) {
+const { user } = useUser();
+const createUser = useMutation(api.users.index.createUser);
   const { isLoaded, isSignedIn } = useAuth();
 
-  // 🔥 wait for Clerk → removes flicker
-  if (!isLoaded) {
-    return <View style={{ flex: 1, backgroundColor: "#000" }} />;
-  }
+  if (!isLoaded) return null;
+useEffect(() => {
+  if (!isSignedIn || !user) return;
 
+  createUser({
+    username: user.primaryEmailAddress?.emailAddress.split("@")[0] || "user",
+    fullname: user.fullName || "User",
+    email: user.primaryEmailAddress?.emailAddress || "",
+    image: user.imageUrl || "",
+    clerkId: user.id,
+  }).catch(() => {});
+}, [isSignedIn, user]);
   return (
     <OnlineWrapper>
       <SafeAreaProvider>
@@ -64,7 +80,6 @@ function AppContent({ onLayoutRootView }: any) {
           style={{ flex: 1, backgroundColor: "#000" }}
           onLayout={onLayoutRootView}
         >
-          {/* 🔔 only after login */}
           {isSignedIn && <PushHandler />}
 
           <Stack

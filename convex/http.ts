@@ -54,7 +54,7 @@ http.route({
           .join(" ") || email.split("@")[0];
 
       try {
-        await ctx.runMutation(api.users.createUser, {
+        await ctx.runMutation(api.users.index.createUser, {
           username: email.split("@")[0],
           fullname,
           email,

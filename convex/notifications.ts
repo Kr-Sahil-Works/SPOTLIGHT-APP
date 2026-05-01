@@ -1,94 +1,86 @@
 import { mutation, query } from "./_generated/server";
 import { getAuthenticatedUser } from "./users";
 
-
-// 🔥 GET ALL NOTIFICATIONS
+/* =========================
+   🔔 GET NOTIFICATIONS
+========================= */
 export const getNotifications = query({
   handler: async (ctx) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const user = await getAuthenticatedUser(ctx);
 
     const notifications = await ctx.db
       .query("notifications")
       .withIndex("by_receiver", (q) =>
-        q.eq("receiverId", currentUser._id)
+        q.eq("receiverId", user._id)
       )
       .order("desc")
-      .collect();
+      .take(50); // 🔥 limit instead of collect
 
-const notificationsWithInfo = [];
+    if (notifications.length === 0) return [];
 
-for (const notification of notifications) {
-  const sender = await ctx.db.get(notification.senderId);
+    // ⚡ batch senders
+    const senderIds = [
+      ...new Set(notifications.map(n => n.senderId)),
+    ];
 
-  // ❌ skip instead of returning null
-  if (!sender) continue;
+    const senders = await Promise.all(
+      senderIds.map(id => ctx.db.get(id))
+    );
 
-  let post = null;
-  let comment = null;
+    const senderMap = new Map(
+      senders.map(s => [s?._id.toString(), s])
+    );
 
-  if (notification.postId) {
-    post = await ctx.db.get(notification.postId);
-  }
+    return notifications.map((n) => {
+      const sender = senderMap.get(n.senderId.toString());
 
-  if (
-    notification.type === "comment" &&
-    notification.commentId
-  ) {
-    const c = await ctx.db.get(notification.commentId);
-    comment = c?.content;
-  }
-
-  notificationsWithInfo.push({
-    ...notification,
-
-    // ✅ always defined
-    isRead: notification.isRead ?? true,
-
-    sender: {
-      _id: sender._id,
-      username: sender.username,
-      image: sender.image,
-    },
-
-    post,
-    comment,
-  });
-}
-return notificationsWithInfo;
+      return {
+        ...n,
+        sender: sender
+          ? {
+              _id: sender._id,
+              username: sender.username,
+              image: sender.image,
+            }
+          : null,
+      };
+    });
   },
 });
 
-
-// 🔥 UNREAD COUNT (for badge)
+/* =========================
+   🔴 UNREAD COUNT
+========================= */
 export const getUnreadCount = query({
   handler: async (ctx) => {
     const user = await getAuthenticatedUser(ctx);
 
     const unread = await ctx.db
       .query("notifications")
-      .withIndex("by_receiver", (q) =>
-        q.eq("receiverId", user._id)
-      )
+      .withIndex("by_receiver_read", (q) =>
+  q.eq("receiverId", user._id).eq("isRead", false)
+)
       .filter((q) => q.eq(q.field("isRead"), false))
-      .collect();
+      .take(999); // 🔥 limit
 
     return unread.length;
   },
 });
 
-
-// 🔥 MARK ALL AS READ
+/* =========================
+   ✅ MARK ALL READ
+========================= */
 export const markAllAsRead = mutation({
   handler: async (ctx) => {
     const user = await getAuthenticatedUser(ctx);
 
     const unread = await ctx.db
       .query("notifications")
-      .withIndex("by_receiver", (q) =>
-        q.eq("receiverId", user._id)
-      )
+   .withIndex("by_receiver_read", (q) =>
+  q.eq("receiverId", user._id).eq("isRead", false)
+)
       .filter((q) => q.eq(q.field("isRead"), false))
-      .collect();
+      .take(100);
 
     await Promise.all(
       unread.map((n) =>
@@ -97,4 +89,3 @@ export const markAllAsRead = mutation({
     );
   },
 });
-

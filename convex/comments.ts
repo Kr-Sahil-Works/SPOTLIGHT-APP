@@ -3,7 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { getAuthenticatedUser } from "./users";
 
 /* =========================
-   💬 ADD COMMENT (OPTIMIZED)
+   💬 ADD COMMENT
 ========================= */
 export const addComment = mutation({
   args: {
@@ -11,31 +11,35 @@ export const addComment = mutation({
     postId: v.id("posts"),
   },
   handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const content = args.content.trim();
+if (!content) throw new ConvexError("Empty comment");
+    const user = await getAuthenticatedUser(ctx);
 
     const post = await ctx.db.get(args.postId);
     if (!post) throw new ConvexError("Post not found");
 
     const commentId = await ctx.db.insert("comments", {
-      userId: currentUser._id,
+      userId: user._id,
       postId: args.postId,
-      content: args.content,
+      content,
+      createdAt: Date.now(), // 🔥 added
     });
 
-    // ⚡ faster patch (no re-read)
+    // ⚠️ keep counter (UI depends on it)
     await ctx.db.patch(args.postId, {
-      comments: (post.comments || 0) + 1,
+      comments: Math.max(0, (post.comments || 0) + 1),
     });
 
-    // 🔔 notification (only if not self)
-    if (post.userId !== currentUser._id) {
+    // 🔔 notification (not self)
+    if (post.userId !== user._id) {
       await ctx.db.insert("notifications", {
         receiverId: post.userId,
-        senderId: currentUser._id,
+        senderId: user._id,
         type: "comment",
         isRead: false,
         postId: args.postId,
         commentId,
+        createdAt: Date.now(), // 🔥 added
       });
     }
 
@@ -44,7 +48,7 @@ export const addComment = mutation({
 });
 
 /* =========================
-   📥 GET COMMENTS (OPTIMIZED)
+   📥 GET COMMENTS
 ========================= */
 export const getComments = query({
   args: {
@@ -52,25 +56,36 @@ export const getComments = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 20; // ⚡ prevent huge loads
+    const limit = Math.min(args.limit ?? 30, 50);
 
     const comments = await ctx.db
       .query("comments")
-      .withIndex("by_post", (q) => q.eq("postId", args.postId))
+      .withIndex("by_post", (q) =>
+        q.eq("postId", args.postId)
+      )
       .order("desc")
-      .take(limit); // ⚡ instead of collect()
+      .take(limit);
 
-    // ⚡ batch user fetch
+    if (comments.length === 0) return [];
+
+    // ⚡ batch users
+    const userIds = [...new Set(comments.map(c => c.userId))];
+
     const users = await Promise.all(
-      comments.map((c) => ctx.db.get(c.userId))
+      userIds.map(id => ctx.db.get(id))
     );
 
-    return comments.map((comment, i) => {
-      const user = users[i];
+    const userMap = new Map(
+      users.map(u => [u?._id.toString(), u])
+    );
+
+    return comments.map((comment) => {
+      const user = userMap.get(comment.userId.toString());
+
       return {
         ...comment,
         user: {
-          fullname: user?.fullname || "User",
+          fullname: user?.fullname || user?.username || "User",
           image: user?.image || "",
         },
       };

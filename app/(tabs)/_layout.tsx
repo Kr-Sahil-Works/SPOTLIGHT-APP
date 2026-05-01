@@ -9,7 +9,7 @@ import { Animated, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /* 🔥 ICON MAP */
-const iconMap: any = {
+const iconMap: Record<string, [any, any]> = {
   index: ["home", "home-outline"],
   bookmarks: ["bookmark", "bookmark-outline"],
   create: ["add-circle", "add-circle"],
