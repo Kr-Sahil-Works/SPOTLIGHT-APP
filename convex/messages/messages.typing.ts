@@ -1,8 +1,10 @@
 import { v } from "convex/values";
 import { api } from "../_generated/api";
 import { mutation, query } from "../_generated/server";
-import { getConversationInternal } from "../conversations";
-import { getAuthenticatedUser } from "../users";
+import {
+  getAuthenticatedUser,
+  getAuthenticatedUserQuery,
+} from "../users/users.core";
 
 export const setTyping = mutation({
   args: {
@@ -13,7 +15,7 @@ export const setTyping = mutation({
     const user = await getAuthenticatedUser(ctx);
 
     const conversationId = await ctx.runMutation(
-      api.conversations.getOrCreateConversation,
+    api.conversations.index.createConversation,
       { userId: args.receiverId }
     );
 
@@ -32,13 +34,6 @@ export const setTyping = mutation({
       return;
     }
 
-    await ctx.db
-  .query("typing")
-  .withIndex("by_user_conversation", (q) =>
-    q.eq("conversationId", conversationId).eq("userId", user._id)
-  )
-  .first();
-
     await ctx.db.insert("typing", {
       conversationId,
       userId: user._id,
@@ -49,24 +44,17 @@ export const setTyping = mutation({
 });
 
 export const getTyping = query({
-  args: { userId: v.id("users") },
+  args: { conversationId: v.id("conversations") },
   handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUser(ctx);
-
-    const conversation = await getConversationInternal(
-      ctx,
-      currentUser._id.toString(),
-      args.userId.toString()
-    );
-
-    if (!conversation) return null;
+    const currentUser = await getAuthenticatedUserQuery(ctx);
+    if (!currentUser) return null;
 
     const typingList = await ctx.db
       .query("typing")
-      .withIndex("by_user_conversation", (q) =>
-        q.eq("conversationId", conversation._id)
+      .withIndex("by_conversation", (q) =>
+        q.eq("conversationId", args.conversationId)
       )
-      .take(10);
+      .collect();
 
     const now = Date.now();
 

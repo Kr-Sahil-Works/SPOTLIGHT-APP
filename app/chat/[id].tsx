@@ -1,755 +1,214 @@
-import { Id } from "@/convex/_generated/dataModel";
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useLocalSearchParams } from "expo-router";
 import {
-  Animated,
   Keyboard,
   KeyboardAvoidingView,
-  Linking, Image as RNImage, Text,
-  TextInput,
-  TouchableOpacity,
-  View
+  Platform,
+  Text,
+  View,
 } from "react-native";
-import TypingDots from "../../components/TypingDots";
-import {
-  DeleteModal,
-  EditModal,
-  InfoModal,
-  MenuModal,
-} from "./_Modals";
-import MessageItem from "./MessageItem";
-import ReactionBar from "./ReactionBar";
-import useChat from "./useChat";
-// ADD THIS IMPORT
-import ChatSkeleton from "@/components/ChatSkeleton";
-import { api } from "@/convex/_generated/api";
-import { FlashList } from "@shopify/flash-list";
-import { useMutation } from "convex/react";
-import React from "react";
 
+import { CHAT_THEMES } from "@/constants/chatThemes";
+import { Id } from "@/convex/_generated/dataModel";
+import { Message } from "@/types/chat";
+import { useState } from "react";
+import { Animated } from "react-native";
+import ChatHeader from "./components/ChatHeader";
+import ChatInput from "./components/ChatInput";
+import MessageList from "./components/MessageList";
+import ThemeModal from "./components/ThemeModal";
+import useMessages from "./hooks/useMessages";
+import useSend from "./hooks/useSend";
+import useTheme from "./hooks/useTheme";
+import MenuModal from "./modals/MenuModal";
 
 
 export default function ChatScreen() {
- const { id, name, image } = useLocalSearchParams();
-  const router = useRouter();
 
-  if (!id || typeof id !== "string") {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: "#fff" }}>Invalid chat</Text>
-      </View>
+const params = useLocalSearchParams<{ id: string }>();
+
+const userId = params.id as Id<"users">;
+
+  // ✅ STRICT TYPES
+  const [replyMsg, setReplyMsg] = useState<Message | null>(null);
+  const [selectedMsg, setSelectedMsg] = useState<Message | null>(null);
+  const [reactionMsg, setReactionMsg] = useState<Message | null>(null);
+
+  const { applyTheme } = useTheme();
+
+const [themeOpen, setThemeOpen] = useState(false);
+const [previewThemeIndex, setPreviewThemeIndex] = useState<number | null>(null);
+
+  if (!userId) {
+    return <Text>Invalid chat</Text>;
+  }
+
+
+
+const {
+  messages,
+  currentUserId,
+  themeIndex,
+  isLoading,
+} = useMessages(userId);
+
+const activeThemeIndex =
+  previewThemeIndex !== null ? previewThemeIndex : themeIndex;
+const theme =
+  CHAT_THEMES[activeThemeIndex ?? 0] ||
+  CHAT_THEMES[0];
+
+
+
+
+
+
+
+  const { text, setText, handleSend } =
+    useSend(userId, replyMsg, setReplyMsg);
+
+  // ✅ STRICT DOUBLE TAP
+  const handleDoubleTap = (msg: Message) => {
+    const reactions = msg.reactions ?? [];
+
+    const hasHeart = reactions.some(
+      (r) => r.value === "❤️"
     );
-  }
 
-  const [forceLoading, setForceLoading] = useState(true);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+    const updatedReactions = hasHeart
+      ? reactions.filter((r) => r.value !== "❤️")
+      : [...reactions, { value: "❤️" }];
 
-useEffect(() => {
-  setTimeout(() => setForceLoading(false), 400);
-}, []);
+    const updatedMsg: Message = {
+      ...msg,
+      reactions: updatedReactions,
+    };
 
-  const userId = id as unknown as Id<"users">;
-
-  const {
-    text, setText,
-    messages,
-    currentUserId,
-    user,
-    typing,
-      themeIndex: serverThemeIndex, // 🔥 ADD
-    reactionMsg, setReactionMsg,
-    selectedMsg, setSelectedMsg,
-    deleteConfirm, setDeleteConfirm,
-    editModal, setEditModal,
-    infoModal, setInfoModal,
-    editText, setEditText,
-    tapRef,
-   setChatTheme,
-    flatListRef,
-    handleSend,
-    handleDelete,
-    toggleReaction,
-    editMessage,
-    replyMsg, setReplyMsg,
-  } = useChat(userId);
- 
-
-
-
-  /* 🎨 THEMES */
-const themes = [
-  { bg: "#140612", bubbleMe: "#ee2292", bubbleOther: "#232323", header: "#0f040c" },
-  { bg: "#090000", bubbleMe: "#FF3B3B", bubbleOther: "#1F1F1F", header: "#140000" },
-  { bg: "#0f1702", bubbleMe: "#6dae05", bubbleOther: "#7e941d", header: "#355705" },
-  { bg: "#000c1d", bubbleMe: "#3B82F6", bubbleOther: "#000916", header: "#000814" },
-  { bg: "#190022", bubbleMe: "#9539eb", bubbleOther: "#1A1625", header: "#14001c" },
-  { bg: "#00121c", bubbleMe: "#22D3EE", bubbleOther: "#013359", header: "#0c2533" },
-  { bg: "#080808", bubbleMe: "#000000", bubbleOther: "#181818", header: "#050505" },
-
-{ bg: "#0c0c14", bubbleMe: "#a855f7", bubbleOther: "#1f1f2e", header: "#141420" },
-{ bg: "#1a0f05", bubbleMe: "#f59e0b", bubbleOther: "#2a2115", header: "#1c140a" },
-{ bg: "#081010", bubbleMe: "#14b8a6", bubbleOther: "#1c2a2a", header: "#0c1818" },
-{ bg: "#0f0a1a", bubbleMe: "#8b5cf6", bubbleOther: "#211a33", header: "#151024" },
-{ bg: "#14213d", bubbleMe: "#fca311", bubbleOther: "#1b0141", header: "#0f172a" },
-
-{ bg: "#0e0e11", bubbleMe: "#ff375f", bubbleOther: "#1c1c22", header: "#141419" },
-{ bg: "#0b0d12", bubbleMe: "#ff5ba8", bubbleOther: "#205d7d", header: "#090a0d" },
-{ bg: "#0c0f0a", bubbleMe: "#7ed957", bubbleOther: "#1d261a", header: "#131a11" },
-{ bg: "#0f0b10", bubbleMe: "#c084fc", bubbleOther: "#211a26", header: "#16111a" },
-{ bg: "#0a0f14", bubbleMe: "#38bdf8", bubbleOther: "#18222c", header: "#0f1720" },
-{ bg: "#140c0c", bubbleMe: "#ff6b6b", bubbleOther: "#2a1c1c", header: "#1c1212" },
-{ bg: "#000000", bubbleMe: "#0e0c0d", bubbleOther: "#080707", header: "#000000" },
-
-{ bg: "#000000", bubbleMe: "#ff3b30", bubbleOther: "#121212", header: "#080808" },
-{ bg: "#000000", bubbleMe: "#0a84ff", bubbleOther: "#101418", header: "#05070a" },
-{ bg: "#000000", bubbleMe: "#30d158", bubbleOther: "#101a12", header: "#050805" },
-{ bg: "#000000", bubbleMe: "#bf5af2", bubbleOther: "#18121f", header: "#0a0610" },
-{ bg: "#000000", bubbleMe: "#3797F0", bubbleOther: "#262626", header: "#000000" },
-{ bg: "#240015", bubbleMe: "#6a057e", bubbleOther: "#5a1a82", header: "#1b0020" },
-];
-  
-const [highlightId, setHighlightId] = useState<string | null>(null);
-const [themeIndex, setThemeIndex] = useState(serverThemeIndex);
-const wmOpacity = useRef(new Animated.Value(0)).current;
-const themeAnim = useRef(new Animated.Value(0)).current;
-const [changingTheme, setChangingTheme] = useState(false);
-const [systemMsg, setSystemMsg] = useState<any | null>(null);
-const [wmText, setWmText] = useState("");
-
-const themeFade = useRef(new Animated.Value(1)).current;
-const isAtBottom = useRef(true);
-const lastMsgIdRef = useRef<string | null>(null);
-
-const [showScrollBtn, setShowScrollBtn] = useState(false);
-const [newMsgCount, setNewMsgCount] = useState(0);
-
-const setActiveChat = useMutation(api.users.setActiveChat);
-
-
-
-useEffect(() => {
-  const show = Keyboard.addListener("keyboardDidShow", () => {
-    requestAnimationFrame(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    });
-  });
-
-  return () => {
-    show.remove();
+    setSelectedMsg(updatedMsg);
   };
-}, []);
 
-useEffect(() => {
-  setActiveChat({ chatWith: userId });
-
-  return () => {
-    setActiveChat({ chatWith: undefined });
-  };
-}, [userId]);
-
-useEffect(() => {
-  if (messages !== undefined) {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }
-}, [messages]);
-
-const showWatermark = (text: string) => {
-  setWmText(text);
-
-  Animated.sequence([
-    Animated.timing(wmOpacity, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: true,
-    }),
-    Animated.delay(1200),
-    Animated.timing(wmOpacity, {
-      toValue: 0,
-      duration: 180,
-      useNativeDriver: true,
-    }),
-  ]).start();
-};
-
-useEffect(() => {
-  setThemeIndex(serverThemeIndex);
-}, [serverThemeIndex]);
-
-
-
-
-  const theme = themes[themeIndex];
-
-const groupedMessages = React.useMemo(() => {
-  if (!messages?.length) return [];
-
-  const result: any[] = [];
-
- const sorted = messages;
-
-  for (let i = 0; i < sorted.length; i++) {
-    const current = sorted[i];
-    const prev = sorted[i - 1];
-
-    // ✅ GROUPING (STRICT + SAFE)
-    const isGrouped =
-      prev &&
-      prev.type !== "system" && // ❗ avoid grouping with system
-      prev.senderId === current.senderId &&
-      Math.abs(current.createdAt - prev.createdAt) < 60 * 1000;
-
-    // ✅ DATE SEPARATOR
-    const showTime =
-      !prev ||
-      new Date(prev.createdAt).toDateString() !==
-        new Date(current.createdAt).toDateString();
-
-    if (showTime) {
-      result.push({
-        type: "time",
-        id: "time-" + current._id,
-        time: new Date(current.createdAt),
-      });
-    }
-
-    // ✅ SYSTEM MESSAGE (theme change etc)
-    if (current.type === "system") {
-      result.push({
-        ...current,
-        type: "system",
-      });
-      continue; // ❗ don't apply grouping to system
-    }
-
-    // ✅ NORMAL MESSAGE
-    result.push({
-      ...current,
-      type: "message",
-      isGrouped: !!isGrouped,
-    });
-  }
-
-  return result;
-}, [messages]);
-
-
-const scrollToBottom = (animated = true) => {
-if (flatListRef.current) {
-  flatListRef.current.scrollToEnd({ animated });
-}
-};
-
-
-
-useEffect(() => {
-  if (!messages.length) return;
-
-  const lastMsg = messages[messages.length - 1];
-  if (!lastMsg) return;
-
-  const id = lastMsg.clientId || lastMsg._id;
-
-  // ✅ ONLY run if truly new message
-  if (lastMsgIdRef.current === id) return;
-
-  lastMsgIdRef.current = id;
-
-  // ✅ ONLY scroll if user at bottom
-  if (!isAtBottom.current && !text.length) return;
-
-  requestAnimationFrame(() => {
-    flatListRef.current?.scrollToEnd({ animated: true });
-  });
-}, [messages]);
-
-
-
-  /* 🎬 SMOOTH THEME ANIMATION */
-  const bgAnim = useRef(new Animated.Value(0)).current;
-
-const sendAnim = useRef(new Animated.Value(1)).current;
-
-
-
-const animateSend = () => {
-  sendAnim.setValue(0.8);
-
-  Animated.spring(sendAnim, {
-    toValue: 1,
-    stiffness: 200,
-    damping: 15,
-    useNativeDriver: true,
-  }).start();
-};
-
-
-
-const changeTheme = async () => {
-  if (changingTheme) return;
-
-  setChangingTheme(true);
-
-  const next = (themeIndex + 1) % themes.length;
-
-  const now = new Date();
-
-  const name =
-    user?.fullname || user?.username || "You";
-
-  setThemeIndex(next);
-
-  await setChatTheme({
-    userId,
-    themeIndex: next,
-  });
-
-  // ✅ SYSTEM MESSAGE
-  setSystemMsg({
-    id: "theme-" + now.getTime(),
-    text: `${name} changed the theme`,
-    time: now,
-  });
-
-  setTimeout(() => setSystemMsg(null), 2500);
-  setTimeout(() => setChangingTheme(false), 600);
-};
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-const handleScrollTo = (id: string) => {
-  const index = messages.findIndex((m) => m._id === id);
-  if (index === -1) return;
-
-  flatListRef.current?.scrollToIndex({
-    index,
-    animated: true,
-  });
-
-  setHighlightId(id);
-
-  setTimeout(() => {
-    setHighlightId(null);
-  }, 1200);
-};
-
-
-const openInstagram = async () => {
-  const url = "instagram://direct/inbox";
-  const canOpen = await Linking.canOpenURL(url);
-
-  if (canOpen) {
-    Linking.openURL(url);
-  } else {
-    Linking.openURL("https://instagram.com/direct/inbox/");
-  }
-};
-
-
-
-return (
-  <KeyboardAvoidingView
-    style={{ flex: 1, backgroundColor: theme.bg }}
-behavior="height"
-keyboardVerticalOffset={20}
-contentContainerStyle={{ padding: 12 }}
-  >
-    <View style={{ flex: 1 }}>
-
-      {/* 🔥 HEADER */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 14,
-          backgroundColor: theme.header,
-        }}
-      >
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={26} color="#fff" />
-        </TouchableOpacity>
-
-   <RNImage
-  source={
-    image
-      ? { uri: image }
-      : user?.image
-      ? { uri: user.image }
-      : require("@/assets/images/iconbg.png")
-  }
-  style={{
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginLeft: 10,
-  }}
-/>
-
-        <Text style={{ color: "#fff", marginLeft: 10, fontSize: 16 }}>
-          {name || user?.fullname || ""}
-        </Text>
-
-        <View style={{ marginLeft: "auto", flexDirection: "row" }}>
-          <TouchableOpacity onPress={openInstagram}>
-            <Ionicons name="call" size={22} color="#fff" />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={changeTheme}
-disabled={changingTheme} style={{ marginLeft: 14 }}>
-            <Ionicons name="color-palette" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* 🔥 MAIN CONTENT */}
-      <View style={{ flex: 1 }}>
-
-        {/* 💬 MESSAGES */}
-{messages === undefined || forceLoading ? (
-  <ChatSkeleton />
-) : messages.length === 0 ? (
-  <View
-    style={{
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      paddingHorizontal: 30,
-    }}
-  >
-    <Text style={{ color: "#aaa", fontSize: 16, marginBottom: 2 }}>
-      Start a conversation
-    </Text>
-    <Text style={{ color: "#666", fontSize: 13 }}>
-      Say “Hi 👋”
-    </Text>
-  </View>
-) : null}
-
-
-{messages !== undefined && messages.length > 0 && (
-     <FlashList
-  ref={flatListRef}
-  data={groupedMessages}
-  {...{
-    estimatedItemSize: 90,
-  }}
-getItemType={(item) => item.type}
-keyExtractor={(item) =>
-  item.type === "message"
-    ? String(item.clientId || item._id)
-    : String(item.id)
-}
-// ListFooterComponent={<View style={{ height: 6 }} />}
-  keyboardDismissMode="interactive"
-  keyboardShouldPersistTaps="handled"
-contentContainerStyle={{
-  padding: 12,
-  paddingBottom: 60, // ✅ ADD THIS
-}}
-
-        onScroll={(e) => {
-  const { layoutMeasurement, contentOffset, contentSize } =
-    e.nativeEvent;
-
-  const distanceFromBottom =
-    contentSize.height -
-    (layoutMeasurement.height + contentOffset.y);
-
-  const atBottom = distanceFromBottom < 60;
-
-  isAtBottom.current = atBottom;
-
-  setShowScrollBtn(!atBottom);
-
-  if (atBottom) {
-    setNewMsgCount(0);
-  }
-}}
-
-          scrollEventThrottle={16}
-
-          renderItem={({ item }) => {
-            /* 🔥 TIME SEPARATOR */
-            if (item.type === "system") {
   return (
-    <View
-      style={{
-        alignSelf: "center",
-        marginVertical: 10,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        backgroundColor: "rgba(255,255,255,0.06)",
-        borderRadius: 12,
-      }}
-    >
-      <Text style={{ color: "#aaa", fontSize: 12 }}>
-        {item.text}
-      </Text>
-    </View>
-  );
-}
-            if (item.type === "time") {
-              return (
-                <View
-                  style={{
-                    alignSelf: "center",
-                    marginVertical: 10,
-                    paddingHorizontal: 10,
-                    paddingVertical: 4,
-                    backgroundColor: "rgba(255,255,255,0.08)",
-                    borderRadius: 10,
-                  }}
-                >
-                  <Text style={{ color: "#aaa", fontSize: 12 }}>
-                    {item.time.toDateString()}
-                  </Text>
-                </View>
-              );
-            }
+<View style={{ flex: 1 }}>
 
-            /* 💬 MESSAGE */
-            return (
-          <MessageItem
-  item={item}
-  isMe={item.senderId === currentUserId}
-  theme={theme}
-  avatar={user?.image || ""}
-  isGrouped={item.isGrouped}
-  isLast={
-    item.type === "message" &&
-    item._id === (messages[messages.length - 1]?._id)
-  } // ✅ ADD THIS
-  onScrollTo={handleScrollTo}
-  highlightId={highlightId}
-  onReply={setReplyMsg}
-  onLongPress={(msg: any) => {
-    setReactionMsg(null);
-    setSelectedMsg(msg);
+  {/* 🔥 CURRENT THEME */}
+  <Animated.View
+  style={{
+    flex: 1,
+    backgroundColor: theme.background,
   }}
-  onReact={(msg: any) => {
-    if (!tapRef.current[msg._id]) {
-      tapRef.current[msg._id] = { count: 0, timer: null };
-    }
+>
+      {/* 🔝 HEADER */}
+      
+<ChatHeader
+  userId={userId}
+  onOpenTheme={() => setThemeOpen(true)}
+  theme={theme} // ✅ ADD
+/>
 
-    const t = tapRef.current[msg._id];
-    t.count++;
-
-    if (t.timer) clearTimeout(t.timer);
-
-    t.timer = setTimeout(() => {
-      const taps = t.count;
-
-      if (taps === 2) {
-        const already = msg.reactions?.some(
-          (r: any) => r.value === "❤️"
-        );
-
-        if (!already) {
-          toggleReaction({
-            messageId: msg._id,
-            reaction: "❤️",
-          });
-        }
-      }
-
-      if (taps === 3) {
-        setReactionMsg(msg);
-      }
-
-      tapRef.current[msg._id] = {
-        count: 0,
-        timer: null,
-      };
-    }, 250);
+<ThemeModal
+  visible={themeOpen}
+  selectedIndex={activeThemeIndex}
+  onPreview={(i: number) => setPreviewThemeIndex(i)} // 🔥 live preview
+  onClose={() => {
+    setPreviewThemeIndex(null); // 🔥 reset preview
+    setThemeOpen(false);
+  }}
+  onApply={(i: number) => {
+    applyTheme(userId, i); // 🔥 save to DB
+    setPreviewThemeIndex(null);
+    setThemeOpen(false);
   }}
 />
-            );
-          }}
-        />
-        )}
 
-{newMsgCount > 0 && (
-  <TouchableOpacity
-    onPress={() => {
-      scrollToBottom(true);
-      setNewMsgCount(0);
-    }}
-    style={{
-      position: "absolute",
-      alignSelf: "center",
-      bottom: 70,
-      backgroundColor: "rgba(255,255,255,0.12)",
-      backdropFilter: "blur(10px)",
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-      borderRadius: 20,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-    }}
-  >
-    <Ionicons name="arrow-down" size={16} color="#fff" />
-    <Text style={{ color: "#fff", fontSize: 12 }}>
-      {newMsgCount}
-    </Text>
-  </TouchableOpacity>
-)}
-
-        {systemMsg && (
-  <View
-    style={{
-      alignSelf: "center",
-      marginVertical: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      backgroundColor: "rgba(255,255,255,0.06)",
-      borderRadius: 12,
-    }}
-  >
-    <Text style={{ color: "#aaa", fontSize: 12 }}>
-      {systemMsg.text} •{" "}
-      {systemMsg.time.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}
-    </Text>
-  </View>
-)}
-
-        {/* ✍️ TYPING */}
-{typing?.isTyping && (
-  <TypingDots typing avatar={user?.image} />
-)}
-
-        {/* 🔁 REPLY BAR */}
-        {replyMsg && (
-          <View
-            style={{
-              padding: 8,
-              backgroundColor: "#222",
-              borderLeftWidth: 3,
-              borderLeftColor: "#4ade80",
-            }}
-          >
-            <Text style={{ color: "#aaa" }}>
-              Replying to: {replyMsg.text}
-            </Text>
-
-            <TouchableOpacity onPress={() => setReplyMsg(null)}>
-              <Text style={{ color: "#f87171" }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      {/* ✅ INPUT */}
-      <View
-        style={{
-          borderTopWidth: 0.5,
-          borderColor: "rgba(255,255,255,0.08)",
-          backgroundColor: theme.header,
-        }}
+      {/* 🔥 MAIN */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={56}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            padding: 10,
-          }}
-        >
-          <TextInput
-            value={text}
-            onChangeText={setText}
-            multiline
-            placeholder="Message..."
-            placeholderTextColor="#777"
-            style={{
-              flex: 1,
-              backgroundColor: theme.bg,
-              color: "#fff",
-              borderRadius: 30,
-              paddingVertical: 10,
-              paddingHorizontal: 16,
-            }}
-          />
+        <View style={{ flex: 1 }}>
+          {/* 💬 MESSAGES */}
+          <View style={{ flex: 1 }}>
+            {isLoading ? (
+              <Text style={{ color: "#fff", padding: 16 }}>
+                Loading...
+              </Text>
+            ) : messages.length === 0 ? (
+              <Text style={{ color: "#aaa", padding: 16 }}>
+                Start conversation
+              </Text>
+            ) : (
+              <MessageList
+                messages={messages}
+                theme={theme}
+                highlightId={reactionMsg?._id}
+                currentUserId={currentUserId}
+                onReply={setReplyMsg}
+                onDoubleTap={handleDoubleTap}
+                onLongPress={(msg: Message) => {
+                  Keyboard.dismiss();
 
-          <TouchableOpacity
-            disabled={!text.trim().length}
-            activeOpacity={0.7}
-            onPress={() => {
-              if (!text.trim().length) return;
+                  setSelectedMsg(msg);
 
-              animateSend();
-              handleSend();
-            }}
-          >
-            <Animated.View
+                  setReactionMsg({
+                    ...msg,
+                    x: msg.x,
+                    y: msg.y,
+                    width: msg.width,
+                    height: msg.height,
+                  });
+                }}
+              />
+            )}
+
+            {/* ✅ MODAL */}
+            <MenuModal
+              selectedMsg={selectedMsg}
+              reactionMsg={reactionMsg}
+              setReactionMsg={setReactionMsg}
+              setSelectedMsg={(v: Message | null) => {
+                setSelectedMsg(v);
+                if (!v) setReactionMsg(null);
+              }}
+              setReplyMsg={setReplyMsg}
+              setDeleteConfirm={() => {}}
+              currentUserId={currentUserId}
+            />
+          </View>
+
+          {/* ✅ REPLY BAR */}
+          {replyMsg && (
+            <View
               style={{
-                marginLeft: 10,
-                transform: [{ scale: sendAnim }],
-                opacity: text.trim().length ? 1 : 0,
+                padding: 8,
+                backgroundColor: theme.inputBg,
+                borderLeftColor: theme.bubbleMe,
+                borderLeftWidth: 3,
+                
               }}
             >
-              <View
-                style={{
-                  backgroundColor: theme.bubbleMe,
-                  padding: 10,
-                  borderRadius: 50,
-                }}
+              <Text style={{ color: theme.headerText }}>
+                Replying: {replyMsg.text}
+              </Text>
+
+              <Text
+                onPress={() => setReplyMsg(null)}
+                style={{ color: "#f87171", marginTop: 4 }}
               >
-                <Ionicons name="send" size={18} color="#fff" />
-              </View>
-            </Animated.View>
-          </TouchableOpacity>
+                Cancel
+              </Text>
+            </View>
+          )}
+
+          {/* ⌨️ INPUT */}
+       <ChatInput
+  text={text}
+  setText={setText}
+  onSend={handleSend}
+  theme={theme}
+/>
         </View>
-      </View>
-
-      {/* MODALS */}
-      <ReactionBar
-        reactionMsg={reactionMsg}
-        setReactionMsg={setReactionMsg}
-        toggleReaction={toggleReaction}
-      />
-
-      <DeleteModal
-        visible={deleteConfirm && !!selectedMsg}
-        selectedMsg={selectedMsg}
-        deleteMessage={handleDelete}
-        setSelectedMsg={setSelectedMsg}
-        setDeleteConfirm={setDeleteConfirm}
-      />
-
-      <EditModal
-        visible={editModal}
-        scaleAnim={scaleAnim}
-        editText={editText}
-        setEditText={setEditText}
-        selectedMsg={selectedMsg}
-        setSelectedMsg={setSelectedMsg}
-        setEditModal={setEditModal}
-        editMessage={editMessage}
-      />
-
-      <InfoModal
-        visible={infoModal}
-        selectedMsg={selectedMsg}
-        setInfoModal={setInfoModal}
-      />
-
-      <MenuModal
-        selectedMsg={selectedMsg}
-        reactionMsg={reactionMsg}
-        scaleAnim={scaleAnim}
-        setSelectedMsg={setSelectedMsg}
-        setEditText={setEditText}
-        setEditModal={setEditModal}
-        setDeleteConfirm={setDeleteConfirm}
-        setInfoModal={setInfoModal}
-        currentUserId={currentUserId}
-      />
-    </View>
-  </KeyboardAvoidingView>
-);
+      </KeyboardAvoidingView>
+</Animated.View>
+</View>
+  );
 }

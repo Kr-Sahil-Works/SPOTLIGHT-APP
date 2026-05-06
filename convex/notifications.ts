@@ -1,12 +1,13 @@
 import { mutation, query } from "./_generated/server";
-import { getAuthenticatedUser } from "./users";
+import { getAuthenticatedUser, getAuthenticatedUserQuery } from "./users/users.core";
 
 /* =========================
    🔔 GET NOTIFICATIONS
 ========================= */
 export const getNotifications = query({
   handler: async (ctx) => {
-    const user = await getAuthenticatedUser(ctx);
+const user = await getAuthenticatedUserQuery(ctx);
+if (!user) return [];
 
     const notifications = await ctx.db
       .query("notifications")
@@ -30,21 +31,56 @@ export const getNotifications = query({
     const senderMap = new Map(
       senders.map(s => [s?._id.toString(), s])
     );
+const commentIds = notifications
+  .map(n => n.commentId)
+  .filter(Boolean);
 
-    return notifications.map((n) => {
-      const sender = senderMap.get(n.senderId.toString());
+const comments = await Promise.all(
+  commentIds.map(id => ctx.db.get(id!))
+);
 
-      return {
-        ...n,
-        sender: sender
-          ? {
-              _id: sender._id,
-              username: sender.username,
-              image: sender.image,
-            }
-          : null,
-      };
-    });
+const commentMap = new Map(
+  comments.map(c => [c?._id.toString(), c])
+);
+
+const postIds = notifications
+  .map(n => n.postId)
+  .filter(Boolean);
+
+const posts = await Promise.all(
+  postIds.map(id => ctx.db.get(id!))
+);
+
+const postMap = new Map(
+  posts.map(p => [p?._id.toString(), p])
+);
+
+return notifications.map((n) => {
+  const sender = senderMap.get(n.senderId.toString());
+
+  const comment = n.commentId
+    ? commentMap.get(n.commentId.toString())
+    : null;
+
+  const post = n.postId
+    ? postMap.get(n.postId.toString())
+    : null;
+
+  return {
+    ...n,
+    comment: comment?.content || null, // ✅ FIX
+    post: post
+      ? { imageUrl: post.imageUrl }
+      : null, // ✅ FIX
+    sender: sender
+      ? {
+          _id: sender._id,
+          username: sender.username,
+          image: sender.image,
+        }
+      : null,
+  };
+});
   },
 });
 
@@ -53,7 +89,8 @@ export const getNotifications = query({
 ========================= */
 export const getUnreadCount = query({
   handler: async (ctx) => {
-    const user = await getAuthenticatedUser(ctx);
+const user = await getAuthenticatedUserQuery(ctx);
+if (!user) return 0;
 
     const unread = await ctx.db
       .query("notifications")

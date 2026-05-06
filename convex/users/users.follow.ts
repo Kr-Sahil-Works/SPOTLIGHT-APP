@@ -1,6 +1,9 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { getAuthenticatedUser } from "./users.core";
+import {
+  getAuthenticatedUser,
+  getAuthenticatedUserQuery,
+} from "./users.core";
 
 /* =========================
    🔁 TOGGLE FOLLOW
@@ -15,37 +18,46 @@ export const toggleFollow = mutation({
     }
 
     const target = await ctx.db.get(args.followingId);
-    if (!target) throw new Error("User not found");
+
+    // 🔒 safety
+    if (!target || target.isDeleted) {
+      throw new Error("User not found");
+    }
 
     const existing = await ctx.db
       .query("follows")
       .withIndex("by_both", (q) =>
-        q.eq("followerId", currentUser._id).eq("followingId", args.followingId)
+        q.eq("followerId", currentUser._id)
+         .eq("followingId", args.followingId)
       )
       .first();
 
-    // 🔥 UNFOLLOW
+    /* =========================
+       🔥 UNFOLLOW
+    ========================= */
     if (existing) {
       await ctx.db.delete(existing._id);
 
-      // ✅ update counters
       await ctx.db.patch(currentUser._id, {
         following: Math.max(0, currentUser.following - 1),
       });
 
       await ctx.db.patch(args.followingId, {
-        followers: Math.max(0, (target.followers || 0) - 1),
+        followers: Math.max(0, target.followers - 1),
       });
 
       return "unfollowed";
     }
 
-    // 🔒 PRIVATE → REQUEST
+    /* =========================
+       🔒 PRIVATE → REQUEST
+    ========================= */
     if (target.isPrivate) {
       const req = await ctx.db
         .query("followRequests")
         .withIndex("by_sender_receiver", (q) =>
-          q.eq("senderId", currentUser._id).eq("receiverId", args.followingId)
+          q.eq("senderId", currentUser._id)
+           .eq("receiverId", args.followingId)
         )
         .first();
 
@@ -60,20 +72,28 @@ export const toggleFollow = mutation({
       return "requested";
     }
 
-    // 🔥 FOLLOW
+    /* =========================
+       🔥 FOLLOW
+    ========================= */
     await ctx.db.insert("follows", {
       followerId: currentUser._id,
       followingId: args.followingId,
       createdAt: Date.now(),
     });
+    await ctx.db.insert("notifications", {
+  receiverId: args.followingId,
+  senderId: currentUser._id,
+  type: "follow",
+  isRead: false,
+  createdAt: Date.now(),
+});
 
-    // ✅ update counters
     await ctx.db.patch(currentUser._id, {
       following: currentUser.following + 1,
     });
 
     await ctx.db.patch(args.followingId, {
-      followers: (target.followers || 0) + 1,
+      followers: target.followers + 1,
     });
 
     return "followed";
@@ -87,25 +107,44 @@ export const acceptFollowRequest = mutation({
   args: { requestId: v.id("followRequests") },
   handler: async (ctx, args) => {
     const user = await getAuthenticatedUser(ctx);
+
     const req = await ctx.db.get(args.requestId);
     if (!req || req.receiverId !== user._id) return;
 
-    await ctx.db.insert("follows", {
-      followerId: req.senderId,
-      followingId: user._id,
-      createdAt: Date.now(),
-    });
-
-    // ✅ update counters
     const sender = await ctx.db.get(req.senderId);
+    if (!sender || sender.isDeleted) return;
 
-    await ctx.db.patch(req.senderId, {
-      following: (sender?.following || 0) + 1,
-    });
+    // prevent duplicate follow
+    const existing = await ctx.db
+      .query("follows")
+      .withIndex("by_both", (q) =>
+        q.eq("followerId", req.senderId)
+         .eq("followingId", user._id)
+      )
+      .first();
 
-    await ctx.db.patch(user._id, {
-      followers: user.followers + 1,
-    });
+    if (!existing) {
+      await ctx.db.insert("follows", {
+        followerId: req.senderId,
+        followingId: user._id,
+        createdAt: Date.now(),
+      });
+      await ctx.db.insert("notifications", {
+  receiverId: user._id,
+  senderId: req.senderId,
+  type: "follow",
+  isRead: false,
+  createdAt: Date.now(),
+});
+
+      await ctx.db.patch(req.senderId, {
+        following: sender.following + 1,
+      });
+
+      await ctx.db.patch(user._id, {
+        followers: user.followers + 1,
+      });
+    }
 
     await ctx.db.delete(args.requestId);
   },
@@ -117,6 +156,11 @@ export const acceptFollowRequest = mutation({
 export const rejectFollowRequest = mutation({
   args: { requestId: v.id("followRequests") },
   handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    const req = await ctx.db.get(args.requestId);
+    if (!req || req.receiverId !== user._id) return;
+
     await ctx.db.delete(args.requestId);
   },
 });
@@ -127,7 +171,8 @@ export const rejectFollowRequest = mutation({
 export const isFollowing = query({
   args: { followingId: v.id("users") },
   handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const currentUser = await getAuthenticatedUserQuery(ctx);
+    if (!currentUser) return false;
 
     const follow = await ctx.db
       .query("follows")

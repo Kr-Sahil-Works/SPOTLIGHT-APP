@@ -36,26 +36,7 @@ export default function FeedSkeleton() {
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       
-      {/* HEADER */}
-      <View
-        style={{
-          height: 70,
-          paddingHorizontal: 12,
-          justifyContent: "center",
-        }}
-      >
-        <View
-          style={{
-            width: 120,
-            height: 20,
-            borderRadius: 6,
-            backgroundColor: COLORS.surface,
-            overflow: "hidden",
-          }}
-        >
-          <Shimmer />
-        </View>
-      </View>
+     
 
       {/* STORIES */}
       <View style={{ flexDirection: "row", paddingHorizontal: 10 }}>

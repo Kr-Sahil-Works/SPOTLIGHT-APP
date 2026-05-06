@@ -15,7 +15,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
@@ -31,6 +31,11 @@ export default function CreateScreen() {
   const [caption, setCaption] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
+const [blockingUI, setBlockingUI] = useState(false);
+
+const [showToast, setShowToast] = useState(false);
+const toastAnim = useRef(new Animated.Value(0)).current;
+
 
   const shimmer = useRef(new Animated.Value(0)).current;
 const breathe = useRef(new Animated.Value(0.6)).current;
@@ -91,6 +96,9 @@ useEffect(() => {
   const handleShare = async () => {
     if (isSharing) return;
     if (!selectedImage) return;
+setIsSharing(true);
+setBlockingUI(true);
+
 
     try {
       setIsSharing(true);
@@ -120,11 +128,27 @@ useEffect(() => {
       setSelectedImage(null);
       setCaption("");
 
-      router.replace("/(tabs)");
+
+
+setShowToast(true);
+
+Animated.timing(toastAnim, {
+  toValue: 1,
+  duration: 250,
+  useNativeDriver: true,
+}).start();
+
+setTimeout(() => {
+router.replace("/");
+}, 500);
+
+
     } catch (error) {
       console.log("Error sharing post:", error);
     } finally {
-      setIsSharing(false);
+  setIsSharing(false);
+  setBlockingUI(false);
+
     }
   };
 
@@ -144,6 +168,61 @@ const Shimmer = () => (
     ]}
   />
 );
+
+const RainbowLoader = () => {
+  const progress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: 1200,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
+
+  const translateX = progress.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-200, 400], // slide across screen
+  });
+
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 3,
+        zIndex: 9999,
+        backgroundColor: "transparent",
+      }}
+    >
+      <Animated.View
+        style={{
+          width: 200,
+          height: 3,
+          borderRadius: 2,
+          transform: [{ translateX }],
+          backgroundColor: "transparent",
+        }}
+      >
+        {/* 🌈 FAKE GRADIENT (multi color segments) */}
+        <View style={{ flexDirection: "row", flex: 1 }}>
+         <View style={{ flex: 1, backgroundColor: "#aeff18" }} />
+          <View style={{ flex: 1, backgroundColor: "#f5c918" }} />
+          <View style={{ flex: 1, backgroundColor: "#5c9702" }} />
+          <View style={{ flex: 1, backgroundColor: "#d1d100" }} />
+          <View style={{ flex: 1, backgroundColor: "#0dff00" }} />
+        </View>
+      </Animated.View>
+    </View>
+  );
+};
+
+
 
   /* ================= EMPTY STATE ================= */
 
@@ -315,6 +394,43 @@ if (!selectedImage) {
       style={styles.container}
       keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
+    {/* ✅ ADD HERE */}
+    {blockingUI && <RainbowLoader />}
+      {showToast && (
+  <Animated.View
+    style={{
+      position: "absolute",
+      bottom: 100,
+      alignSelf: "center",
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 20,
+      backgroundColor: "rgba(0,0,0,0.8)",
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.1)",
+      flexDirection: "row",
+      alignItems: "center",
+      transform: [
+        {
+          translateY: toastAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [40, 0],
+          }),
+        },
+        {
+          scale: toastAnim,
+        },
+      ],
+      opacity: toastAnim,
+      zIndex: 999,
+    }}
+  >
+    <Ionicons name="checkmark-circle" size={18} color="#22c55e" />
+    <Text style={{ color: "#fff", marginLeft: 8 }}>
+      Uploaded
+    </Text>
+  </Animated.View>
+)}
       <View style={styles.contentContainer}>
         
         {/* HEADER */}

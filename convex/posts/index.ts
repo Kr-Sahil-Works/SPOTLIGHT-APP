@@ -1,4 +1,8 @@
-export * from "./posts.core";
-export * from "./posts.feed";
-export * from "./posts.likes";
-export * from "./posts.user";
+export { getFeedPosts } from "./posts.feed";
+
+export { getPostsByUser } from "./posts.user";
+
+export { createPost, deletePost, generateUploadUrl } from "./posts.core";
+
+export { toggleLike } from "./posts.likes";
+

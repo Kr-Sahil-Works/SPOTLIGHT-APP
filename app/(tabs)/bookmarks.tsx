@@ -1,3 +1,4 @@
+import EmptyCenter from "@/components/EmptyCenter";
 import { Loader } from "@/components/Loader";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/feed.styles";
@@ -6,6 +7,7 @@ import { useQuery } from "convex/react";
 import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
 import * as MediaLibrary from "expo-media-library";
+import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -13,95 +15,92 @@ import {
   Animated,
   FlatList,
   Modal,
-  Platform, Image as RNImage, Text,
+  Platform,
+  Image as RNImage,
+  Text,
   ToastAndroid,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-
 
 /* ========================= */
 export default function Bookmarks() {
-const bookmarkedPosts = useQuery(
-  api.bookmarks.getBookmarkedPosts,
-  { limit: 30 }
-) ?? [];
+  const router = useRouter();
+
+  const bookmarkedPosts =
+    useQuery(api.bookmarks.getBookmarkedPosts, { limit: 30 }) ?? [];
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-const [downloading, setDownloading] = useState(false);
-const [showSuccess, setShowSuccess] = useState(false);
-const successScale = useRef(new Animated.Value(0)).current;
+  const [downloading, setDownloading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const scale = useRef(new Animated.Value(1)).current;
+  const successScale = useRef(new Animated.Value(0)).current;
 
+  /* ========================= */
   const openModal = (uri: string) => {
     setSelectedImage(uri);
     scale.setValue(1);
   };
 
-  const closeModal = () => {
-    setSelectedImage(null);
+  const closeModal = () => setSelectedImage(null);
+
+  const showToast = (msg: string) => {
+    if (Platform.OS === "android") {
+      ToastAndroid.show(msg, ToastAndroid.SHORT);
+    } else {
+      Alert.alert(msg);
+    }
   };
 
-  /* 📥 DOWNLOAD */
-const showToast = (msg: string) => {
-  if (Platform.OS === "android") {
-    ToastAndroid.show(msg, ToastAndroid.SHORT);
-  } else {
-    Alert.alert(msg);
-  }
-};
+  /* ========================= */
+  const downloadImage = async () => {
+    try {
+      if (!selectedImage || downloading) return;
 
-const downloadImage = async () => {
-  try {
-    if (!selectedImage || downloading) return;
+      setDownloading(true);
 
-    setDownloading(true);
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        showToast("Permission denied");
+        return;
+      }
 
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== "granted") {
-      showToast("Permission denied");
+      const filename = `img_${Date.now()}.jpg`;
+      const fileUri = FileSystem.documentDirectory + filename;
+
+      const res = await FileSystem.downloadAsync(selectedImage, fileUri);
+
+      const asset = await MediaLibrary.createAssetAsync(res.uri);
+      const album = await MediaLibrary.getAlbumAsync("Download");
+
+      if (album) {
+        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+      } else {
+        await MediaLibrary.createAlbumAsync("Download", asset, false);
+      }
+
+      /* ✅ SUCCESS ANIMATION */
+      setShowSuccess(true);
+      successScale.setValue(0);
+
+      Animated.spring(successScale, {
+        toValue: 1,
+        useNativeDriver: true,
+      }).start(() => {
+        setTimeout(() => setShowSuccess(false), 1200);
+      });
+
+      showToast("Downloaded ✅");
+    } catch {
+      showToast("Download failed ❌");
+    } finally {
       setDownloading(false);
-      return;
     }
+  };
 
-    const filename = `image_${Date.now()}.jpg`;
-    const fileUri = FileSystem.documentDirectory + filename;
-
-    const res = await FileSystem.downloadAsync(selectedImage, fileUri);
-
-    const asset = await MediaLibrary.createAssetAsync(res.uri);
-    const album = await MediaLibrary.getAlbumAsync("Download");
-
-if (album) {
-  await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-} else {
-  await MediaLibrary.createAlbumAsync("Download", asset, false);
-}
-
-   // 🔥 success animation
-setShowSuccess(true);
-
-successScale.setValue(0);
-
-Animated.spring(successScale, {
-  toValue: 1,
-  useNativeDriver: true,
-}).start(() => {
-  setTimeout(() => {
-    setShowSuccess(false);
-  }, 1200);
-});
-
-showToast("Image downloaded ✅");
-  } catch (e) {
-    showToast("Download failed ❌");
-  } finally {
-    setDownloading(false);
-  }
-};
-
+  /* ========================= */
   if (bookmarkedPosts === undefined) return <Loader />;
-  if (!bookmarkedPosts || bookmarkedPosts.length === 0) return <NoBookmarksFound />;
 
   return (
     <View style={styles.container}>
@@ -110,45 +109,49 @@ showToast("Image downloaded ✅");
         <Text style={styles.headerTitle}>Bookmarks</Text>
       </View>
 
-      {/* GRID */}
-      <FlatList
-        data={bookmarkedPosts ?? []}
-        keyExtractor={(item, i) => item?._id?.toString() || i.toString()}
-        numColumns={3}
-        removeClippedSubviews
-        initialNumToRender={9}
-        maxToRenderPerBatch={9}
-        windowSize={7}
-        renderItem={({ item }) => {
-          if (!item || !item.imageUrl) return null;
+      {/* EMPTY */}
+      {bookmarkedPosts.length === 0 ? (
+        <NoBookmarksFound onExplore={() => router.push("/")} />
+      ) : (
+        <FlatList
+          data={bookmarkedPosts}
+          keyExtractor={(item, i) =>
+            item?._id?.toString() || i.toString()
+          }
+          numColumns={3}
+          removeClippedSubviews
+          initialNumToRender={9}
+          windowSize={7}
+          renderItem={({ item }) => {
+            if (!item?.imageUrl) return null;
 
-          return (
-            <TouchableOpacity
-              onPress={() => openModal(item.imageUrl)}
-              style={{ width: "33.33%", padding: 3 }}
-            >
-              <View
-                style={{
-                  borderRadius: 14,
-                  overflow: "hidden",
-                  backgroundColor: "#0a0a0a",
-                }}
+            return (
+              <TouchableOpacity
+                onPress={() => openModal(item.imageUrl)}
+                style={{ width: "33.33%", padding: 3 }}
               >
-                <Image
-                source={{ uri: item.imageUrl }}
-                  style={{ width: "100%", aspectRatio: 1 }}
-                  contentFit="cover"
-                  cachePolicy="memory-disk"
-                    allowDownscaling 
-                    recyclingKey={item._id.toString()}
-                />
-              </View>
-            </TouchableOpacity>
-          );
-        }}
-      />
+                <View
+                  style={{
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    backgroundColor: "#0a0a0a",
+                  }}
+                >
+                  <Image
+                    source={{ uri: item.imageUrl }}
+                    style={{ width: "100%", aspectRatio: 1 }}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                  />
+                </View>
+              </TouchableOpacity>
+            );
+          }}
+        />
+      )}
 
-      {/* ✅ CLEAN MODAL */}
+      {/* ========================= */}
+      {/* MODAL */}
       <Modal visible={!!selectedImage} transparent animationType="fade">
         <View
           style={{
@@ -158,7 +161,7 @@ showToast("Image downloaded ✅");
             alignItems: "center",
           }}
         >
-          {/* CLOSE BACK */}
+          {/* CLOSE BG */}
           <TouchableOpacity
             style={{ position: "absolute", width: "100%", height: "100%" }}
             activeOpacity={1}
@@ -168,129 +171,89 @@ showToast("Image downloaded ✅");
           {/* IMAGE */}
           {selectedImage && (
             <Animated.View
-  style={{
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    transform: [{ scale }],
-  }}
-  renderToHardwareTextureAndroid={false}
->
-             <RNImage
-  source={{ uri: selectedImage }}
-  style={{
-    width: "100%",
-    height: "100%",
-    borderRadius: 12,
-  }}
-  resizeMode="contain"
-/> 
+              style={{
+                width: "100%",
+                height: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+                transform: [{ scale }],
+              }}
+            >
+              <RNImage
+                source={{ uri: selectedImage }}
+                style={{ width: "100%", height: "100%" }}
+                resizeMode="contain"
+              />
             </Animated.View>
           )}
-{showSuccess && (
-  <Animated.View
-    style={{
-      position: "absolute",
-      justifyContent: "center",
-      alignItems: "center",
-      transform: [{ scale: successScale }],
-    }}
-  >
-    <View
-      style={{
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: "rgba(0,0,0,0.7)",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Ionicons name="checkmark" size={40} color="#00ff88" />
-    </View>
-  </Animated.View>
-)}
+
+          {/* SUCCESS */}
+          {showSuccess && (
+            <Animated.View
+              style={{
+                position: "absolute",
+                transform: [{ scale: successScale }],
+              }}
+            >
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: "rgba(0,0,0,0.7)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Ionicons name="checkmark" size={40} color="#00ff88" />
+              </View>
+            </Animated.View>
+          )}
+
           {/* CONTROLS */}
-         <View
-  style={{
-    position: "absolute",
-    bottom: 60, // ✅ little higher
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  }}
->
-  <View
-    style={{
-      flexDirection: "row",
-      gap: 16,
-      paddingHorizontal: 18,
-      paddingVertical: 10,
-      borderRadius: 30,
+          <View
+            style={{
+              position: "absolute",
+              bottom: 60,
+              flexDirection: "row",
+              gap: 16,
+              padding: 10,
+              borderRadius: 30,
+              backgroundColor: "rgba(20,20,20,0.6)",
+            }}
+          >
+            <Btn icon="remove" onPress={() => scale.setValue(1)} />
+            <Btn icon="add" onPress={() => scale.setValue(1.5)} />
+            <Btn icon="download" onPress={downloadImage} loading={downloading} />
+          </View>
 
-      // 🔥 PREMIUM GLASS LOOK
-      backgroundColor: "rgba(20,20,20,0.65)",
-      borderWidth: 1,
-      borderColor: "rgba(255,255,255,0.08)",
-    }}
-  >
-    <Btn
-      icon="remove"
-      onPress={() =>
-        Animated.spring(scale, {
-          toValue: 1,
-          useNativeDriver: true,
-        }).start()
-      }
-    />
-
-    <Btn
-      icon="add"
-      onPress={() =>
-        Animated.spring(scale, {
-          toValue: 1.5,
-          useNativeDriver: true,
-        }).start()
-      }
-    />
-
-<Btn icon="download" onPress={downloadImage} loading={downloading} />
-  </View>
-</View>
-<View
-  style={{
-    position: "absolute",
-    top: 50,
-    right: 16,
-    zIndex: 20,
-  }}
->
-  <TouchableOpacity
-    onPress={closeModal}
-    style={{
-      width: 42,
-      height: 42,
-      borderRadius: 21,
-      backgroundColor: "rgba(20,20,20,0.7)",
-      justifyContent: "center",
-      alignItems: "center",
-    }}
-  >
-    <Ionicons name="close" size={22} color="#fff" />
-  </TouchableOpacity>
-</View>
+          {/* CLOSE BUTTON */}
+          <TouchableOpacity
+            onPress={closeModal}
+            style={{
+              position: "absolute",
+              top: 50,
+              right: 16,
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              backgroundColor: "rgba(20,20,20,0.7)",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Ionicons name="close" size={22} color="#fff" />
+          </TouchableOpacity>
         </View>
       </Modal>
     </View>
   );
 }
 
-/* BUTTON */
+/* ========================= */
 function Btn({ icon, onPress, loading }: any) {
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
       onPress={onPress}
       disabled={loading}
       style={{
@@ -303,18 +266,83 @@ function Btn({ icon, onPress, loading }: any) {
       }}
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#fff" />
+        <ActivityIndicator color="#fff" />
       ) : (
         <Ionicons name={icon} size={20} color="#fff" />
       )}
     </TouchableOpacity>
   );
 }
-/* EMPTY */
-function NoBookmarksFound() {
+
+/* ========================= */
+function NoBookmarksFound({ onExplore }: any) {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" }}>
-      <Text style={{ color: "#fff" }}>No Bookmarks</Text>
-    </View>
+    <EmptyCenter>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: 30,
+        }}
+      >
+        {/* ICON */}
+        <View
+          style={{
+            width: 90,
+            height: 90,
+            borderRadius: 45,
+            backgroundColor: "#111",
+            justifyContent: "center",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.08)",
+          }}
+        >
+          <Ionicons name="bookmark-outline" size={40} color="#666" />
+        </View>
+
+        {/* TITLE */}
+        <Text
+          style={{
+            marginTop: 20,
+            fontSize: 20,
+            color: "#fff",
+            fontWeight: "600",
+          }}
+        >
+          No bookmarks yet
+        </Text>
+
+        {/* SUBTEXT */}
+        <Text
+          style={{
+            marginTop: 8,
+            fontSize: 14,
+            color: "#888",
+            textAlign: "center",
+          }}
+        >
+          Save posts to view them later.
+        </Text>
+
+        {/* BUTTON */}
+        <TouchableOpacity
+          onPress={onExplore}
+          style={{
+            marginTop: 20,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderRadius: 25,
+            backgroundColor: "#00ff6a",
+          }}
+          activeOpacity={0.8}
+        >
+          <Text style={{ color: "#000", fontWeight: "600" }}>
+            Explore Posts
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </EmptyCenter>
   );
 }

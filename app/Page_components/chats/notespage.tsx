@@ -3,7 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useRef, useState } from "react";
 import {
-  Alert,
+  ActivityIndicator,
   Animated,
   Dimensions,
   FlatList,
@@ -11,7 +11,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ViewStyle,
+  ViewStyle
 } from "react-native";
 
 import { Id } from "@/convex/_generated/dataModel";
@@ -25,18 +25,23 @@ const { height } = Dimensions.get("window");
 export default function Notes() {
   const router = useRouter();
 
-  const notes: any = useQuery(api.messages.getNotes) || [];
-  const saveNote = useMutation(api.messages.saveNote);
-  const deleteNote = useMutation(api.messages.deleteNote);
-  const updateNote = useMutation(api.messages.updateNote);
+  const notes: any = useQuery(api.notes.index.getNotes) || [];
+  const saveNote = useMutation(api.notes.index.saveNote);
+  const deleteNote = useMutation(api.notes.index.deleteNote);
+  const updateNote = useMutation(api.notes.index.updateNote);
 const inputRef = useRef<TextInput>(null);
 
   const [text, setText] = useState("");
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-
+const [saving, setSaving] = useState(false);
   
+
+const tickScale = useRef(new Animated.Value(0)).current;
+const [showTick, setShowTick] = useState(false);
+
+const [deleteId, setDeleteId] = useState<Id<"notes"> | null>(null);
 
 const [pinned, setPinned] = useState<Id<"notes">[]>([]);
 
@@ -53,23 +58,25 @@ const [pinned, setPinned] = useState<Id<"notes">[]>([]);
     ]).start();
   };
 
-  const confirmDelete = (id: Id<"notes">) => {
-    Alert.alert(
-      "Delete Note",
-      "Are you sure?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await deleteNote({ id });
-            showToast("Deleted");
-          },
-        },
-      ]
-    );
-  };
+const confirmDelete = (id: Id<"notes">) => {
+  setDeleteId(id);
+};
+
+
+const showSuccessTick = () => {
+  setShowTick(true);
+  tickScale.setValue(0);
+
+  Animated.spring(tickScale, {
+    toValue: 1,
+    friction: 5,
+    useNativeDriver: true,
+  }).start();
+
+  setTimeout(() => {
+    setShowTick(false);
+  }, 1200);
+};
 
 const openSheet = (note?: any) => {
   if (note) {
@@ -110,8 +117,35 @@ const openSheet = (note?: any) => {
       const bPinned = pinned.includes(b._id);
       return aPinned === bPinned ? 0 : aPinned ? -1 : 1;
     });
-
+{showTick && (
+  <View
+    style={{
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <Animated.View
+      style={{
+        transform: [{ scale: tickScale }],
+        backgroundColor: "#22c55e",
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Ionicons name="checkmark" size={36} color="#000" />
+    </Animated.View>
+  </View>
+)}
   return (
+    
     <View style={{ flex: 1, backgroundColor: "#000", padding: 16 }}>
 
     <View
@@ -324,35 +358,50 @@ const openSheet = (note?: any) => {
       />
 
       {/* SAVE */}
-      <TouchableOpacity
-        onPress={async () => {
-          if (!text.trim()) return;
+<TouchableOpacity
+  disabled={saving}
+  style={{
+    marginTop: 12,
+    backgroundColor: saving ? "#166534" : "#22c55e", // darker when disabled
+    padding: 14,
+    borderRadius: 16,
+    alignItems: "center",
+    opacity: saving ? 0.7 : 1,
+  }}
+     onPress={async () => {
+  if (saving) return; // 🔥 block double tap
+  if (!text.trim()) return;
 
-          if (editing) {
-            await updateNote({
-              id: editing._id,
-              content: text,
-            });
-          } else {
-            await saveNote({
-              content: text,
-            });
-          }
+  setSaving(true);
 
-          showToast(editing ? "Updated" : "Saved");
-          closeSheet();
-        }}
-        style={{
-          marginTop: 12,
-          backgroundColor: "#22c55e",
-          padding: 14,
-          borderRadius: 16,
-          alignItems: "center",
-        }}
+  try {
+    if (editing) {
+      await updateNote({
+        noteId: editing._id,
+        content: text,
+      });
+    } else {
+      await saveNote({
+        content: text,
+      });
+    }
+
+    showSuccessTick();
+    closeSheet();
+  } catch (e) {
+    console.log(e);
+  } finally {
+    setSaving(false);
+  }
+}}
       >
-        <Text style={{ color: "#000", fontWeight: "600" }}>
-          {editing ? "Update" : "Save"}
-        </Text>
+ {saving ? (
+  <ActivityIndicator color="#000" size="small" />
+) : (
+  <Text style={{ color: "#000", fontWeight: "600" }}>
+    {editing ? "Update" : "Save"}
+  </Text>
+)}
       </TouchableOpacity>
 
       {/* CANCEL */}
@@ -388,6 +437,76 @@ const openSheet = (note?: any) => {
       >
         <Text style={{ color: "#fff" }}>{toastMsg}</Text>
       </Animated.View>
+
+
+      {deleteId && (
+  <View
+    style={{
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "#000000cf",
+    }}
+  >
+    <BlurView
+      intensity={80}
+      tint="dark"
+      style={{
+        width: "80%",
+        borderRadius: 20,
+        padding: 20,
+        backgroundColor: "#00000082",
+            overflow: "hidden",
+      }}
+    >
+      <Text style={{ color: "#fff", fontSize: 16, marginBottom: 16 }}>
+        Delete this note?
+      </Text>
+
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        {/* CANCEL */}
+        <TouchableOpacity
+          onPress={() => setDeleteId(null)}
+          style={{
+            flex: 1,
+            marginRight: 8,
+            padding: 12,
+            borderRadius: 16,
+            alignItems: "center",
+            backgroundColor: "rgba(255,255,255,0.08)",
+          }}
+        >
+          <Text style={{ color: "#fff" }}>Cancel</Text>
+        </TouchableOpacity>
+
+        {/* DELETE */}
+        <TouchableOpacity
+          onPress={async () => {
+            await deleteNote({ noteId: deleteId });
+            setDeleteId(null);
+            showSuccessTick();
+          }}
+          style={{
+            flex: 1,
+            marginLeft: 8,
+            padding: 12,
+            borderRadius: 16,
+            alignItems: "center",
+            backgroundColor: "#ff3b30", // iOS red
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "600" }}>
+            Delete
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </BlurView>
+  </View>
+)}
     </View>
   );
 }

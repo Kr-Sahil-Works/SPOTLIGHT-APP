@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthenticatedUser } from "./users";
+import { getAuthenticatedUser, getAuthenticatedUserQuery } from "./users/users.core";
 
 /* =========================
    🔖 TOGGLE BOOKMARK
@@ -8,7 +8,7 @@ import { getAuthenticatedUser } from "./users";
 export const toggleBookmark = mutation({
   args: { postId: v.id("posts") },
   handler: async (ctx, args) => {
-    const user = await getAuthenticatedUser(ctx);
+const user = await getAuthenticatedUser(ctx);
 const post = await ctx.db.get(args.postId);
 if (!post) throw new Error("Post not found");
     const existing = await ctx.db
@@ -43,7 +43,8 @@ export const getBookmarkedPosts = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const user = await getAuthenticatedUser(ctx);
+    const user = await getAuthenticatedUserQuery(ctx);
+if (!user) return [];
     const limit = args.limit ?? 30;
 
     const bookmarks = await ctx.db

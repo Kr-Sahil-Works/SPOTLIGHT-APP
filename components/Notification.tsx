@@ -51,13 +51,17 @@ export default function Notification({ notification }: any) {
             </TouchableOpacity>
           </Link>
 
-          <Text style={styles.action}>
-            {notification.type === "follow"
-              ? "started following you"
-              : notification.type === "like"
-              ? "liked your post"
-              : `commented: "${notification.comment}"`}
-          </Text>
+    <Text style={styles.action}>
+  {notification.type === "follow"
+    ? "started following you"
+    : notification.type === "like"
+    ? "liked your post"
+    : notification.type === "comment"
+    ? notification.comment
+      ? `commented: "${notification.comment}"`
+      : "commented on your post"
+    : ""}
+</Text>
 
           <Text style={styles.timeAgo}>
             {formatDistanceToNow(notification._creationTime, {
@@ -67,14 +71,27 @@ export default function Notification({ notification }: any) {
         </View>
       </View>
 
-      {notification.post && (
-      <Image
-  source={{ uri: notification.post.imageUrl }}
-  style={styles.postImage}
-  contentFit="cover"
-  cachePolicy="memory-disk"
-/>
-      )}
+     {notification.type === "follow" ? (
+  <View
+    style={{
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: "#111",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <Ionicons name="people" size={24} color="#8b5cf6" />
+  </View>
+) : notification.post ? (
+  <Image
+    source={{ uri: notification.post.imageUrl }}
+    style={styles.postImage}
+    contentFit="cover"
+    cachePolicy="memory-disk"
+  />
+) : null}
     </View>
   );
 }

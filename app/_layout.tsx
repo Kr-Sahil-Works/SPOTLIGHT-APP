@@ -56,22 +56,28 @@ function OnlineWrapper({ children }: any) {
    ✅ APP CONTENT
 ========================= */
 function AppContent({ onLayoutRootView }: any) {
-const { user } = useUser();
-const createUser = useMutation(api.users.index.createUser);
+  const { user } = useUser();
   const { isLoaded, isSignedIn } = useAuth();
 
-  if (!isLoaded) return null;
+  const createUser = useMutation(
+    api.users.index.createOrUpdateUser
+  );
+
 useEffect(() => {
-  if (!isSignedIn || !user) return;
+  if (!user || !isSignedIn) return;
 
   createUser({
-    username: user.primaryEmailAddress?.emailAddress.split("@")[0] || "user",
-    fullname: user.fullName || "User",
-    email: user.primaryEmailAddress?.emailAddress || "",
-    image: user.imageUrl || "",
     clerkId: user.id,
-  }).catch(() => {});
-}, [isSignedIn, user]);
+    email: user.primaryEmailAddress?.emailAddress || "",
+    fullname:
+      `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+      "User",
+    image: user.imageUrl || "",
+  });
+}, [user?.id]); // 🔥 IMPORTANT CHANGE
+
+  if (!isLoaded) return null;
+
   return (
     <OnlineWrapper>
       <SafeAreaProvider>

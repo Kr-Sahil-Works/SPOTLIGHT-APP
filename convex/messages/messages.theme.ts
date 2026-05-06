@@ -1,5 +1,4 @@
 import { v } from "convex/values";
-import { api } from "../_generated/api";
 import { mutation } from "../_generated/server";
 import { getAuthenticatedUser } from "../users";
 
@@ -11,17 +10,28 @@ export const setChatTheme = mutation({
   handler: async (ctx, args) => {
     const current = await getAuthenticatedUser(ctx);
 
-    const conversationId = await ctx.runMutation(
-      api.conversations.getOrCreateConversation,
-      { userId: args.userId }
-    );
+    const participants =
+      current._id < args.userId
+        ? [current._id, args.userId]
+        : [args.userId, current._id];
 
-    await ctx.db.patch(conversationId, {
+    const conversation = await ctx.db
+      .query("conversations")
+      .withIndex("by_participants", (q) =>
+        q.eq("participants", participants)
+      )
+      .first();
+
+    if (!conversation) {
+      throw new Error("Conversation not found");
+    }
+
+    await ctx.db.patch(conversation._id, {
       themeIndex: args.themeIndex,
     });
 
     await ctx.db.insert("messages", {
-      conversationId,
+      conversationId: conversation._id,
       senderId: current._id,
       receiverId: args.userId,
       text: `${current.fullname} changed the theme`,

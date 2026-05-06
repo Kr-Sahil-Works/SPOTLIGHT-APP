@@ -17,6 +17,20 @@ import {
   View,
 } from "react-native";
 
+export const IOS_COLORS = {
+  bg: "#0B0B0F",
+  card: "rgba(255,255,255,0.04)",
+  border: "rgba(255,255,255,0.06)",
+
+  primary: "#30D158",     
+  accent: "#d1c430",      
+  accentDim: "#d1c430",
+        // iOS green
+  danger: "#FF453A",
+  headercolor: "#079027"
+  
+};
+
 export default function AccountScreen() {
   const { user } = useUser();
   const router = useRouter();
@@ -27,12 +41,12 @@ export default function AccountScreen() {
   const toastAnim = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
 
-  const dbUser = useQuery(
-    api.users.getUserByClerkId,
-    user ? { clerkId: user.id } : "skip"
-  );
+ const dbUser = useQuery(api.users.index.getCurrentUser);
 
-  const stats = useQuery(api.stats.getUserStats);
+const stats = useQuery(
+  api.users.index.getUserStats,
+  dbUser?._id ? { userId: dbUser._id } : "skip"
+);
 
   useEffect(() => {
     Animated.loop(
@@ -69,10 +83,10 @@ export default function AccountScreen() {
     });
   };
 
-  if (!user || !dbUser) {
+  if (!user || dbUser === undefined || dbUser === null)  {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#22c55e" />
+        <ActivityIndicator color={IOS_COLORS.headercolor} />
       </View>
     );
   }
@@ -82,7 +96,7 @@ export default function AccountScreen() {
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color="#22c55e" />
+          <Ionicons name="arrow-back" size={22} color= {IOS_COLORS.headercolor }/>
         </TouchableOpacity>
         <Text style={styles.headerText}>Profile</Text>
         <View style={{ width: 22 }} />
@@ -111,7 +125,16 @@ export default function AccountScreen() {
                 },
               ]}
             />
-            <Image source={{ uri: dbUser.image }} style={styles.avatar} />
+      <Image
+  source={
+    dbUser?.image && dbUser.image.trim() !== ""
+      ? { uri: dbUser.image }
+      : require("@/assets/images/iconbg.png")
+  }
+  style={styles.avatar}
+  resizeMode="cover"
+  fadeDuration={0}
+/>
           </View>
 
           <Text style={styles.name}>{dbUser.fullname}</Text>
@@ -137,10 +160,12 @@ export default function AccountScreen() {
           <Text style={styles.cardTitle}>Activity</Text>
 
           <View style={styles.modularGrid}>
-            <ModBox title="Messages" value={stats?.messages ?? 0} icon="chatbubble" />
-            <ModBox title="Likes" value={stats?.likes ?? 0} icon="heart" />
-            <ModBox title="Bookmarks" value={stats?.bookmarks ?? 0} icon="bookmark" />
-            <ModBox title="Comments" value={stats?.comments ?? 0} icon="chatbox" />
+   <ModBox title="Posts" value={stats?.posts ?? 0} icon="grid" />
+<ModBox title="Followers" value={stats?.followers ?? 0} icon="people" />
+<ModBox title="Following" value={stats?.following ?? 0} icon="person-add" />
+<ModBox title="Likes" value={stats?.likes ?? 0} icon="heart" />
+<ModBox title="Comments" value={stats?.comments ?? 0} icon="chatbubble" />
+<ModBox title="Messages" value={stats?.messages ?? 0} icon="mail" />
           </View>
         </BlurView>
 
@@ -154,7 +179,7 @@ export default function AccountScreen() {
             <Ionicons
               name={restrictedOpen ? "chevron-up" : "chevron-down"}
               size={16}
-              color="#ef4444"
+              color={IOS_COLORS.danger}
             />
           </TouchableOpacity>
 
@@ -208,14 +233,14 @@ export default function AccountScreen() {
 
 const MiniStat = ({ value, label }: any) => (
   <View style={{ alignItems: "center" }}>
-    <Text style={{ color: "#ccff00" }}>{value}</Text>
+    <Text style={{ color: IOS_COLORS.accent }}>{value}</Text>
     <Text style={{ color: "#6b7280", fontSize: 11 }}>{label}</Text>
   </View>
 );
 
 const ModBox = ({ title, value, icon }: any) => (
   <View style={styles.modBox}>
-    <Ionicons name={icon} size={18} color="#22c55e" style={{ marginBottom: 6 }} />
+  <Ionicons name={icon} size={18} color={IOS_COLORS.primary} style={{ marginBottom: 6 }} />
     <Text style={styles.modValue}>{value}</Text>
     <Text style={styles.modLabel}>{title}</Text>
   </View>
@@ -239,7 +264,7 @@ const styles = StyleSheet.create({
     padding: 18,
   },
 
-  headerText: { color: "#22c55e", fontSize: 17 },
+  headerText: { color: IOS_COLORS.primary, fontSize: 17 },
 
   glassCard: {
     borderRadius: 22,
@@ -262,7 +287,7 @@ const styles = StyleSheet.create({
     width: 102,
     height: 102,
     borderRadius: 60,
-    backgroundColor: "#12bb0f49",
+    backgroundColor: "rgba(10,132,255,0.15)",
   },
 
   avatar: {
@@ -271,8 +296,8 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
 
-  name: { color: "#40c801", fontSize: 22, fontWeight: "700" },
-  email: { color: "#ccff00", fontSize: 12 },
+  name: { color: IOS_COLORS.primary, fontSize: 22, fontWeight: "700" },
+  email: { color: IOS_COLORS.accent, fontSize: 12 },
 
   row: {
     flexDirection: "row",
@@ -291,10 +316,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  memberTitle: { color: "#40c801", fontSize: 12 },
-  memberDate: { color: "#ccff00", fontSize: 18, fontWeight: "700" },
+  memberTitle: {  color: IOS_COLORS.primary, fontSize: 12 },
+  memberDate: {  color: IOS_COLORS.accent, fontSize: 18, fontWeight: "700" },
 
-  cardTitle: { color: "#40c801", marginBottom: 10 },
+  cardTitle: {  color: IOS_COLORS.primary, marginBottom: 10 },
 
   modularGrid: {
     flexDirection: "row",
@@ -313,7 +338,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  modValue: { color: "#ccff00", fontSize: 18, fontWeight: "600" },
+  modValue: {  color: IOS_COLORS.accent, fontSize: 18, fontWeight: "600" },
   modLabel: { color: "#ffffff", fontSize: 11 },
 
   dangerCard: {

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
-import { getAuthenticatedUser } from "../users";
+import { getAuthenticatedUserQuery } from "../users/users.core";
 
 /* =========================
    👤 USER POSTS
@@ -12,9 +12,9 @@ export const getPostsByUser = query({
   handler: async (ctx, args) => {
     const user = args.userId
       ? await ctx.db.get(args.userId)
-      : await getAuthenticatedUser(ctx);
+: await getAuthenticatedUserQuery(ctx);
 
-    if (!user) throw new Error("User not found");
+if (!user) return [];
 
     return await ctx.db
       .query("posts")

@@ -1,15 +1,16 @@
 import { query } from "../_generated/server";
-import { getAuthenticatedUser } from "../users";
+import { getAuthenticatedUserQuery } from "../users/users.core";
 
 export const getChatList = query({
   handler: async (ctx) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+const currentUser = await getAuthenticatedUserQuery(ctx);
+if (!currentUser) return [];
 
     const conversations = await ctx.db.query("conversations").take(100);
 
     const myConversations = conversations.filter((c) =>
       c.participants.some(
-        (p) => p.toString() === currentUser._id.toString()
+        (p) => p === currentUser._id
       )
     );
 
@@ -17,7 +18,7 @@ export const getChatList = query({
 
     for (const conv of myConversations) {
       const otherUserId = conv.participants.find(
-        (p) => p.toString() !== currentUser._id.toString()
+        (p) => p !== currentUser._id
       );
 
       if (!otherUserId) continue;

@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthenticatedUser } from "./users";
+import { getAuthenticatedUser } from "./users/users.core";
 
 /* =========================
    💬 ADD COMMENT

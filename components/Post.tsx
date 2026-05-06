@@ -54,14 +54,11 @@ export default function Post({ post, onDelete }: PostProps) {
 
   const { user } = useUser();
 
-  const currentUser = useQuery(
-    api.users.getUserByClerkId,
-    user ? { clerkId: user.id } : "skip"
-  );
+const currentUser = useQuery(api.users.index.getCurrentUser);
 
-  const toggleLike = useMutation(api.posts.toggleLike);
+  const toggleLike = useMutation(api.posts.index.toggleLike);
   const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
-  const deletePost = useMutation(api.posts.deletePost);
+  const deletePost = useMutation(api.posts.index.deletePost);
 
   useEffect(() => {
     Animated.loop(

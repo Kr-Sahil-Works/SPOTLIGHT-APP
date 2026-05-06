@@ -10,7 +10,7 @@
 
 import type * as bookmarks from "../bookmarks.js";
 import type * as comments from "../comments.js";
-import type * as conversations from "../conversations.js";
+import type * as conversations_index from "../conversations/index.js";
 import type * as http from "../http.js";
 import type * as messages_index from "../messages/index.js";
 import type * as notes_index from "../notes/index.js";
@@ -18,6 +18,7 @@ import type * as notes_notes from "../notes/notes.js";
 import type * as notifications from "../notifications.js";
 import type * as posts_index from "../posts/index.js";
 import type * as users_index from "../users/index.js";
+import type * as users_webhook from "../users/webhook.js";
 
 import type {
   ApiFromModules,
@@ -28,7 +29,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   bookmarks: typeof bookmarks;
   comments: typeof comments;
-  conversations: typeof conversations;
+  "conversations/index": typeof conversations_index;
   http: typeof http;
   "messages/index": typeof messages_index;
   "notes/index": typeof notes_index;
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   notifications: typeof notifications;
   "posts/index": typeof posts_index;
   "users/index": typeof users_index;
+  "users/webhook": typeof users_webhook;
 }>;
 
 /**

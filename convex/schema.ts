@@ -5,58 +5,83 @@ export default defineSchema({
   /* =========================
      👤 USERS
   ========================= */
-  users: defineTable({
-    username: v.string(),
-    fullname: v.string(),
-    email: v.string(),
-    bio: v.optional(v.string()),
-    image: v.string(),
+users: defineTable({
+  username: v.string(),
+  fullname: v.string(),
+  email: v.string(),
+  bio: v.optional(v.string()),
+  image: v.string(),
 
-    isPrivate: v.optional(v.boolean()),
-    isOnline: v.optional(v.boolean()),
-    lastSeen: v.optional(v.number()),
-    showOnline: v.optional(v.boolean()),
+  // 🔐 privacy / presence
+  isPrivate: v.boolean(),
+  isOnline: v.boolean(),
+  lastSeen: v.number(),
+  showOnline: v.boolean(),
 
-    activeChatWith: v.optional(v.id("users")),
+  activeChatWith: v.optional(v.id("users")),
 
-    followers: v.number(),
-    following: v.number(),
-    posts: v.number(),
+  // 📊 stats (keep counters — good decision)
+  followers: v.number(),
+  following: v.number(),
+  posts: v.number(),
 
-    clerkId: v.string(),
-    pushToken: v.optional(v.string()),
+  // 🔑 auth
+  clerkId: v.string(),
+  pushToken: v.optional(v.string()),
 
-    // 🔥 NEW
-    createdAt: v.number(),
-  })
-    .index("by_clerk_id", ["clerkId"])
-    .index("by_username", ["username"]),
+  // ⭐ profile extras (keep)
+  isVerified: v.optional(v.boolean()),
+  website: v.optional(v.string()),
+  location: v.optional(v.string()),
 
+  // 🧊 soft delete (correct)
+  isDeleted: v.optional(v.boolean()),
+  deletedAt: v.optional(v.number()),
 
-    followRequests: defineTable({
-  senderId: v.id("users"),
-  receiverId: v.id("users"),
+  // 🆕 ADD THESE (important)
+  lastActiveAt: v.optional(v.number()),   // better than only lastSeen
+  accountType: v.optional(               // future monetization
+    v.union(
+      v.literal("user"),
+      v.literal("creator"),
+      v.literal("business")
+    )
+  ),
+
   createdAt: v.number(),
 })
-  .index("by_receiver", ["receiverId"])
-  .index("by_sender_receiver", ["senderId", "receiverId"]),
+  .index("by_clerk_id", ["clerkId"])
+  .index("by_username", ["username"]),
+
+  /* =========================
+     🔁 FOLLOW REQUESTS
+  ========================= */
+  followRequests: defineTable({
+    senderId: v.id("users"),
+    receiverId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_receiver", ["receiverId"])
+    .index("by_sender_receiver", ["senderId", "receiverId"]),
+
 
   
   /* =========================
      📸 POSTS
   ========================= */
-  posts: defineTable({
-    userId: v.id("users"),
-    imageUrl: v.string(),
-    storageId: v.id("_storage"),
-    caption: v.optional(v.string()),
+posts: defineTable({
+  userId: v.id("users"),
+  imageUrl: v.string(),
+  storageId: v.id("_storage"),
+  caption: v.optional(v.string()),
 
-    likes: v.number(),
-    comments: v.number(),
+  likes: v.number(),
+  comments: v.number(),
 
-    // 🔥 NEW
-    createdAt: v.number(),
-  }).index("by_user", ["userId"]),
+  createdAt: v.number(),
+})
+.index("by_user", ["userId"])
+.index("by_user_time", ["userId", "createdAt"]),
 
   /* =========================
      ❤️ LIKES
@@ -78,7 +103,8 @@ export default defineSchema({
 
     // 🔥 NEW
     createdAt: v.number(),
-  }).index("by_post", ["postId"]),
+  }).index("by_post", ["postId"])
+  .index("by_post_time", ["postId", "createdAt"]),
 
   /* =========================
      👥 FOLLOWS
@@ -117,8 +143,8 @@ export default defineSchema({
   })
     .index("by_receiver", ["receiverId"])
     .index("by_post", ["postId"])
-    .index("by_receiver_read", ["receiverId", "isRead"]),
-
+    .index("by_receiver_read", ["receiverId", "isRead"])
+    .index("by_receiver_time", ["receiverId", "createdAt"]),
   /* =========================
      🔖 BOOKMARKS
   ========================= */
@@ -146,17 +172,65 @@ bookmarks: defineTable({
   /* =========================
      💬 CONVERSATIONS
   ========================= */
-  conversations: defineTable({
-    conversationKey: v.optional(v.string()),
-    participants: v.array(v.id("users")),
-    createdAt: v.number(),
-    lastMessage: v.optional(v.string()),
-lastMessageAt: v.optional(v.number()),
+conversations: defineTable({
+  /* 🔑 core */
+  conversationKey: v.optional(v.string()),
+  participants: v.array(v.id("users")),
+  createdAt: v.number(),
 
-    // ✅ CORRECT PLACE FOR THEME
-    themeIndex: v.optional(v.number()),
-  }).index("by_participants", ["participants"])
-  .index("by_key", ["conversationKey"]),
+  /* 💬 last message (for chat list) */
+  lastMessage: v.optional(v.string()),
+  lastMessageAt: v.optional(v.number()),
+  lastMessageSenderId: v.optional(v.id("users")),
+
+  /* 🎨 UI */
+  themeIndex: v.optional(v.number()),
+
+  /* 🔒 type */
+  type: v.optional(
+    v.union(
+      v.literal("private"),
+      v.literal("group"),
+      v.literal("public")
+    )
+  ),
+
+  /* 👻 hidden / archived */
+  hiddenFor: v.optional(v.array(v.id("users"))),
+  archivedFor: v.optional(v.array(v.id("users"))),
+
+  /* 🔕 mute */
+  mutedFor: v.optional(v.array(v.id("users"))),
+
+  /* 📌 pin */
+  pinnedFor: v.optional(v.array(v.id("users"))),
+
+  /* 🧹 clear chat (per user) */
+  clearedAt: v.optional(
+    v.array(
+      v.object({
+        userId: v.id("users"),
+        timestamp: v.number(),
+      })
+    )
+  ),
+
+  /* ❌ delete chat (soft delete per user) */
+  deletedFor: v.optional(v.array(v.id("users"))),
+
+  /* 📊 metadata */
+  isBlocked: v.optional(v.boolean()),
+  isReported: v.optional(v.boolean()),
+
+  /* 🆕 future ready */
+  customName: v.optional(v.string()),
+  customImage: v.optional(v.string()),
+
+  updatedAt: v.optional(v.number()),
+})
+.index("by_participants", ["participants"])
+.index("by_key", ["conversationKey"])
+.index("by_lastMessageAt", ["lastMessageAt"]),
 
   /* =========================
      💬 MESSAGES
@@ -192,6 +266,16 @@ lastMessageAt: v.optional(v.number()),
     edited: v.optional(v.boolean()),
     replyTo: v.optional(v.id("messages")),
     replyToText: v.optional(v.string()),
+
+
+    status: v.optional(
+  v.union(
+    v.literal("sent"),
+    v.literal("delivered"),
+    v.literal("seen")
+  )
+),
+
 
     reactions: v.optional(
       v.array(

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { getAuthenticatedUser } from "../users";
+import { getAuthenticatedUser, getAuthenticatedUserQuery } from "../users/users.core";
 
 export const saveNote = mutation({
   args: { content: v.string() },
@@ -24,7 +24,8 @@ export const saveNote = mutation({
 
 export const getNotes = query({
   handler: async (ctx) => {
-    const user = await getAuthenticatedUser(ctx);
+const user = await getAuthenticatedUserQuery(ctx);
+if (!user) return [];
 
     const notes = await ctx.db
       .query("notes")

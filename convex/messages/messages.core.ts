@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { api } from "../_generated/api";
 import { mutation, query } from "../_generated/server";
-import { getConversationInternal } from "../conversations";
-import { getAuthenticatedUser } from "../users";
+import { getConversationInternal } from "../conversations/conversations.core";
+import { getAuthenticatedUser, getAuthenticatedUserQuery } from "../users/users.core";
 
 export const sendMessage = mutation({
   args: {
@@ -16,10 +16,10 @@ export const sendMessage = mutation({
     if (!args.text.trim()) throw new Error("Empty message");
     const current = await getAuthenticatedUser(ctx);
 
-    const conversationId = await ctx.runMutation(
-      api.conversations.getOrCreateConversation,
-      { userId: args.receiverId }
-    );
+const conversationId = await ctx.runMutation(
+ api.conversations.index.createConversation,
+  { userId: args.receiverId }
+);
 
     await ctx.db.insert("messages", {
       conversationId,
@@ -46,10 +46,10 @@ export const markAsSeen = mutation({
   handler: async (ctx, args) => {
     const user = await getAuthenticatedUser(ctx);
 
-    const conversationId = await ctx.runMutation(
-      api.conversations.getOrCreateConversation,
-      { userId: args.userId }
-    );
+ const conversationId = await ctx.runMutation(
+api.conversations.index.createConversation,
+  { userId: args.userId }
+);
 
     const messages = await ctx.db
       .query("messages")
@@ -60,7 +60,7 @@ export const markAsSeen = mutation({
       .take(50);
 
     await Promise.all(
-      messages.map((msg) => {
+ messages.map((msg) => {
   if (
     msg.receiverId === user._id &&
     !msg.seen &&
@@ -68,6 +68,7 @@ export const markAsSeen = mutation({
   ) {
     return ctx.db.patch(msg._id, { seen: true });
   }
+  return null;
 })
     );
   },
@@ -80,13 +81,16 @@ export const getMessages = query({
     before: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUser(ctx);
+    const currentUser = await getAuthenticatedUserQuery(ctx);
+if (!currentUser) {
+  return { messages: [], currentUserId: null, nextCursor: null };
+}
 
-    const conversation = await getConversationInternal(
-      ctx,
-      currentUser._id.toString(),
-      args.userId.toString()
-    );
+  const conversation = await getConversationInternal(
+  ctx,
+  currentUser._id,
+  args.userId
+);
 
     if (!conversation) {
       return { messages: [], currentUserId: currentUser._id, nextCursor: null };

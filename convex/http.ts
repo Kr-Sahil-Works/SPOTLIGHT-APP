@@ -12,7 +12,7 @@ http.route({
     const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
 
     if (!webhookSecret) {
-      throw new Error("Missing CLERK_WEBHOOK_SECRET environment variable");
+      throw new Error("Missing CLERK_WEBHOOK_SECRET");
     }
 
     const svix_id = request.headers.get("svix-id");
@@ -43,28 +43,31 @@ http.route({
 
     const eventType = evt.type;
 
+    /* =========================
+       👤 USER CREATED
+    ========================= */
     if (eventType === "user.created") {
-      const { id, email_addresses, first_name, last_name, image_url } = evt.data;
+      const {
+        id,
+        email_addresses,
+        first_name,
+        last_name,
+        image_url,
+      } = evt.data;
 
       const email = email_addresses?.[0]?.email_address || "";
 
       const fullname =
-        [first_name, last_name]
-          .filter(Boolean)
-          .join(" ") || email.split("@")[0];
+        [first_name, last_name].filter(Boolean).join(" ") ||
+        email.split("@")[0];
 
-      try {
-        await ctx.runMutation(api.users.index.createUser, {
-          username: email.split("@")[0],
-          fullname,
-          email,
-          image: image_url,
-          clerkId: id,
-        });
-      } catch (error) {
-        console.error("Error creating user:", error);
-        return new Response("User creation failed", { status: 500 });
-      }
+      // ✅ Call mutation (no ctx.db here)
+      await ctx.runMutation(api.users.webhook.createUserFromWebhook, {
+        clerkId: id,
+        email,
+        fullname,
+        image: image_url,
+      });
     }
 
     return new Response("Webhook processed", { status: 200 });

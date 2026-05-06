@@ -9,13 +9,16 @@ import { useRouter } from "expo-router";
 
 export default function PushHandler() {
   const router = useRouter();
-  const saveToken = useMutation(api.users.savePushToken);
+  const saveToken = useMutation(api.users.index.savePushToken);
   const { isLoaded, isSignedIn } = useAuth();
   const savedRef = useRef(false);
 
+  /* ✅ SINGLE CORRECT CHECK */
+  const isExpoGo = Constants.appOwnership === "expo";
+
   useEffect(() => {
-    // 🚫 STOP EVERYTHING in Expo Go (CRITICAL)
-    if (Constants.appOwnership === "expo") {
+    /* 🚫 STOP EVERYTHING IN EXPO GO */
+    if (isExpoGo) {
       console.log("🚫 Push disabled in Expo Go");
       return;
     }
@@ -24,10 +27,8 @@ export default function PushHandler() {
 
     (async () => {
       try {
-        // ✅ lazy import (prevents crash)
         const Notifications = await import("expo-notifications");
 
-        // ✅ set handler AFTER import
         Notifications.setNotificationHandler({
           handleNotification: async () => ({
             shouldShowAlert: true,
@@ -38,10 +39,8 @@ export default function PushHandler() {
           }),
         });
 
-        // 🚨 wait for auth
         if (!isLoaded || !isSignedIn || savedRef.current) return;
 
-        // 🔔 get token
         const token = await registerForPushNotificationsAsync();
 
         if (token) {
@@ -49,7 +48,6 @@ export default function PushHandler() {
           savedRef.current = true;
         }
 
-        // 📲 handle click
         sub =
           Notifications.addNotificationResponseReceivedListener(
             (response: any) => {

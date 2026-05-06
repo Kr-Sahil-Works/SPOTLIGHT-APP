@@ -7,16 +7,22 @@ import { query } from "../_generated/server";
 export const getFeedPosts = query({
   args: {
     limit: v.optional(v.number()),
+    refreshKey: v.optional(v.number()), // ✅ add this
   },
   handler: async (ctx, args) => {
     const limit = args.limit ?? 50;
 
-    const posts = await ctx.db
+    let posts = await ctx.db
       .query("posts")
       .order("desc")
       .take(limit);
 
     if (posts.length === 0) return [];
+
+    // 🔥 OPTIONAL: shuffle on refresh
+    if (args.refreshKey) {
+      posts = [...posts].sort(() => Math.random() - 0.5);
+    }
 
     const userIds = [...new Set(posts.map(p => p.userId))];
 
@@ -33,11 +39,11 @@ export const getFeedPosts = query({
 
       return {
         ...post,
-   author: {
-  _id: author?._id,
-  username: author?.username || "user",
-  image: author?.image || "",
-},
+        author: {
+          _id: author?._id,
+          username: author?.username || "user",
+          image: author?.image || "",
+        },
       };
     });
   },

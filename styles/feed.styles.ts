@@ -245,8 +245,8 @@ header: {
 },
 
 headerTitle: {
-  fontSize: 20,
-  fontFamily: "JetBrainsMono-Medium",
+  fontSize: 22,
+  fontFamily: "JetBrainsMono-Bold", // or Medium if Bold not loaded
   color: COLORS.primary,
   letterSpacing: 1,
 },
