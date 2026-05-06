@@ -262,6 +262,7 @@ conversations: defineTable({
     ),
 
     meta: v.optional(v.any()),
+    systemCount: v.optional(v.number()),
 
     edited: v.optional(v.boolean()),
     replyTo: v.optional(v.id("messages")),

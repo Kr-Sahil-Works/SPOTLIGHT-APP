@@ -66,6 +66,8 @@ const MessageItem = React.memo(function MessageItem({
 
   const isHighlighted = highlightId === item._id;
 
+ 
+
   /* ✅ SIMPLE SWIPE */
   const panX = useRef(new Animated.Value(0)).current;
 
@@ -122,6 +124,72 @@ const MessageItem = React.memo(function MessageItem({
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
+
+   if (item.type === "system") {
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        marginVertical: 12,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+
+          backgroundColor: "#ffffff10",
+
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+
+          borderRadius: 999,
+        }}
+      >
+        <Text
+          style={{
+            color: "#888",
+            fontSize: 12,
+          }}
+        >
+          {item.text}
+        </Text>
+
+        {(item.systemCount ?? 1) >
+          1 && (
+          <View
+            style={{
+              marginLeft: 8,
+
+              minWidth: 18,
+              height: 18,
+
+              borderRadius: 9,
+
+              backgroundColor:
+                theme.bubbleMe,
+
+              alignItems: "center",
+              justifyContent: "center",
+
+              paddingHorizontal: 4,
+            }}
+          >
+            <Text
+              style={{
+                color: "#000",
+                fontSize: 10,
+                fontWeight: "700",
+              }}
+            >
+              {item.systemCount}
+            </Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
 
   return (
     <Animated.View
@@ -224,7 +292,6 @@ const MessageItem = React.memo(function MessageItem({
                 </Text>
               </Pressable>
             )}
-
             {/* ✅ BUBBLE */}
             <View
               style={{

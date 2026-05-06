@@ -4,7 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Text,
-  View,
+  View
 } from "react-native";
 
 import { CHAT_THEMES } from "@/constants/chatThemes";
@@ -14,13 +14,13 @@ import { useState } from "react";
 import { Animated } from "react-native";
 import ChatHeader from "./components/ChatHeader";
 import ChatInput from "./components/ChatInput";
+import ChatSkeleton from "./components/ChatSkeleton";
 import MessageList from "./components/MessageList";
 import ThemeModal from "./components/ThemeModal";
 import useMessages from "./hooks/useMessages";
 import useSend from "./hooks/useSend";
 import useTheme from "./hooks/useTheme";
 import MenuModal from "./modals/MenuModal";
-
 
 export default function ChatScreen() {
 
@@ -123,9 +123,7 @@ const theme =
           {/* 💬 MESSAGES */}
           <View style={{ flex: 1 }}>
             {isLoading ? (
-              <Text style={{ color: "#fff", padding: 16 }}>
-                Loading...
-              </Text>
+              <ChatSkeleton theme={theme} />
             ) : messages.length === 0 ? (
               <Text style={{ color: "#aaa", padding: 16 }}>
                 Start conversation

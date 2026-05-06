@@ -23,6 +23,15 @@ export type Message = {
   reactions?: Reaction[];
 
   edited?: boolean;
+  type?: "text" | "system";
+
+systemType?:
+  | "theme_change"
+  | "date";
+
+systemCount?: number;
+
+meta?: any;
   optimistic?: boolean;
 
   // layout (measured)

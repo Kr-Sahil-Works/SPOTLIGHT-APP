@@ -101,6 +101,24 @@ useEffect(() => {
     liveData.currentUserId ??
       undefined
   );
+
+  setMessages((prev) => {
+    const existingIds = new Set(
+      prev.map((m) => m._id)
+    );
+
+    const fresh =
+      liveData.messages.filter(
+        (m) =>
+          !existingIds.has(m._id)
+      );
+
+    if (!fresh.length) {
+      return prev;
+    }
+
+    return [...prev, ...fresh];
+  });
 }, [liveData]);
 
   const loadOlder = async () => {

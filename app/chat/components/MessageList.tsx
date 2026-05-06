@@ -99,26 +99,6 @@ export default function MessageList({
     setNewMsgCount(0);
   };
 
-
-  {loadingMore && (
-  <View
-    style={{
-      paddingTop: 10,
-      alignItems: "center",
-    }}
-  >
-    <Text
-      style={{
-        color: theme.headerText,
-        fontSize: 12,
-      }}
-    >
-      Loading older messages...
-    </Text>
-  </View>
-)}
-
-
   return (
     <View
       style={{
@@ -127,6 +107,37 @@ export default function MessageList({
           theme.background,
       }}
     >
+      {loadingMore && (
+  <View
+    style={{
+      position: "absolute",
+
+      top: 8,
+
+      alignSelf: "center",
+
+      zIndex: 999,
+
+      backgroundColor: "#000000aa",
+
+      paddingHorizontal: 12,
+
+      paddingVertical: 6,
+
+      borderRadius: 999,
+    }}
+  >
+    <Text
+      style={{
+        color: "#fff",
+
+        fontSize: 12,
+      }}
+    >
+      Loading Chats...
+    </Text>
+  </View>
+)}
       <FlashList
         ref={listRef}
         data={messages}
