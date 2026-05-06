@@ -77,52 +77,96 @@ api.conversations.index.createConversation,
 export const getMessages = query({
   args: {
     userId: v.id("users"),
+
     limit: v.optional(v.number()),
+
     before: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUserQuery(ctx);
-if (!currentUser) {
-  return { messages: [], currentUserId: null, nextCursor: null };
-}
 
-  const conversation = await getConversationInternal(
-  ctx,
-  currentUser._id,
-  args.userId
-);
+  handler: async (ctx, args) => {
+    const currentUser =
+      await getAuthenticatedUserQuery(ctx);
+
+    if (!currentUser) {
+      return {
+        messages: [],
+        currentUserId: null,
+        nextCursor: null,
+      };
+    }
+
+    const conversation =
+      await getConversationInternal(
+        ctx,
+        currentUser._id,
+        args.userId
+      );
 
     if (!conversation) {
-      return { messages: [], currentUserId: currentUser._id, nextCursor: null };
+      return {
+        messages: [],
+        currentUserId:
+          currentUser._id,
+        nextCursor: null,
+      };
     }
 
     const limit = args.limit ?? 30;
 
     let q = ctx.db
       .query("messages")
-      .withIndex("by_conversation_time", (qq) =>
-        qq.eq("conversationId", conversation._id)
+      .withIndex(
+        "by_conversation_time",
+        (qq) =>
+          qq.eq(
+            "conversationId",
+            conversation._id
+          )
       )
       .order("desc");
 
     if (args.before) {
       q = q.filter((qq) =>
-        qq.lt(qq.field("createdAt"), args.before!)
+        qq.lt(
+          qq.field("createdAt"),
+          args.before!
+        )
       );
     }
 
-    const messages = await q.take(limit);
+    const messages =
+      await q.take(limit);
+
+      const enriched = await Promise.all(
+  messages.map(async (m) => {
+    const sender = await ctx.db.get(
+      m.senderId
+    );
+
+    return {
+      ...m,
+      senderImage: sender?.image || "",
+    };
+  })
+);
 
     const nextCursor =
       messages.length > 0
-        ? messages[messages.length - 1].createdAt
+        ? messages[
+            messages.length - 1
+          ].createdAt
         : null;
 
     return {
-      messages: messages.reverse(),
-      currentUserId: currentUser._id,
+      messages: enriched.reverse(),
+
+      currentUserId:
+        currentUser._id,
+
       nextCursor,
-      themeIndex: conversation.themeIndex ?? 0,
+
+      themeIndex:
+        conversation.themeIndex ?? 0,
     };
   },
 });

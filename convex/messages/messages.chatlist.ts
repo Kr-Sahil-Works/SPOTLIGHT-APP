@@ -32,7 +32,7 @@ const lastMessages = await ctx.db
     q.eq("conversationId", conv._id)
   )
   .order("desc")
-  .take(20);
+  .take(30);
 
 const unreadCount = lastMessages.filter(
   (m) =>

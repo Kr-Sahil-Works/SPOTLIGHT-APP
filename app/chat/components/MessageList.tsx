@@ -28,6 +28,10 @@ type Props = {
   onDoubleTap?: (msg: Message) => void;
 
   highlightId?: string;
+
+  loadOlder?: () => void;
+
+  loadingMore?: boolean;
 };
 
 export default function MessageList({
@@ -39,6 +43,9 @@ export default function MessageList({
   onReact,
   onDoubleTap,
   highlightId,
+
+  loadOlder,
+  loadingMore,
 }: Props) {
   const listRef = useRef<any>(null);
 
@@ -92,6 +99,26 @@ export default function MessageList({
     setNewMsgCount(0);
   };
 
+
+  {loadingMore && (
+  <View
+    style={{
+      paddingTop: 10,
+      alignItems: "center",
+    }}
+  >
+    <Text
+      style={{
+        color: theme.headerText,
+        fontSize: 12,
+      }}
+    >
+      Loading older messages...
+    </Text>
+  </View>
+)}
+
+
   return (
     <View
       style={{
@@ -117,6 +144,13 @@ export default function MessageList({
             contentSize,
             layoutMeasurement,
           } = e.nativeEvent;
+
+       if (
+  contentOffset.y < 80 &&
+  !loadingMore
+) {
+  loadOlder?.();
+}
 
           const distanceFromBottom =
             contentSize.height -
@@ -150,7 +184,7 @@ export default function MessageList({
               item={item}
               isMe={isMe}
               theme={theme}
-              avatar=""
+              avatar={item.senderImage || ""}
               isGrouped={!!isGrouped}
               highlightId={highlightId}
               onLongPress={(

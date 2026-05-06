@@ -42,13 +42,13 @@ const [previewThemeIndex, setPreviewThemeIndex] = useState<number | null>(null);
     return <Text>Invalid chat</Text>;
   }
 
-
-
 const {
   messages,
   currentUserId,
   themeIndex,
   isLoading,
+  loadOlder,
+  loadingMore,
 } = useMessages(userId);
 
 const activeThemeIndex =
@@ -56,12 +56,6 @@ const activeThemeIndex =
 const theme =
   CHAT_THEMES[activeThemeIndex ?? 0] ||
   CHAT_THEMES[0];
-
-
-
-
-
-
 
   const { text, setText, handleSend } =
     useSend(userId, replyMsg, setReplyMsg);
@@ -141,6 +135,8 @@ const theme =
                 messages={messages}
                 theme={theme}
                 highlightId={reactionMsg?._id}
+                loadOlder={loadOlder}
+                loadingMore={loadingMore}
                 currentUserId={currentUserId}
                 onReply={setReplyMsg}
                 onDoubleTap={handleDoubleTap}

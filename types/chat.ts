@@ -35,4 +35,5 @@ export type Message = {
   fingerX?: number;
   fingerY?: number;
 
+  senderImage?: string;
 };
