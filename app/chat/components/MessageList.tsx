@@ -1,6 +1,7 @@
 import { FlashList } from "@shopify/flash-list";
 import { useEffect, useRef, useState } from "react";
 import {
+  Keyboard,
   Text,
   TouchableOpacity,
   View,
@@ -49,6 +50,12 @@ export default function MessageList({
 }: Props) {
   const listRef = useRef<any>(null);
 
+  const scrollOffsetRef =
+  useRef(0);
+
+const themeChangingRef =
+  useRef(false);
+
   const tapRef = useRef<
     Record<Id<"messages">, TapState>
   >({});
@@ -77,7 +84,10 @@ export default function MessageList({
 
     lastIdRef.current = latest._id;
 
-    if (isAtBottom.current) {
+    if (
+  isAtBottom.current &&
+  !themeChangingRef.current
+) {
       requestAnimationFrame(() => {
         listRef.current?.scrollToEnd({
           animated: true,
@@ -88,6 +98,41 @@ export default function MessageList({
       setShowScrollBtn(true);
     }
   }, [messages]);
+  
+  
+  /* ✅ KEYBOARD AUTO SCROLL */
+useEffect(() => {
+  const sub = Keyboard.addListener(
+    "keyboardDidShow",
+    () => {
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToEnd({
+          animated: false,
+        });
+      });
+    }
+  );
+
+  return () => sub.remove();
+}, []);
+
+useEffect(() => {
+  themeChangingRef.current =
+    true;
+
+  requestAnimationFrame(() => {
+    listRef.current?.scrollToOffset({
+      offset:
+        scrollOffsetRef.current,
+      animated: false,
+    });
+
+    setTimeout(() => {
+      themeChangingRef.current =
+        false;
+    }, 120);
+  });
+}, [theme]);
 
   /* ✅ SCROLL TO BOTTOM */
   const scrollToBottom = () => {
@@ -103,8 +148,10 @@ export default function MessageList({
     <View
       style={{
         flex: 1,
-        backgroundColor:
-          theme.background,
+       backgroundColor:
+  theme.wallpaper
+    ? "transparent"
+    : theme.background
       }}
     >
       {loadingMore && (
@@ -139,6 +186,9 @@ export default function MessageList({
   </View>
 )}
       <FlashList
+maintainVisibleContentPosition={{
+  startRenderingFromBottom: true,
+}}
         ref={listRef}
         data={messages}
         keyExtractor={(item) => item._id.toString()}
@@ -150,6 +200,8 @@ export default function MessageList({
           false
         }
         onScroll={(e) => {
+  scrollOffsetRef.current =
+    e.nativeEvent.contentOffset.y;
           const {
             contentOffset,
             contentSize,

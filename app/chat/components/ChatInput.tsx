@@ -80,8 +80,10 @@ Animated.timing(widthAnim, {
       style={{
         padding: 10,
 
-        backgroundColor:
-          theme.background,
+      backgroundColor:
+  theme.wallpaper
+    ? "transparent"
+    : theme.background,
       }}
     >
       <View

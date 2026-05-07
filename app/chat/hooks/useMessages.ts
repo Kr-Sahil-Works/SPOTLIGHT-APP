@@ -15,7 +15,7 @@ type UseMessagesResult = {
 
   currentUserId?: Id<"users">;
 
-  themeIndex: number;
+  themeIndex: number | null;
 
   isLoading: boolean;
 
@@ -40,8 +40,8 @@ export default function useMessages(
   const [messages, setMessages] =
     useState<Message[]>([]);
 
-  const [themeIndex, setThemeIndex] =
-    useState(0);
+const [themeIndex, setThemeIndex] =
+  useState<number | null>(null);
 
   const [currentUserId, setCurrentUserId] =
     useState<Id<"users"> | undefined>();

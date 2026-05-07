@@ -18,14 +18,14 @@ export default function ChatHeader() {
 
         <View style={{ flexDirection: "row", gap: 14 }}>
           <TouchableOpacity
-     onPress={() => router.push("/chat/notespage")}
+     onPress={() => router.push("/notespage")}
             style={{ backgroundColor: "rgba(255,255,255,0.05)", padding: 6, borderRadius: 10 }}
           >
             <Image source={require("@/assets/images/notes.png")} style={{ width: 28, height: 28 }} />
           </TouchableOpacity>
 
           <TouchableOpacity
-      onPress={() => router.push("/chat/calculator")}
+      onPress={() => router.push("/calculator")}
             style={{ backgroundColor: "rgba(255,255,255,0.05)", padding: 6, borderRadius: 10 }}
           >
             <Image source={require("@/assets/images/calc.png")} style={{ width: 28, height: 28 }} />

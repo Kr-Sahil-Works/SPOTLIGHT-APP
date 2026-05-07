@@ -43,7 +43,7 @@ export default function ChatHeader({ userId, onOpenTheme, theme }: Props){
           width: 36,
           height: 36,
           borderRadius: 18,
-          marginLeft: 10,
+          marginLeft: 14,
         }}
       />
 
@@ -63,12 +63,12 @@ export default function ChatHeader({ userId, onOpenTheme, theme }: Props){
 
       {/* CALL BTN */}
       <TouchableOpacity style={{ marginRight: 14 }}>
-        <Ionicons name="call-outline" size={22} color={theme.headerText} />
+        <Ionicons name="call-sharp" size={22} color={theme.headerText} />
       </TouchableOpacity>
 
       {/* THEME BTN */}
-      <TouchableOpacity onPress={onOpenTheme}>
-        <Ionicons name="color-palette-outline" size={22} color={theme.headerText} />
+      <TouchableOpacity style={{ marginRight: 5 }} onPress={onOpenTheme}>
+        <Ionicons name="color-palette-sharp" size={22} color={theme.headerText} />
       </TouchableOpacity>
     </View>
   );

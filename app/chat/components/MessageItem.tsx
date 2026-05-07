@@ -36,18 +36,27 @@ type Props = {
 
 const areEqual = (prev: Props, next: Props) => {
   return (
-    prev.item._id === next.item._id &&
-    prev.item.text === next.item.text &&
-    prev.item.edited === next.item.edited &&
-    prev.item.replyToText === next.item.replyToText &&
-    JSON.stringify(prev.item.reactions) ===
-      JSON.stringify(next.item.reactions) &&
-    prev.highlightId === next.highlightId &&
-    prev.isGrouped === next.isGrouped &&
-    prev.isMe === next.isMe &&
-    prev.theme?.bubbleMe === next.theme?.bubbleMe &&
-    prev.theme?.bubbleOther === next.theme?.bubbleOther
-  );
+  prev.item._id ===
+    next.item._id &&
+  prev.item.text ===
+    next.item.text &&
+  prev.item.edited ===
+    next.item.edited &&
+  prev.item.replyToText ===
+    next.item.replyToText &&
+  JSON.stringify(
+    prev.item.reactions
+  ) ===
+    JSON.stringify(
+      next.item.reactions
+    ) &&
+  prev.highlightId ===
+    next.highlightId &&
+  prev.isGrouped ===
+    next.isGrouped &&
+  prev.isMe === next.isMe &&
+  prev.theme === next.theme
+);
 };
 
 const MessageItem = React.memo(function MessageItem({

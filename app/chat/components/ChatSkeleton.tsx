@@ -1,14 +1,14 @@
 import { ChatTheme } from "@/constants/chatThemes";
 
 import {
-    Animated,
-    ScrollView,
-    View,
+  Animated,
+  ScrollView,
+  View,
 } from "react-native";
 
 import {
-    useEffect,
-    useRef,
+  useEffect,
+  useRef,
 } from "react";
 
 type Props = {
@@ -34,85 +34,24 @@ export default function ChatSkeleton({
     ).start();
   }, []);
 
-  const opacity =
-    shimmer.interpolate({
-      inputRange: [0, 0.5, 1],
+const opacity =
+  shimmer.interpolate({
+    inputRange: [0, 0.5, 1],
 
-      outputRange: [0.3, 0.6, 0.3],
-    });
+    outputRange: [0.55, 1, 0.55],
+  });
 
   return (
     <View
       style={{
         flex: 1,
 
-        backgroundColor:
-          theme.background,
+backgroundColor:
+  theme.wallpaper
+    ? "transparent"
+    : theme.background,
       }}
     >
-      {/* 🔝 HEADER */}
-      <Animated.View
-        style={{
-          opacity,
-
-          height: 72,
-
-          paddingHorizontal: 14,
-
-          flexDirection: "row",
-
-          alignItems: "center",
-
-          borderBottomWidth: 1,
-
-          borderBottomColor:
-            "#232323",
-        }}
-      >
-        <View
-          style={{
-            width: 42,
-            height: 42,
-
-            borderRadius: 21,
-
-            backgroundColor:
-              "#1a1a1a",
-          }}
-        />
-
-        <View
-          style={{
-            marginLeft: 12,
-          }}
-        >
-          <View
-            style={{
-              width: 110,
-              height: 14,
-
-              borderRadius: 8,
-
-              backgroundColor:
-                "#1a1a1a",
-
-              marginBottom: 6,
-            }}
-          />
-
-          <View
-            style={{
-              width: 70,
-              height: 10,
-
-              borderRadius: 8,
-
-              backgroundColor:
-                "#232323",
-            }}
-          />
-        </View>
-      </Animated.View>
 
       {/* 💬 CHAT */}
       <ScrollView
@@ -134,16 +73,32 @@ export default function ChatSkeleton({
           true,
           false,
           true,
+          true,
+          false,
+          false,
+          true,
+          true,
+          false,
+          true,
           false,
           false,
           true,
+           false,
           true,
-          false,
+           false,
           true,
+        
+    
         ].map((isMe, i) => (
           <Animated.View
             key={i}
             style={{
+              transform: [
+  {
+    scale:
+      isMe ? 0.96 : 1,
+  },
+],
               opacity,
 
               alignItems: isMe
@@ -155,23 +110,19 @@ export default function ChatSkeleton({
           >
             <View
               style={{
-                width: isMe
-                  ? 90 +
-                    ((i * 17) % 70)
-                  : 120 +
-                    ((i * 13) % 80),
+         width: isMe
+  ? 110 +
+    ((i * 37) % 140)
+  : 110 +
+    ((i * 29) % 170),
 
-                height:
-                  i % 5 === 0
-                    ? 44
-                    : 34,
+               height: 40,
 
-                borderRadius: 18,
+                borderRadius: 16,
 
                 backgroundColor:
                   isMe
-                    ? theme.bubbleMe +
-                      "35"
+                    ?theme.bubbleMe + "18"
                     : "#1a1a1a",
               }}
             />
@@ -179,52 +130,6 @@ export default function ChatSkeleton({
         ))}
       </ScrollView>
 
-      {/* ⌨️ INPUT */}
-      <Animated.View
-        style={{
-          opacity,
-
-          paddingHorizontal: 10,
-
-          paddingVertical: 10,
-
-          borderTopWidth: 1,
-
-          borderTopColor:
-            "#232323",
-
-          flexDirection: "row",
-
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-
-            height: 44,
-
-            borderRadius: 24,
-
-            backgroundColor:
-              "#1a1a1a",
-          }}
-        />
-
-        <View
-          style={{
-            width: 42,
-            height: 42,
-
-            borderRadius: 21,
-
-            marginLeft: 8,
-
-            backgroundColor:
-              "#ffffff12"
-          }}
-        />
-      </Animated.View>
     </View>
   );
 }
