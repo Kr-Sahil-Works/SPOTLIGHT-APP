@@ -6,7 +6,10 @@ export const getChatList = query({
 const currentUser = await getAuthenticatedUserQuery(ctx);
 if (!currentUser) return [];
 
-    const conversations = await ctx.db.query("conversations").take(100);
+    const conversations =
+  await ctx.db
+    .query("conversations")
+    .collect();
 
     const myConversations = conversations.filter((c) =>
       c.participants.some(
@@ -48,7 +51,12 @@ const unreadCount = lastMessages.filter(
         lastMessage: conv.lastMessage || "",
         createdAt: conv.lastMessageAt || conv.createdAt,
         unreadCount,
-        isOnline: user.isOnline,
+        isOnline:
+  !!user.showOnline &&
+  !!user.lastActiveAt &&
+  Date.now() -
+    user.lastActiveAt <
+    45000,
         showOnline: user.showOnline,
       });
     }

@@ -8,7 +8,9 @@
  * @module
  */
 
+import type * as admin_admin from "../admin/admin.js";
 import type * as bookmarks from "../bookmarks.js";
+import type * as collections from "../collections.js";
 import type * as comments from "../comments.js";
 import type * as conversations_index from "../conversations/index.js";
 import type * as http from "../http.js";
@@ -27,7 +29,9 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "admin/admin": typeof admin_admin;
   bookmarks: typeof bookmarks;
+  collections: typeof collections;
   comments: typeof comments;
   "conversations/index": typeof conversations_index;
   http: typeof http;

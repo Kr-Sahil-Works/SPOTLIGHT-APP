@@ -6,7 +6,7 @@ import { useCallback, useEffect } from "react";
 import PushHandler from "@/components/PushHandler";
 import { api } from "@/convex/_generated/api";
 import { useAuth, useUser } from "@clerk/clerk-expo";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { AppState, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
@@ -14,40 +14,90 @@ import {
   SafeAreaView,
 } from "react-native-safe-area-context";
 
+
 SplashScreen.preventAutoHideAsync();
 
 /* =========================
    ✅ ONLINE WRAPPER
 ========================= */
-function OnlineWrapper({ children }: any) {
-  const setOnline = useMutation(
-    api.messages.index.setOnlineStatus
-  );
-  const { isLoaded, isSignedIn } = useAuth();
+function OnlineWrapper({
+  children,
+}: any) {
+  const setOnline =
+    useMutation(
+      api.messages.index
+        .setOnlineStatus
+    );
+
+  const {
+    isLoaded,
+    isSignedIn,
+  } = useAuth();
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (
+      !isLoaded ||
+      !isSignedIn
+    )
+      return;
 
-  const handleState = (state: string) => {
-  try {
-    if (isSignedIn) {
-      setOnline({ isOnline: state === "active" });
-    }
-  } catch {}
-};
+const handleState =
+  async (state: string) => {
+    try {
+      if (
+        !isLoaded ||
+        !isSignedIn
+      ) {
+        return;
+      }
 
-    const sub = AppState.addEventListener("change", handleState);
+      await setOnline({
+        isOnline:
+          state === "active",
+      });
+    } catch {}
+  };
 
-    // initial state
-    handleState(AppState.currentState);
+    const sub =
+      AppState.addEventListener(
+        "change",
+        handleState
+      );
+
+    handleState(
+      AppState.currentState
+    );
+    const interval =
+  setInterval(() => {
+    setOnline({
+      isOnline: true,
+    }).catch(() => {});
+  }, 30000);
 
     return () => {
+
+      clearInterval(interval);
+      
       sub.remove();
-      if (isSignedIn) {
-        setOnline({ isOnline: false });
-      }
+
+      try {
+        if (
+          isLoaded &&
+          isSignedIn
+        ) {
+          setOnline({
+            isOnline: false,
+          }).catch(
+            () => {}
+          );
+        }
+      } catch {}
     };
-  }, [isLoaded, isSignedIn, setOnline]);
+  }, [
+    isLoaded,
+    isSignedIn,
+    setOnline,
+  ]);
 
   return children;
 }
@@ -57,11 +107,21 @@ function OnlineWrapper({ children }: any) {
 ========================= */
 function AppContent({ onLayoutRootView }: any) {
   const { user } = useUser();
-  const { isLoaded, isSignedIn } = useAuth();
+  const {
+  isLoaded,
+  isSignedIn,
+  signOut,
+} = useAuth();
 
   const createUser = useMutation(
     api.users.index.createOrUpdateUser
   );
+
+  const currentUser = useQuery(
+  api.users.index.getCurrentUser
+);
+
+
 
 useEffect(() => {
   if (!user || !isSignedIn) return;
@@ -74,9 +134,9 @@ useEffect(() => {
       "User",
     image: user.imageUrl || "",
   });
-}, [user?.id]); // 🔥 IMPORTANT CHANGE
+}, [user?.id, isSignedIn]);
 
-  if (!isLoaded) return null;
+ 
 
   return (
     <OnlineWrapper>

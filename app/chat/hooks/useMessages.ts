@@ -13,6 +13,8 @@ import { Message } from "@/types/chat";
 type UseMessagesResult = {
   messages: Message[];
 
+  conversationId?: Id<"conversations">;
+
   currentUserId?: Id<"users">;
 
   themeIndex: number | null;
@@ -25,20 +27,25 @@ type UseMessagesResult = {
 };
 
 export default function useMessages(
-  conversationId: Id<"users">
+  userId: Id<"users">
 ): UseMessagesResult {
   const convex = useConvex();
 
   const liveData = useQuery(
   api.messages.index.getMessages,
   {
-    userId: conversationId,
+    userId: userId,
     limit: 30,
   }
 );
 
   const [messages, setMessages] =
     useState<Message[]>([]);
+    
+    const [conversationId, setConversationId] =
+  useState<
+    Id<"conversations"> | undefined
+  >();
 
 const [themeIndex, setThemeIndex] =
   useState<number | null>(null);
@@ -62,14 +69,18 @@ const [themeIndex, setThemeIndex] =
       const data = await convex.query(
         api.messages.index.getMessages,
         {
-          userId: conversationId,
+          userId,
           limit: 30,
         }
       );
 
-      setMessages(
-        (data?.messages ?? []) as Message[]
-      );
+    setConversationId(
+  data?.conversationId
+);
+
+setMessages(
+  (data?.messages ?? []) as Message[]
+);
 
       setThemeIndex(
         data?.themeIndex ?? 0
@@ -88,10 +99,13 @@ const [themeIndex, setThemeIndex] =
 
 useEffect(() => {
   loadInitialMessages();
-}, [conversationId]);
+}, [userId]);
 
 useEffect(() => {
   if (!liveData) return;
+  setConversationId(
+  liveData.conversationId
+);
 
   setThemeIndex(
     liveData.themeIndex ?? 0
@@ -102,23 +116,9 @@ useEffect(() => {
       undefined
   );
 
-  setMessages((prev) => {
-    const existingIds = new Set(
-      prev.map((m) => m._id)
-    );
-
-    const fresh =
-      liveData.messages.filter(
-        (m) =>
-          !existingIds.has(m._id)
-      );
-
-    if (!fresh.length) {
-      return prev;
-    }
-
-    return [...prev, ...fresh];
-  });
+setMessages(
+  liveData.messages as Message[]
+);
 }, [liveData]);
 
   const loadOlder = async () => {
@@ -133,7 +133,7 @@ useEffect(() => {
     const data = await convex.query(
       api.messages.index.getMessages,
       {
-        userId: conversationId,
+        userId,
         limit: 30,
         before: oldest.createdAt,
       }
@@ -154,17 +154,19 @@ useEffect(() => {
     setLoadingMore(false);
   };
 
-  return {
-    messages,
+return {
+  messages,
 
-    currentUserId,
+  conversationId,
 
-    themeIndex,
+  currentUserId,
 
-    isLoading,
+  themeIndex,
 
-    loadingMore,
+  isLoading,
 
-    loadOlder,
-  };
+  loadingMore,
+
+  loadOlder,
+};
 }

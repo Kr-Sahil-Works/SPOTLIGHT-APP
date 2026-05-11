@@ -1,9 +1,10 @@
 import EmptyCenter from "@/components/EmptyCenter";
+import ImageViewerModal from "@/components/ImageViewerModal";
 import { Loader } from "@/components/Loader";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/feed.styles";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
 import * as MediaLibrary from "expo-media-library";
@@ -16,26 +17,79 @@ import {
   FlatList,
   Modal,
   Platform,
-  Image as RNImage,
   Text,
+  TextInput,
   ToastAndroid,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
-/* ========================= */
 export default function Bookmarks() {
   const router = useRouter();
 
   const bookmarkedPosts =
-    useQuery(api.bookmarks.getBookmarkedPosts, { limit: 30 }) ?? [];
+    useQuery(api.bookmarks.getBookmarkedPosts, {
+      limit: 30,
+    }) ?? [];
 
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [downloading, setDownloading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const collections =
+    useQuery(api.collections.getCollections) ?? [];
+
+  const createCollection = useMutation(
+    api.collections.createCollection
+  );
+
+  const addPostsToCollection = useMutation(
+    api.collections.addPostsToCollection
+  );
+
+  const [selectedImage, setSelectedImage] =
+    useState<string | null>(null);
+
+  const [downloading, setDownloading] =
+    useState(false);
+
+  const [showSuccess, setShowSuccess] =
+    useState(false);
+
+  const [selectionMode, setSelectionMode] =
+    useState(false);
+
+  const [selectedPosts, setSelectedPosts] =
+    useState<string[]>([]);
+
+  const [showCollectionModal, setShowCollectionModal] =
+    useState(false);
+
+  const [newCollectionName, setNewCollectionName] =
+    useState("");
+
+    const [toast, setToast] = useState({
+  visible: false,
+  text: "",
+});
+
+const showCustomToast = (
+  text: string
+) => {
+  setToast({
+    visible: true,
+    text,
+  });
+
+  setTimeout(() => {
+    setToast({
+      visible: false,
+      text: "",
+    });
+  }, 2200);
+};
 
   const scale = useRef(new Animated.Value(1)).current;
-  const successScale = useRef(new Animated.Value(0)).current;
+
+  const successScale = useRef(
+    new Animated.Value(0)
+  ).current;
 
   /* ========================= */
   const openModal = (uri: string) => {
@@ -45,6 +99,26 @@ export default function Bookmarks() {
 
   const closeModal = () => setSelectedImage(null);
 
+  /* ========================= */
+  const toggleSelection = (postId: string) => {
+    const exists = selectedPosts.includes(postId);
+
+    if (exists) {
+      setSelectedPosts((prev) =>
+        prev.filter((id) => id !== postId)
+      );
+    } else {
+      setSelectedPosts((prev) => [...prev, postId]);
+    }
+  };
+
+  /* ========================= */
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    setSelectedPosts([]);
+  };
+
+  /* ========================= */
   const showToast = (msg: string) => {
     if (Platform.OS === "android") {
       ToastAndroid.show(msg, ToastAndroid.SHORT);
@@ -54,41 +128,128 @@ export default function Bookmarks() {
   };
 
   /* ========================= */
+const createNewCollection = async () => {
+  try {
+    if (!newCollectionName.trim()) return;
+
+    const collectionId =
+      await createCollection({
+        name: newCollectionName.trim(),
+      });
+
+    const result =
+      await addPostsToCollection({
+        collectionId,
+        postIds: selectedPosts as any,
+      });
+
+    setNewCollectionName("");
+
+    setShowCollectionModal(false);
+
+    exitSelectionMode();
+
+    if (result.added > 0) {
+      showCustomToast(
+        `Collection created • ${result.added} saved ✨`
+      );
+    } else {
+      showCustomToast(
+        "Collection created"
+      );
+    }
+  } catch {
+    showToast("Failed ❌");
+  }
+};
+
+  /* ========================= */
+const addToExistingCollection = async (
+  collectionId: any
+) => {
+  try {
+    const result =
+      await addPostsToCollection({
+        collectionId,
+        postIds: selectedPosts as any,
+      });
+
+    setShowCollectionModal(false);
+
+    exitSelectionMode();
+
+    if (result.added > 0) {
+      showCustomToast(
+        `${result.added} post saved ✨`
+      );
+    } else {
+      showCustomToast(
+        "Already in collection"
+      );
+    }
+  } catch {
+    showToast("Failed ❌");
+  }
+};
+
+  /* ========================= */
   const downloadImage = async () => {
     try {
       if (!selectedImage || downloading) return;
 
       setDownloading(true);
 
-      const { status } = await MediaLibrary.requestPermissionsAsync();
+      const { status } =
+        await MediaLibrary.requestPermissionsAsync();
+
       if (status !== "granted") {
         showToast("Permission denied");
         return;
       }
 
       const filename = `img_${Date.now()}.jpg`;
-      const fileUri = FileSystem.documentDirectory + filename;
 
-      const res = await FileSystem.downloadAsync(selectedImage, fileUri);
+      const fileUri =
+        FileSystem.documentDirectory + filename;
 
-      const asset = await MediaLibrary.createAssetAsync(res.uri);
-      const album = await MediaLibrary.getAlbumAsync("Download");
+      const res = await FileSystem.downloadAsync(
+        selectedImage,
+        fileUri
+      );
+
+      const asset =
+        await MediaLibrary.createAssetAsync(
+          res.uri
+        );
+
+      const album =
+        await MediaLibrary.getAlbumAsync("Download");
 
       if (album) {
-        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+        await MediaLibrary.addAssetsToAlbumAsync(
+          [asset],
+          album,
+          false
+        );
       } else {
-        await MediaLibrary.createAlbumAsync("Download", asset, false);
+        await MediaLibrary.createAlbumAsync(
+          "Download",
+          asset,
+          false
+        );
       }
 
-      /* ✅ SUCCESS ANIMATION */
       setShowSuccess(true);
+
       successScale.setValue(0);
 
       Animated.spring(successScale, {
         toValue: 1,
         useNativeDriver: true,
       }).start(() => {
-        setTimeout(() => setShowSuccess(false), 1200);
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 1200);
       });
 
       showToast("Downloaded ✅");
@@ -100,35 +261,121 @@ export default function Bookmarks() {
   };
 
   /* ========================= */
-  if (bookmarkedPosts === undefined) return <Loader />;
+  if (bookmarkedPosts === undefined) {
+    return <Loader />;
+  }
 
   return (
     <View style={styles.container}>
+      {/* ========================= */}
       {/* HEADER */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Bookmarks</Text>
+      <View
+        style={[
+          styles.header,
+          {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <Text style={styles.headerTitle}>
+          {selectionMode
+            ? `${selectedPosts.length} Selected`
+            : "Bookmarks"}
+        </Text>
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 16,
+          }}
+        >
+          
+          {selectionMode && (
+            <TouchableOpacity
+              onPress={exitSelectionMode}
+            >
+              <Text
+                style={{
+                  color: "#ff4444",
+                  fontWeight: "600",
+                }}
+              >
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          )}
+
+       <TouchableOpacity
+  onPress={() =>
+    router.push("/collections" as any)
+  }
+>
+            <Ionicons
+              name="folder-open"
+              size={24}
+              color="#09bb03"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
+      {/* ========================= */}
       {/* EMPTY */}
       {bookmarkedPosts.length === 0 ? (
-        <NoBookmarksFound onExplore={() => router.push("/")} />
+        <NoBookmarksFound
+          onExplore={() => router.push("/")}
+        />
       ) : (
         <FlatList
           data={bookmarkedPosts}
           keyExtractor={(item, i) =>
-            item?._id?.toString() || i.toString()
+            item?._id?.toString() ||
+            i.toString()
           }
           numColumns={3}
           removeClippedSubviews
           initialNumToRender={9}
           windowSize={7}
+          contentContainerStyle={{
+            paddingBottom: 140,
+          }}
           renderItem={({ item }) => {
             if (!item?.imageUrl) return null;
 
+            const isSelected =
+              selectedPosts.includes(
+                item._id as any
+              );
+
             return (
               <TouchableOpacity
-                onPress={() => openModal(item.imageUrl)}
-                style={{ width: "33.33%", padding: 3 }}
+                activeOpacity={0.9}
+                style={{
+                  width: "33.33%",
+                  padding: 3,
+                }}
+                onLongPress={() => {
+                  if (!selectionMode) {
+                    setSelectionMode(true);
+
+                    setSelectedPosts([
+                      item._id as any,
+                    ]);
+                  }
+                }}
+                onPress={() => {
+                  if (selectionMode) {
+                    toggleSelection(
+                      item._id as any
+                    );
+                    return;
+                  }
+
+                  openModal(item.imageUrl);
+                }}
               >
                 <View
                   style={{
@@ -137,12 +384,58 @@ export default function Bookmarks() {
                     backgroundColor: "#0a0a0a",
                   }}
                 >
+                  {/* IMAGE */}
                   <Image
-                    source={{ uri: item.imageUrl }}
-                    style={{ width: "100%", aspectRatio: 1 }}
+                    source={{
+                      uri: item.imageUrl,
+                    }}
+                    style={{
+                      width: "100%",
+                      aspectRatio: 1,
+                    }}
                     contentFit="cover"
                     cachePolicy="memory-disk"
                   />
+
+                  {/* CHECKBOX */}
+                  {selectionMode && (
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        zIndex: 5,
+                      }}
+                    >
+                      <Ionicons
+                        name={
+                          isSelected
+                            ? "checkmark-circle"
+                            : "ellipse-outline"
+                        }
+                        size={24}
+                        color={
+                          isSelected
+                            ? "#00ff88"
+                            : "#fff"
+                        }
+                      />
+                    </View>
+                  )}
+
+                  {/* DARK OVERLAY */}
+                  {selectionMode &&
+                    isSelected && (
+                      <View
+                        style={{
+                          position: "absolute",
+                          width: "100%",
+                          height: "100%",
+                          backgroundColor:
+                            "rgba(0,255,136,0.18)",
+                        }}
+                      />
+                    )}
                 </View>
               </TouchableOpacity>
             );
@@ -151,107 +444,258 @@ export default function Bookmarks() {
       )}
 
       {/* ========================= */}
-      {/* MODAL */}
-      <Modal visible={!!selectedImage} transparent animationType="fade">
+      {/* BOTTOM ACTION BAR */}
+      {selectionMode && (
+        <View
+          style={{
+            position: "absolute",
+            bottom: 110,
+            left: 16,
+            right: 16,
+            backgroundColor: "#111",
+            borderRadius: 24,
+            paddingHorizontal: 18,
+            paddingVertical: 16,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor:
+              "rgba(255,255,255,0.06)",
+          }}
+        >
+          <Text
+            style={{
+              color: "#fff",
+              fontWeight: "600",
+            }}
+          >
+            {selectedPosts.length} selected
+          </Text>
+
+          <TouchableOpacity
+            onPress={() =>
+              setShowCollectionModal(true)
+            }
+            style={{
+              backgroundColor: "#00ff88",
+              paddingHorizontal: 18,
+              paddingVertical: 10,
+              borderRadius: 18,
+            }}
+          >
+            <Text
+              style={{
+                color: "#000",
+                fontWeight: "700",
+              }}
+            >
+              Add To Collection
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ========================= */}
+      {/* COLLECTION MODAL */}
+      <Modal
+        visible={showCollectionModal}
+        transparent
+        animationType="slide"
+      >
         <View
           style={{
             flex: 1,
-            backgroundColor: "rgba(0,0,0,0.96)",
-            justifyContent: "center",
-            alignItems: "center",
+            justifyContent: "flex-end",
+            backgroundColor:
+              "rgba(0,0,0,0.6)",
           }}
         >
-          {/* CLOSE BG */}
-          <TouchableOpacity
-            style={{ position: "absolute", width: "100%", height: "100%" }}
-            activeOpacity={1}
-            onPress={closeModal}
-          />
-
-          {/* IMAGE */}
-          {selectedImage && (
-            <Animated.View
-              style={{
-                width: "100%",
-                height: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-                transform: [{ scale }],
-              }}
-            >
-              <RNImage
-                source={{ uri: selectedImage }}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="contain"
-              />
-            </Animated.View>
-          )}
-
-          {/* SUCCESS */}
-          {showSuccess && (
-            <Animated.View
-              style={{
-                position: "absolute",
-                transform: [{ scale: successScale }],
-              }}
-            >
-              <View
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  backgroundColor: "rgba(0,0,0,0.7)",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Ionicons name="checkmark" size={40} color="#00ff88" />
-              </View>
-            </Animated.View>
-          )}
-
-          {/* CONTROLS */}
           <View
             style={{
-              position: "absolute",
-              bottom: 60,
-              flexDirection: "row",
-              gap: 16,
-              padding: 10,
-              borderRadius: 30,
-              backgroundColor: "rgba(20,20,20,0.6)",
+              backgroundColor: "#111",
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
+              padding: 20,
+              maxHeight: "80%",
             }}
           >
-            <Btn icon="remove" onPress={() => scale.setValue(1)} />
-            <Btn icon="add" onPress={() => scale.setValue(1.5)} />
-            <Btn icon="download" onPress={downloadImage} loading={downloading} />
-          </View>
+            {/* TITLE */}
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 20,
+                fontWeight: "700",
+                marginBottom: 20,
+              }}
+            >
+              Save To Collection
+            </Text>
 
-          {/* CLOSE BUTTON */}
-          <TouchableOpacity
-            onPress={closeModal}
-            style={{
-              position: "absolute",
-              top: 50,
-              right: 16,
-              width: 42,
-              height: 42,
-              borderRadius: 21,
-              backgroundColor: "rgba(20,20,20,0.7)",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Ionicons name="close" size={22} color="#fff" />
-          </TouchableOpacity>
+            {/* CREATE */}
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 10,
+                marginBottom: 24,
+              }}
+            >
+              <TextInput
+                value={newCollectionName}
+                onChangeText={
+                  setNewCollectionName
+                }
+                placeholder="New collection..."
+                placeholderTextColor="#666"
+                style={{
+                  flex: 1,
+                  backgroundColor: "#1b1b1b",
+                  color: "#fff",
+                  borderRadius: 16,
+                  paddingHorizontal: 16,
+                  height: 50,
+                }}
+              />
+
+              <TouchableOpacity
+                onPress={
+                  createNewCollection
+                }
+                style={{
+                  backgroundColor:
+                    "#00ff88",
+                  paddingHorizontal: 18,
+                  borderRadius: 16,
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons
+                  name="add"
+                  size={24}
+                  color="#000"
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* COLLECTION LIST */}
+            <FlatList
+              data={collections}
+              keyExtractor={(item) =>
+                item._id
+              }
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() =>
+                    addToExistingCollection(
+                      item._id
+                    )
+                  }
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 16,
+                    borderBottomWidth: 1,
+                    borderBottomColor:
+                      "rgba(255,255,255,0.05)",
+                  }}
+                >
+                  <Ionicons
+                    name="folder-outline"
+                    size={22}
+                    color="#00ff88"
+                  />
+
+                  <Text
+                    style={{
+                      color: "#fff",
+                      marginLeft: 14,
+                      fontSize: 16,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+
+            {/* CLOSE */}
+            <TouchableOpacity
+              onPress={() =>
+                setShowCollectionModal(false)
+              }
+              style={{
+                marginTop: 20,
+                alignSelf: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: "#888",
+                  fontSize: 15,
+                }}
+              >
+                Close
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
+
+
+      {/* CUSTOM TOAST */}
+{toast.visible && (
+  <Animated.View
+    style={{
+      position: "absolute",
+      bottom: 140,
+      alignSelf: "center",
+      backgroundColor: "#111",
+      borderRadius: 24,
+      paddingHorizontal: 18,
+      paddingVertical: 14,
+      flexDirection: "row",
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor:
+        "rgba(0,255,136,0.18)",
+      zIndex: 999,
+    }}
+  >
+    <Ionicons
+      name="checkmark-circle"
+      size={20}
+      color="#00ff88"
+    />
+
+    <Text
+      style={{
+        color: "#fff",
+        marginLeft: 10,
+        fontWeight: "600",
+      }}
+    >
+      {toast.text}
+    </Text>
+  </Animated.View>
+)}
+
+      {/* ========================= */}
+  <ImageViewerModal
+  visible={!!selectedImage}
+  imageUrl={selectedImage}
+  onClose={closeModal}
+/>
     </View>
   );
 }
 
 /* ========================= */
-function Btn({ icon, onPress, loading }: any) {
+function Btn({
+  icon,
+  onPress,
+  loading,
+}: any) {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -260,7 +704,8 @@ function Btn({ icon, onPress, loading }: any) {
         width: 48,
         height: 48,
         borderRadius: 24,
-        backgroundColor: "rgba(255,255,255,0.08)",
+        backgroundColor:
+          "rgba(255,255,255,0.08)",
         justifyContent: "center",
         alignItems: "center",
       }}
@@ -268,14 +713,20 @@ function Btn({ icon, onPress, loading }: any) {
       {loading ? (
         <ActivityIndicator color="#fff" />
       ) : (
-        <Ionicons name={icon} size={20} color="#fff" />
+        <Ionicons
+          name={icon}
+          size={20}
+          color="#fff"
+        />
       )}
     </TouchableOpacity>
   );
 }
 
 /* ========================= */
-function NoBookmarksFound({ onExplore }: any) {
+function NoBookmarksFound({
+  onExplore,
+}: any) {
   return (
     <EmptyCenter>
       <View
@@ -296,10 +747,15 @@ function NoBookmarksFound({ onExplore }: any) {
             justifyContent: "center",
             alignItems: "center",
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.08)",
+            borderColor:
+              "rgba(255,255,255,0.08)",
           }}
         >
-          <Ionicons name="bookmark-outline" size={40} color="#666" />
+          <Ionicons
+            name="bookmark-outline"
+            size={40}
+            color="#666"
+          />
         </View>
 
         {/* TITLE */}
@@ -338,7 +794,12 @@ function NoBookmarksFound({ onExplore }: any) {
           }}
           activeOpacity={0.8}
         >
-          <Text style={{ color: "#000", fontWeight: "600" }}>
+          <Text
+            style={{
+              color: "#000",
+              fontWeight: "600",
+            }}
+          >
             Explore Posts
           </Text>
         </TouchableOpacity>

@@ -2,6 +2,7 @@ import { ChatTheme } from "@/constants/chatThemes";
 import { Message } from "@/types/chat";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useRef } from "react";
 import {
   Animated,
@@ -74,8 +75,10 @@ const MessageItem = React.memo(function MessageItem({
   const msgRef = useRef<any>(null);
 
   const isHighlighted = highlightId === item._id;
+  const lastTap = useRef(0);
 
- 
+ const tapCount = useRef(0);
+const tapTimer = useRef<any>(null);
 
   /* ✅ SIMPLE SWIPE */
   const panX = useRef(new Animated.Value(0)).current;
@@ -207,21 +210,51 @@ const MessageItem = React.memo(function MessageItem({
         transform: [{ translateX: panX }],
       }}
     >
-      <Pressable
-        ref={msgRef}
-        delayLongPress={180}
-        onLongPress={(e) => {
-          const { pageX, pageY } = e.nativeEvent;
+    <Pressable
+  ref={msgRef}
+  delayLongPress={260}
+  onLongPress={(e) => {
+    const { pageX, pageY } =
+      e.nativeEvent;
 
-          onLongPress(
-            item,
-            msgRef,
-            pageX,
-            pageY
-          );
-        }}
-        onPress={() => onReact(item)}
-      >
+    onLongPress(
+      item,
+      msgRef,
+      pageX,
+      pageY
+    );
+  }}
+onPress={() => {
+  const now = Date.now();
+
+  // DOUBLE TAP ❤️
+  if (now - lastTap.current < 260) {
+    onReact(item);
+  }
+
+  lastTap.current = now;
+
+  // 4 TAP MENU
+  tapCount.current += 1;
+
+  if (tapTimer.current) {
+    clearTimeout(tapTimer.current);
+  }
+
+  tapTimer.current = setTimeout(() => {
+    tapCount.current = 0;
+  }, 2000);
+
+  if (tapCount.current >= 4) {
+    tapCount.current = 0;
+
+    onLongPress(
+      item,
+      msgRef
+    );
+  }
+}}
+>
         <View
           style={{
             flexDirection: "row",
@@ -302,46 +335,90 @@ const MessageItem = React.memo(function MessageItem({
               </Pressable>
             )}
             {/* ✅ BUBBLE */}
-            <View
-              style={{
-                backgroundColor:
-                  isHighlighted
-                    ? "#111"
-                    : isMe
-                    ? theme.bubbleMe
-                    : theme.bubbleOther,
+  {
+  isMe &&
+  theme.bubbleGradient ? (
+    <LinearGradient
+      colors={
+        theme.bubbleGradient
+      }
+      style={{
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+opacity: isHighlighted ? 0.7 : 1,
+        borderRadius:
+          isGrouped
+            ? 16
+            : 22,
+      }}
+    >
+      <Text
+        style={{
+          color: theme.textMe,
+          fontSize: 14,
+        }}
+      >
+        {item.text}
+      </Text>
 
-                paddingVertical: 10,
-                paddingHorizontal: 14,
+      {item.edited && (
+        <Text
+          style={{
+            fontSize: 10,
+            color:
+              "#ffffffcc",
+            marginTop: 4,
+          }}
+        >
+          edited
+        </Text>
+      )}
+    </LinearGradient>
+  ) : (
+    <View
+      style={{
+        backgroundColor:
+          isHighlighted
+            ? "#111"
+            : isMe
+            ? theme.bubbleMe
+            : theme.bubbleOther,
 
-                borderRadius: isGrouped
-                  ? 16
-                  : 22,
-              }}
-            >
-              <Text
-                style={{
-                  color: isMe
-  ? theme.textMe
-  : theme.textOther,
-                  fontSize: 14,
-                }}
-              >
-                {item.text}
-              </Text>
+        paddingVertical: 10,
+        paddingHorizontal: 14,
 
-              {item.edited && (
-                <Text
-                  style={{
-                    fontSize: 10,
-                    color: "#aaa",
-                    marginTop: 4,
-                  }}
-                >
-                  edited
-                </Text>
-              )}
-            </View>
+        borderRadius:
+          isGrouped
+            ? 16
+            : 22,
+      }}
+    >
+      <Text
+        style={{
+          color: isMe
+            ? theme.textMe
+            : theme.textOther,
+
+          fontSize: 14,
+        }}
+      >
+        {item.text}
+      </Text>
+
+      {item.edited && (
+        <Text
+          style={{
+            fontSize: 10,
+            color: "#aaa",
+            marginTop: 4,
+          }}
+        >
+          edited
+        </Text>
+      )}
+    </View>
+  )
+}
 
             {/* ✅ REACTIONS */}
             {(item.reactions?.length ?? 0) >

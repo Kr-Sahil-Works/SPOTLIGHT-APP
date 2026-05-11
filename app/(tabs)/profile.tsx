@@ -47,10 +47,11 @@ export default function Profile() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const [editedProfile, setEditedProfile] = useState({
-    fullname: "",
-    bio: "",
-  });
+const [editedProfile, setEditedProfile] = useState({
+  username: "",
+  fullname: "",
+  bio: "",
+});
 
   /* 🔥 ANIMATIONS */
   const scale = useRef(new Animated.Value(1)).current;
@@ -136,10 +137,11 @@ const modalPanResponder = useRef(
   /* 🔥 LOAD PROFILE */
   useEffect(() => {
     if (currentUser) {
-      setEditedProfile({
-        fullname: currentUser.fullname || "",
-        bio: currentUser.bio || "",
-      });
+setEditedProfile({
+  username: currentUser.username || "",
+  fullname: currentUser.fullname || "",
+  bio: currentUser.bio || "",
+});
     }
   }, [currentUser]);
 

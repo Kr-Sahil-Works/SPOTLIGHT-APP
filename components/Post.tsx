@@ -6,13 +6,11 @@ import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
-import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Modal,
+  Animated, Image, Modal,
   Pressable,
   Text,
   TouchableOpacity,
@@ -105,11 +103,11 @@ const handleDelete = async () => {
           asChild
         >
           <TouchableOpacity style={styles.postHeaderLeft}>
-            <Image
-              source={{ uri: post.author.image }}
-              style={styles.postAvatar}
-              contentFit="cover"
-            />
+        <Image
+  source={{ uri: post.author.image }}
+  style={styles.postAvatar}
+  resizeMode="cover"
+/>
             <Text style={styles.postUsername}>{post.author.username}</Text>
           </TouchableOpacity>
         </Link>
@@ -228,18 +226,12 @@ const handleDelete = async () => {
           </View>
         )}
 
-        <Image
-          source={{ uri: post.imageUrl }}
-          style={[
-            styles.postImage,
-            {
-              position: loaded ? "relative" : "absolute",
-              opacity: loaded ? 1 : 0,
-            },
-          ]}
-          contentFit="cover"
-          onLoadEnd={() => setLoaded(true)}
-        />
+<Image
+  source={{ uri: post.imageUrl }}
+  style={styles.postImage}
+  resizeMode="cover"
+  onLoadEnd={() => setLoaded(true)}
+/>
       </View>
 
       {/* ACTIONS */}

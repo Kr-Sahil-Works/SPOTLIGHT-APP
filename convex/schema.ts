@@ -8,7 +8,9 @@ export default defineSchema({
 users: defineTable({
   username: v.string(),
   fullname: v.string(),
-  email: v.string(),
+  email: v.optional(
+  v.string()
+),
   bio: v.optional(v.string()),
   image: v.string(),
 
@@ -17,6 +19,15 @@ users: defineTable({
   isOnline: v.boolean(),
   lastSeen: v.number(),
   showOnline: v.boolean(),
+
+  readReceiptsEnabled:
+  v.optional(v.boolean()),
+
+notificationsEnabled:
+  v.optional(v.boolean()),
+
+messageRequestsEnabled:
+  v.optional(v.boolean()),
 
   activeChatWith: v.optional(v.id("users")),
 
@@ -36,6 +47,14 @@ users: defineTable({
 
   // 🧊 soft delete (correct)
   isDeleted: v.optional(v.boolean()),
+  isBanned:
+  v.optional(v.boolean()),
+
+bannedReason:
+  v.optional(v.string()),
+
+bannedAt:
+  v.optional(v.number()),
   deletedAt: v.optional(v.number()),
 
   // 🆕 ADD THESE (important)
@@ -51,7 +70,8 @@ users: defineTable({
   createdAt: v.number(),
 })
   .index("by_clerk_id", ["clerkId"])
-  .index("by_username", ["username"]),
+  .index("by_username", ["username"])
+.index("by_fullname", ["fullname"]),
 
   /* =========================
      🔁 FOLLOW REQUESTS
@@ -168,6 +188,21 @@ bookmarks: defineTable({
     order: v.number(),
     pinned: v.optional(v.boolean()),
   }).index("by_user", ["userId"]),
+
+  collections: defineTable({
+  userId: v.id("users"),
+  name: v.string(),
+  createdAt: v.number(),
+})
+.index("by_user", ["userId"]),
+
+collectionPosts: defineTable({
+  collectionId: v.id("collections"),
+  postId: v.id("posts"),
+  addedAt: v.number(),
+})
+.index("by_collection", ["collectionId"])
+.index("by_collection_and_post", ["collectionId", "postId"]),
 
   /* =========================
      💬 CONVERSATIONS

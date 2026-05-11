@@ -10,12 +10,15 @@ import {
 import { CHAT_THEMES } from "@/constants/chatThemes";
 import { Id } from "@/convex/_generated/dataModel";
 import { Message } from "@/types/chat";
+import { useMutation } from "convex/react";
+import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useMemo, useState } from "react";
 import {
   Animated,
   ImageBackground,
 } from "react-native";
+
 
 import ChatHeader from "./components/ChatHeader";
 import ChatInput from "./components/ChatInput";
@@ -28,15 +31,21 @@ import useSend from "./hooks/useSend";
 import useTheme from "./hooks/useTheme";
 import MenuModal from "./modals/MenuModal";
 
+import { api } from "@/convex/_generated/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQuery } from "convex/react";
+import TypingDots from "./components/TypingDots";
 
 
 
 export default function ChatScreen() {
 
+
+
 const params = useLocalSearchParams<{ id: string }>();
 
 const userId = params.id as Id<"users">;
+
 
   // ✅ STRICT TYPES
   const [replyMsg, setReplyMsg] = useState<Message | null>(null);
@@ -68,12 +77,20 @@ useEffect(() => {
 
 const {
   messages,
+  conversationId,
   currentUserId,
   themeIndex,
   isLoading,
   loadOlder,
   loadingMore,
 } = useMessages(userId);
+
+const typing = useQuery(
+  api.messages.index.getTyping,
+  conversationId
+    ? { conversationId }
+    : "skip"
+);
 
 const resolvedThemeIndex =
   previewThemeIndex !== null
@@ -95,24 +112,34 @@ const theme = useMemo(() => {
     useSend(userId, replyMsg, setReplyMsg);
 
   // ✅ STRICT DOUBLE TAP
-  const handleDoubleTap = (msg: Message) => {
-    const reactions = msg.reactions ?? [];
+const toggleReaction =
+  useMutation(
+    api.messages.index.toggleReaction
+  );
 
-    const hasHeart = reactions.some(
-      (r) => r.value === "❤️"
-    );
+  const handleDoubleTap =
+  async (msg: Message) => {
+    if (!msg._id) return;
 
-    const updatedReactions = hasHeart
-      ? reactions.filter((r) => r.value !== "❤️")
-      : [...reactions, { value: "❤️" }];
+    try {
+      await Haptics.impactAsync(
+        Haptics
+          .ImpactFeedbackStyle
+          .Medium
+      );
 
-    const updatedMsg: Message = {
-      ...msg,
-      reactions: updatedReactions,
-    };
-
-    setSelectedMsg(updatedMsg);
+      await toggleReaction({
+        messageId: msg._id,
+        reaction: "❤️",
+      });
+    } catch (e) {
+      console.log(
+        "DOUBLE TAP ERROR",
+        e
+      );
+    }
   };
+  
 
 const renderChatContent = () => (
   <>
@@ -186,26 +213,32 @@ const renderChatContent = () => (
               onDoubleTap={
                 handleDoubleTap
               }
-              onLongPress={(msg) => {
-                Keyboard.dismiss();
+           onLongPress={(msg) => {
+  Keyboard.dismiss();
 
-                setSelectedMsg(msg);
-
-                setReactionMsg({
-                  ...msg,
-                  x: msg.x,
-                  y: msg.y,
-                  width: msg.width,
-                  height:
-                    msg.height,
-                });
-              }}
+  setReactionMsg({
+    ...msg,
+    x: msg.x,
+    y: msg.y,
+    width: msg.width,
+    height: msg.height,
+  });
+}}
             />
+
           )}
+                      {typing && (
+  <TypingDots
+  theme={theme}
+    typing={true}
+    avatar={typing.user?.image}
+  />
+)}
         </View>
 
         <ChatInput
           text={text}
+            userId={userId}
           setText={setText}
           onSend={handleSend}
           theme={theme}
@@ -332,7 +365,13 @@ return (
                     }}
                   />
                 )}
-
+{typing && (
+  <TypingDots
+  theme={theme}
+    typing={true}
+    avatar={typing.user?.image}
+  />
+)}
                 <MenuModal
                   selectedMsg={
                     selectedMsg
@@ -402,6 +441,7 @@ return (
 
               <ChatInput
                 text={text}
+                  userId={userId}
                 setText={setText}
                 onSend={handleSend}
                 theme={theme}

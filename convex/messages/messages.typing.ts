@@ -58,12 +58,23 @@ export const getTyping = query({
 
     const now = Date.now();
 
-    return typingList.find(
-      (t) =>
-        t.userId !== currentUser._id &&
-        t.isTyping &&
-        t.updatedAt &&
-        now - t.updatedAt < 5000
-    );
+const active = typingList.find(
+  (t) =>
+    t.userId !== currentUser._id &&
+    t.isTyping &&
+    t.updatedAt &&
+    now - t.updatedAt < 5000
+);
+
+if (!active) return null;
+
+const user = await ctx.db.get(
+  active.userId
+);
+
+return {
+  ...active,
+  user,
+};
   },
 });

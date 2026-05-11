@@ -2,20 +2,88 @@ import { ChatTheme } from "@/constants/chatThemes";
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+
+import {
+  Image,
+  Linking,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+
+import { useState } from "react";
 import useUser from "../hooks/useUser";
+import CallOptionsModal from "../modals/CallOptionsModal";
 
 type Props = {
   userId: Id<"users">;
   onOpenTheme: () => void;
-theme: ChatTheme;
+  theme: ChatTheme;
 };
 
-export default function ChatHeader({ userId, onOpenTheme, theme }: Props){
+export default function ChatHeader({
+  userId,
+  onOpenTheme,
+  theme,
+}: Props) {
   const router = useRouter();
+
   const { user } = useUser(userId);
 
-  return (
+  const [showCallModal, setShowCallModal] = useState(false);
+
+  
+
+const openWhatsApp = async () => {
+  try {
+    await Linking.openURL(
+      "https://wa.me/919999999999"
+    );
+  } catch (e) {
+    await Linking.openURL(
+      "market://details?id=com.whatsapp"
+    );
+  }
+};
+
+const openInstagram = async () => {
+  const appUrl =
+    "instagram://direct/inbox";
+
+  const playStore =
+    "market://details?id=com.instagram.android";
+
+  const supported = await Linking.canOpenURL(appUrl);
+
+  if (supported) {
+    await Linking.openURL(appUrl);
+  } else {
+    await Linking.openURL(playStore);
+  }
+};
+
+const openTelegram = async () => {
+  const appUrl = "tg://msg";
+
+  const playStore =
+    "market://details?id=org.telegram.messenger";
+
+  const supported = await Linking.canOpenURL(appUrl);
+
+  if (supported) {
+    await Linking.openURL(appUrl);
+  } else {
+    await Linking.openURL(playStore);
+  }
+};
+
+const openCallApp = async () => {
+  await Linking.openURL("content://contacts/people/");
+};
+
+
+return (
+  <>
     <View
       style={{
         height: 56,
@@ -29,47 +97,110 @@ export default function ChatHeader({ userId, onOpenTheme, theme }: Props){
     >
       {/* BACK */}
       <TouchableOpacity onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color={theme.headerText} />
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color={theme.headerText}
+        />
       </TouchableOpacity>
 
-      {/* AVATAR */}
-      <Image
-        source={
-          user?.image
-            ? { uri: user.image }
-            : require("@/assets/images/iconbg.png")
-        }
+      {/* PROFILE AREA */}
+      <View
         style={{
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          marginLeft: 14,
-        }}
-      />
-
-      {/* NAME */}
-      <Text
-        style={{
-          color: "#fff",
-          marginLeft: 10,
-          fontSize: 16,
-          fontWeight: "500",
+          flexDirection: "row",
+          alignItems: "center",
           flex: 1,
         }}
-        numberOfLines={1}
       >
-  {user?.fullname || "Chat"}
-      </Text>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() =>
+            router.push({
+              pathname: "/chat-profile",
+              params: {
+                userId,
+              },
+            })
+          }
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <Image
+            source={
+              user?.image
+                ? { uri: user.image }
+                : require("@/assets/images/iconbg.png")
+            }
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              marginLeft: 14,
+            }}
+          />
+
+          <View
+            style={{
+              marginLeft: 10,
+              maxWidth: 170,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: "600",
+              }}
+            >
+              {user?.fullname || "Chat"}
+            </Text>
+
+            <Text
+              numberOfLines={1}
+              style={{
+                color: "#999",
+                fontSize: 12,
+                marginTop: 1,
+              }}
+            >
+              @{user?.username || "username"}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
 
       {/* CALL BTN */}
-      <TouchableOpacity style={{ marginRight: 14 }}>
-        <Ionicons name="call-sharp" size={22} color={theme.headerText} />
+      <TouchableOpacity
+        style={{ marginRight: 14 }}
+        onPress={() => setShowCallModal(true)}
+      >
+        <Ionicons
+          name="call-sharp"
+          size={22}
+          color={theme.headerText}
+        />
       </TouchableOpacity>
 
       {/* THEME BTN */}
-      <TouchableOpacity style={{ marginRight: 5 }} onPress={onOpenTheme}>
-        <Ionicons name="color-palette-sharp" size={22} color={theme.headerText} />
+      <TouchableOpacity
+        style={{ marginRight: 5 }}
+        onPress={onOpenTheme}
+      >
+        <Ionicons
+          name="color-palette-sharp"
+          size={22}
+          color={theme.headerText}
+        />
       </TouchableOpacity>
     </View>
-  );
+
+    <CallOptionsModal
+  visible={showCallModal}
+  onClose={() => setShowCallModal(false)}
+/>
+  </>
+);
 }

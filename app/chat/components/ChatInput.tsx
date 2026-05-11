@@ -4,8 +4,9 @@ import {
   Ionicons
 } from "@expo/vector-icons";
 
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
 import { BlurView } from "expo-blur";
-
 import {
   useEffect,
   useRef,
@@ -27,6 +28,7 @@ type Props = {
   onSend: () => void;
 
   theme: ChatTheme;
+  userId: any;
 };
 
 export default function ChatInput({
@@ -34,6 +36,7 @@ export default function ChatInput({
   setText,
   onSend,
   theme,
+  userId,
 }: Props) {
   const tilt = useRef(
     new Animated.Value(0)
@@ -69,11 +72,72 @@ Animated.timing(widthAnim, {
 }).start();
   }, [disabled]);
 
-  const handleSend = () => {
-    if (disabled) return;
+const handleSend = () => {
+  if (disabled) return;
 
-    onSend();
+  isTypingRef.current = false;
+
+  setTyping({
+    receiverId: userId,
+    isTyping: false,
+  });
+
+  if (typingTimeout.current) {
+    clearTimeout(
+      typingTimeout.current
+    );
+  }
+
+  onSend();
+};
+useEffect(() => {
+  return () => {
+    if (typingTimeout.current) {
+      clearTimeout(
+        typingTimeout.current
+      );
+    }
   };
+}, []);
+
+
+const setTyping = useMutation(
+  api.messages.index.setTyping
+);
+const typingTimeout = useRef<any>(null);
+
+const isTypingRef = useRef(false);
+
+const handleTyping = (value: string) => {
+  setText(value);
+
+  // already typing
+  if (!isTypingRef.current) {
+    isTypingRef.current = true;
+
+    setTyping({
+      receiverId: userId,
+      isTyping: true,
+    });
+  }
+
+  // reset timer
+  if (typingTimeout.current) {
+    clearTimeout(
+      typingTimeout.current
+    );
+  }
+
+  typingTimeout.current =
+    setTimeout(() => {
+      isTypingRef.current = false;
+
+      setTyping({
+        receiverId: userId,
+        isTyping: false,
+      });
+    }, 1800);
+};
 
   return (
     <View
@@ -100,7 +164,7 @@ Animated.timing(widthAnim, {
             flex: 1,
 
             borderRadius: 30,
-
+            
             overflow: "hidden",
 
             marginRight: 8,
@@ -145,7 +209,7 @@ Animated.timing(widthAnim, {
               onBlur={() =>
                 setFocused(false)
               }
-              onChangeText={setText}
+              onChangeText={handleTyping}
               placeholder="Message..."
               placeholderTextColor="#aaa"
               style={{
@@ -161,13 +225,21 @@ Animated.timing(widthAnim, {
         {/* 🚀 MORPH BUTTON */}
 <Animated.View
   style={{
-    width: widthAnim,
+    width: disabled
+  ? 55
+  : 68,
 
-    height: 42,
+    height: disabled
+      ? 44
+      : 44,
 
-    borderRadius: 20,
+borderRadius: disabled
+  ? 16
+  : 30,
 
-    overflow: "hidden",
+    overflow: "visible",
+    borderWidth: 1,
+borderColor: "#ffffff15",
   }}
 >
   <TouchableOpacity
@@ -176,10 +248,21 @@ Animated.timing(widthAnim, {
     disabled={disabled}
     style={{
       flex: 1,
+borderRadius: 20,
+overflow: "hidden",
+   backgroundColor: disabled
+  ? "#ffffff12"
+  : theme.sendBtn,
 
-      backgroundColor: disabled
-        ? "#3a3a3a"
-        : theme.sendBtn,
+borderWidth: disabled
+  ? 1
+  : 0,
+
+borderColor: disabled
+  ? "#ffffff18"
+  : "transparent",
+
+
 
       alignItems: "center",
 
@@ -218,10 +301,18 @@ Animated.timing(widthAnim, {
         ],
       }}
     >
-      <Ionicons
+<Ionicons
   name="paper-plane"
-  size={24}
-  color={theme.sendIcon}
+  size={
+    disabled
+      ? 24
+      : 30
+  }
+  color={
+  disabled
+    ? "#ffffff90"
+    : theme.sendIcon
+}
 />
     </Animated.View>
   </TouchableOpacity>

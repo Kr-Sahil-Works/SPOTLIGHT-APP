@@ -1,7 +1,6 @@
 import { styles } from "@/styles/feed.styles";
-import { Image } from "expo-image";
 import { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 type Story = {
   id: string;
@@ -34,12 +33,10 @@ export default function Story({
           !story.hasStory && styles.noStory,
         ]}
       >
-       <Image
+   <Image
   source={error ? { uri: FALLBACK } : story.avatar}
   style={styles.storyAvatar}
-  contentFit="cover"
-  cachePolicy="memory-disk"
-  blurRadius={error ? 6 : 0}
+  resizeMode="cover"
   onError={() => setError(true)}
 />
       </View>

@@ -2,10 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import {
+  FlatList,
   ImageBackground,
   Modal,
   Pressable,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -32,137 +32,17 @@ export default function ThemeModal({
   onClose,
   onApply,
 }: Props) {
-  const row1 =
-    CHAT_THEMES.slice(0, 12);
 
-  const row2 =
-    CHAT_THEMES.slice(12, 24);
 
-  const row3 =
-    CHAT_THEMES.slice(24, 36);
+const reorderedThemes = [
+  ...CHAT_THEMES.slice(0, 2),
 
-  const renderCard = (
-    theme: any,
-    i: number
-  ) => {
-    const selected =
-      selectedIndex === i;
+  ...CHAT_THEMES.filter(
+    (t) => t.wallpaper
+  ),
 
-    const Content = (
-      <View
-        style={{
-          flex: 1,
-
-          padding: 5,
-
-          justifyContent:
-            "flex-end",
-        }}
-      >
-        <View
-          style={{
-            backgroundColor:
-              theme.bubbleMe,
-
-            height: 18,
-
-            borderRadius: 6,
-
-            marginBottom: 4,
-          }}
-        />
-
-        <View
-          style={{
-            backgroundColor:
-              theme.bubbleOther,
-
-            height: 14,
-
-            width: "70%",
-
-            borderRadius: 6,
-          }}
-        />
-      </View>
-    );
-
-    return (
-      <TouchableOpacity
-        key={i}
-        onPress={() =>
-          onPreview(i)
-        }
-        style={{
-          width: 96,
-
-          height: 142,
-
-          marginRight: 10,
-
-          marginBottom: 12,
-
-          borderRadius: 16,
-
-          borderWidth: selected
-            ? 2
-            : 0,
-
-          borderColor: "#fff",
-
-          overflow: "hidden",
-
-          backgroundColor:
-            "#000",
-        }}
-      >
-        {theme.wallpaper ? (
-          <ImageBackground
-            source={
-              theme.wallpaper
-            }
-            resizeMode="cover"
-            style={{
-              flex: 1,
-            }}
-          >
-            <View
-              style={{
-                flex: 1,
-
-                backgroundColor:
-                  "#00000055",
-              }}
-            >
-              {Content}
-            </View>
-          </ImageBackground>
-        ) : theme.gradient ? (
-          <LinearGradient
-            colors={
-              theme.gradient
-            }
-            style={{
-              flex: 1,
-            }}
-          >
-            {Content}
-          </LinearGradient>
-        ) : (
-          <View
-            style={{
-              flex: 1,
-
-              backgroundColor:
-                theme.background,
-            }}
-          >
-            {Content}
-          </View>
-        )}
-      </TouchableOpacity>
-    );
-  };
+  ...CHAT_THEMES.slice(2, 12),
+];
 
   return (
 <Modal
@@ -192,7 +72,7 @@ export default function ThemeModal({
       }}
     >
       {/* GLASS BG */}
-      <BlurView
+    <BlurView
         intensity={70}
         tint="dark"
         style={{
@@ -221,7 +101,7 @@ export default function ThemeModal({
         {/* TITLE */}
         <Text
           style={{
-            color: "#fff",
+            color: "#0d0011e5",
             fontSize: 24,
             fontWeight: "700",
             marginBottom: 20,
@@ -231,156 +111,184 @@ export default function ThemeModal({
           Chat Themes
         </Text>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingBottom: 20,
-          }}
-        >
-          <View
+    <FlatList
+  data={reorderedThemes}
+  keyExtractor={(_, i) => i.toString()}
+  numColumns={2}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: 120,
+  }}
+  columnWrapperStyle={{
+    justifyContent: "space-between",
+  }}
+  initialNumToRender={8}
+  maxToRenderPerBatch={8}
+  windowSize={5}
+  removeClippedSubviews
+  renderItem={({ item: theme, index: i }) => {
+   const originalIndex =
+  CHAT_THEMES.findIndex(
+    (t) => t.name === theme.name
+  );
+
+const selected =
+  selectedIndex === originalIndex;
+
+    return (
+      <TouchableOpacity
+        onPress={() => {
+  const originalIndex =
+    CHAT_THEMES.findIndex(
+      (t) => t.name === theme.name
+    );
+
+  onPreview(originalIndex);
+}}
+        activeOpacity={0.9}
+        style={{
+          width: "48%",
+          height: 220,
+          marginBottom: 16,
+          borderRadius: 24,
+          overflow: "hidden",
+          borderWidth: selected ? 2 : 1,
+          borderColor: selected
+            ? "#22c55e"
+            : "#ffffff10",
+          backgroundColor: "#111",
+        }}
+      >
+        {theme.wallpaper ? (
+          <ImageBackground
+            source={theme.wallpaper}
+            resizeMode="cover"
+            fadeDuration={0}
             style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              justifyContent:
-                "space-between",
+              flex: 1,
             }}
           >
-            {CHAT_THEMES.map(
-              (theme, i) => {
-                const selected =
-                  selectedIndex === i;
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "#00000025",
+                padding: 14,
+                justifyContent: "flex-end",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor:
+                    theme.bubbleMe,
+                  height: 18,
+                  borderRadius: 10,
+                  marginBottom: 8,
+                  width: "82%",
+                  alignSelf: "flex-end",
+                }}
+              />
 
-                const Content = (
-                  <View
-                    style={{
-                      flex: 1,
-                      padding: 14,
-                      justifyContent:
-                        "flex-end",
-                    }}
-                  >
-                    <View
-                      style={{
-                        backgroundColor:
-                          theme.bubbleMe,
-                        height: 18,
-                        borderRadius: 10,
-                        marginBottom: 8,
-                        width: "82%",
-                        alignSelf: "flex-end",
-                      }}
-                    />
+              <View
+                style={{
+                  backgroundColor:
+                    theme.bubbleOther,
+                  height: 18,
+                  width: "68%",
+                  borderRadius: 10,
+                }}
+              />
+            </View>
+          </ImageBackground>
+        ) : theme.gradient ? (
+          <LinearGradient
+            colors={theme.gradient}
+            style={{
+              flex: 1,
+              padding: 14,
+              justifyContent: "flex-end",
+            }}
+          >
+            <View
+              style={{
+                backgroundColor:
+                  theme.bubbleMe,
+                height: 18,
+                borderRadius: 10,
+                marginBottom: 8,
+                width: "82%",
+                alignSelf: "flex-end",
+              }}
+            />
 
-                    <View
-                      style={{
-                        backgroundColor:
-                          theme.bubbleOther,
-                        height: 18,
-                        width: "68%",
-                        borderRadius: 10,
-                      }}
-                    />
-                  </View>
-                );
+            <View
+              style={{
+                backgroundColor:
+                  theme.bubbleOther,
+                height: 18,
+                width: "68%",
+                borderRadius: 10,
+              }}
+            />
+          </LinearGradient>
+        ) : (
+          <View
+            style={{
+              flex: 1,
+              backgroundColor:
+                theme.background,
+              padding: 14,
+              justifyContent: "flex-end",
+            }}
+          >
+            <View
+              style={{
+                backgroundColor:
+                  theme.bubbleMe,
+                height: 18,
+                borderRadius: 10,
+                marginBottom: 8,
+                width: "82%",
+                alignSelf: "flex-end",
+              }}
+            />
 
-                return (
-                  <TouchableOpacity
-                    key={i}
-                    onPress={() =>
-                      onPreview(i)
-                    }
-                    activeOpacity={0.9}
-                    style={{
-                    width: "44%",
-                    height: 200,
-                      marginBottom: 16,
-                      borderRadius: 28,
-                      overflow: "hidden",
-                      borderWidth: selected
-                        ? 2.5
-                        : 1,
-                      borderColor: selected
-                        ? "#ffffff"
-                        : "#ffffff18",
-                      backgroundColor:
-                        "#1a1a1a",
-                    }}
-                  >
-                    {theme.wallpaper ? (
-                      <ImageBackground
-                        source={
-                          theme.wallpaper
-                        }
-                        resizeMode="cover"
-                        style={{
-                          flex: 1,
-                        }}
-                      >
-                        <View
-                          style={{
-                            flex: 1,
-                            backgroundColor:
-                              "#00000035",
-                          }}
-                        >
-                          {Content}
-                        </View>
-                      </ImageBackground>
-                    ) : theme.gradient ? (
-                      <LinearGradient
-                        colors={
-                          theme.gradient
-                        }
-                        style={{
-                          flex: 1,
-                        }}
-                      >
-                        {Content}
-                      </LinearGradient>
-                    ) : (
-                      <View
-                        style={{
-                          flex: 1,
-                          backgroundColor:
-                            theme.background,
-                        }}
-                      >
-                        {Content}
-                      </View>
-                    )}
-
-                    {/* SELECTED CHECK */}
-                    {selected && (
-                      <View
-                        style={{
-                          position:
-                            "absolute",
-                          top: 10,
-                          right: 10,
-                          width: 28,
-                          height: 28,
-                          borderRadius: 999,
-                          backgroundColor:
-                            "#ffffffdd",
-                          alignItems:
-                            "center",
-                          justifyContent:
-                            "center",
-                        }}
-                      >
-                        <Ionicons
-                          name="checkmark"
-                          size={18}
-                          color="#000"
-                        />
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              }
-            )}
+            <View
+              style={{
+                backgroundColor:
+                  theme.bubbleOther,
+                height: 18,
+                width: "68%",
+                borderRadius: 10,
+              }}
+            />
           </View>
-        </ScrollView>
+        )}
+
+        {selected && (
+          <View
+            style={{
+              position: "absolute",
+              top: 10,
+              right: 10,
+              width: 28,
+              height: 28,
+              borderRadius: 999,
+              backgroundColor: "#22c55e",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons
+              name="checkmark"
+              size={18}
+              color="#000"
+            />
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  }}
+/>
 
         {/* BUTTONS */}
         <View

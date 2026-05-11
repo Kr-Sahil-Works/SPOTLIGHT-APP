@@ -3,6 +3,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import * as Haptics from "expo-haptics";
+import { Redirect } from "expo-router";
 import React, { memo, useRef, useState } from "react";
 import { Animated, Dimensions, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,14 +25,25 @@ const iconMap: Record<
 
 function TabsLayout() {
   const { isLoaded, isSignedIn } = useAuth();
+
   const insets = useSafeAreaInsets();
 
-  if (!isLoaded) {
-    return <View style={{ flex: 1, backgroundColor: "#000" }} />;
-  }
+  const [swipeEnabled,
+    setSwipeEnabled] =
+    useState(true);
 
-  if (!isSignedIn) return null;
-const [swipeEnabled, setSwipeEnabled] = useState(true);
+    if (!isLoaded) {
+  return null;
+}
+
+if (!isSignedIn) {
+  return (
+    <Redirect
+      href="/(auth)/login"
+    />
+  );
+}
+
 return (
   <>
     <Tab.Navigator

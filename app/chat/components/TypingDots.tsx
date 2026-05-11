@@ -1,18 +1,18 @@
-import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef } from "react";
 import {
   Animated,
-  Easing,
-  View
+  Easing, Image, View
 } from "react-native";
 
 export default function TypingDots({
   avatar,
-  typing,
+ typing,
+  theme,
 }: {
   avatar?: string;
   typing: boolean;
+  theme: any;
 }) {
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
@@ -99,8 +99,7 @@ export default function TypingDots({
     borderRadius: 14,
     marginRight: 6,
   }}
-  contentFit="cover"
-  cachePolicy="memory-disk"
+  resizeMode="cover"
 />
 
       {/* BUBBLE */}
@@ -117,7 +116,11 @@ export default function TypingDots({
           {[dot1, dot2, dot3].map((d, i) => (
             <Animated.View key={i} style={[{ marginHorizontal: 2 }, dotStyle(d)]}>
               <LinearGradient
-                colors={["#22c55e", "#4ade80"]}
+                colors={[
+  theme.bubbleMe,
+  theme.sendBtn ||
+    theme.bubbleMe,
+]}
                 style={{
                   width: 6,
                   height: 6,

@@ -30,6 +30,7 @@ const conversationId = await ctx.runMutation(
       createdAt: Date.now(),
       type: "text",
       seen: false,
+      status: "sent",
       replyTo: args.replyTo,
       replyToText: args.replyToText,
     });
@@ -37,6 +38,8 @@ const conversationId = await ctx.runMutation(
     await ctx.db.patch(conversationId, {
       lastMessage: args.text,
       lastMessageAt: Date.now(),
+      lastMessageSenderId:
+  current._id,
     });
   },
 });
@@ -66,7 +69,13 @@ api.conversations.index.createConversation,
     !msg.seen &&
     msg.senderId === args.userId
   ) {
-    return ctx.db.patch(msg._id, { seen: true });
+    return ctx.db.patch(
+  msg._id,
+  {
+    seen: true,
+    status: "seen",
+  }
+);
   }
   return null;
 })
@@ -137,6 +146,7 @@ export const getMessages = query({
     const messages =
       await q.take(limit);
 
+
       const enriched = await Promise.all(
   messages.map(async (m) => {
     const sender = await ctx.db.get(
@@ -159,6 +169,9 @@ export const getMessages = query({
 
     return {
       messages: enriched.reverse(),
+
+      conversationId:
+  conversation._id,
 
       currentUserId:
         currentUser._id,

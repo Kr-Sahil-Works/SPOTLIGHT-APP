@@ -18,6 +18,7 @@ export default function MenuModal({
   setReplyMsg,
   setDeleteConfirm,
   currentUserId,
+  toggleReaction,
 }: any) {
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.9)).current;
@@ -67,11 +68,11 @@ export default function MenuModal({
         <BlurView intensity={0} style={{ flex: 1 }}>
           
           {/* ✅ REACTION BAR */}
-          {reactionMsg && (
-            <ReactionBar
+    {reactionMsg && !selectedMsg && (
+           <ReactionBar
               reactionMsg={reactionMsg}
               setReactionMsg={setReactionMsg}
-              toggleReaction={() => {}}
+            toggleReaction={toggleReaction}
             />
           )}
 
