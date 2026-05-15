@@ -1,4 +1,4 @@
-import { Loader } from "@/components/Loader";
+import { Loader } from "@/components/LoaderSkeletons/Loader";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";

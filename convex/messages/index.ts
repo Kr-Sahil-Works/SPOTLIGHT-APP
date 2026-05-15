@@ -10,7 +10,7 @@ export {
 
 // core
 export {
-    getMessages, markAsSeen, sendMessage
+    getMessages, markAsDelivered, markAsSeen, sendMessage
 } from "./messages.core";
 
 // presence (online/offline)

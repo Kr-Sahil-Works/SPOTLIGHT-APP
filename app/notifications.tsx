@@ -1,5 +1,5 @@
+import NotificationsSkeleton from "@/components/LoaderSkeletons/NotificationsSkeleton";
 import Notification from "@/components/Notification";
-import NotificationsSkeleton from "@/components/NotificationsSkeleton";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/notifications.styles";

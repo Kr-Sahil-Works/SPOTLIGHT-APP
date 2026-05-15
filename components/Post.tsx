@@ -16,7 +16,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import CommentsModal from "./CommentsModal";
+import CommentsModal from "./modals/CommentsModal";
 
 type PostProps = {
   onDelete?: (id: Id<"posts">) => void;

@@ -1,22 +1,22 @@
-import ImageViewerModal from "@/components/ImageViewerModal";
+import ImageViewerModal from "@/components/modals/ImageViewerModal";
 import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
 import {
-  useMutation,
-  useQuery,
+    useMutation,
+    useQuery,
 } from "convex/react";
 import { Image } from "expo-image";
 import {
-  useLocalSearchParams,
-  useRouter,
+    useLocalSearchParams,
+    useRouter,
 } from "expo-router";
 import { useState } from "react";
 
 import {
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
+    FlatList,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function CollectionPage() {

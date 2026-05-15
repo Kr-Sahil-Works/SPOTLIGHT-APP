@@ -1,5 +1,5 @@
-import Story from "@/components/Story";
-import StoryViewer from "@/components/StoryViewer";
+import Story from "@/components/story/Story";
+import StoryViewer from "@/components/story/StoryViewer";
 import { STORIES } from "@/constants/mock-data";
 import { styles } from "@/styles/feed.styles";
 import { useEffect, useRef, useState } from "react";

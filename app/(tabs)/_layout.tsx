@@ -39,8 +39,8 @@ const iconMap: Record<
   ],
 
 chats: [
-  "paper-plane",
-  "paper-plane",
+  "chatbubble-ellipses",
+  "chatbubble-ellipses-outline",
 ],
 
   profile: [
@@ -238,9 +238,6 @@ if (name === "profile") {
           {
   translateY: -1,
 },
-          {
-            rotate:"28deg",
-          },
           {
             scale: 1.08,
           },

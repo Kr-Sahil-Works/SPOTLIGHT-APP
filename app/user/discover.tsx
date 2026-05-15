@@ -1,4 +1,4 @@
-import { Loader } from "@/components/Loader";
+import { Loader } from "@/components/LoaderSkeletons/Loader";
 import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";

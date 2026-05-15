@@ -54,9 +54,9 @@ const unreadCount = lastMessages.filter(
         isOnline:
   !!user.showOnline &&
   !!user.lastActiveAt &&
-  Date.now() -
-    user.lastActiveAt <
-    45000,
+Date.now() -
+  (user.lastActiveAt || 0) <
+  15000,
         showOnline: user.showOnline,
       });
     }

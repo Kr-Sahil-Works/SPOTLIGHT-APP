@@ -17,7 +17,7 @@ import {
   TouchableWithoutFeedback,
   View
 } from "react-native";
-import Comment from "./Comment";
+import Comment from "../Comment";
 
 export default function CommentsModal({
   onClose,

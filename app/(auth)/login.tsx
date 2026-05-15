@@ -1,4 +1,4 @@
-import GreenLoader from "@/components/GreenLoader";
+import GreenLoader from "@/components/LoaderSkeletons/GreenLoader";
 import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/auth.styles";
 import { useSSO } from "@clerk/clerk-expo";

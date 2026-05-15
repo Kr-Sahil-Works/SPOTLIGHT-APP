@@ -44,6 +44,59 @@ const conversationId = await ctx.runMutation(
   },
 });
 
+export const markAsDelivered = mutation({
+  args: {
+    userId: v.id("users"),
+  },
+
+  handler: async (ctx, args) => {
+    const user =
+      await getAuthenticatedUser(ctx);
+
+    const conversationId =
+      await ctx.runMutation(
+        api.conversations.index
+          .createConversation,
+        {
+          userId: args.userId,
+        }
+      );
+
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex(
+        "by_conversation",
+        (q) =>
+          q.eq(
+            "conversationId",
+            conversationId
+          )
+      )
+      .order("desc")
+      .take(50);
+
+    await Promise.all(
+      messages.map((msg) => {
+        if (
+          msg.receiverId ===
+            user._id &&
+          msg.status === "sent"
+        ) {
+          return ctx.db.patch(
+            msg._id,
+            {
+              status:
+                "delivered",
+            }
+          );
+        }
+
+        return null;
+      })
+    );
+  },
+});
+
 export const markAsSeen = mutation({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {

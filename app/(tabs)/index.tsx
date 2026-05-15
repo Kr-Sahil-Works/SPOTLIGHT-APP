@@ -1,7 +1,7 @@
 import EmptyCenter from "@/components/EmptyCenter";
-import FeedSkeleton from "@/components/FeedSkeleton"; // ✅ USE THIS
+import FeedSkeleton from "@/components/LoaderSkeletons/FeedSkeleton"; // ✅ USE THIS
 import Post from "@/components/Post";
-import StoriesSection from "@/components/Stories";
+import StoriesSection from "@/components/story/Stories";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/clerk-expo";

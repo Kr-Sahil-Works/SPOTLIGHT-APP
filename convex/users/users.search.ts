@@ -4,27 +4,75 @@ import { getAuthenticatedUserQuery } from "./users.core";
 
 export const searchUsers = query({
   args: { search: v.string() },
+
   handler: async (ctx, args) => {
-    const currentUser = await getAuthenticatedUserQuery(ctx);
+    const currentUser =
+      await getAuthenticatedUserQuery(ctx);
+
     if (!currentUser) return [];
 
-    const s = args.search.toLowerCase().trim();
-    if (!s) return [];
+    const search =
+      args.search.toLowerCase().trim();
 
-    const users = await ctx.db
-      .query("users")
-      .withIndex("by_username", (q) =>
-        q.gte("username", s).lt("username", s + "z")
+    if (!search) return [];
+
+    // ✅ GET CONVERSATIONS
+    const conversations =
+      await ctx.db
+        .query("conversations")
+        .collect();
+
+    // ✅ FIND CHAT USER IDS
+    const chattedUserIds =
+      conversations
+        .filter((c) =>
+          c.participants.includes(
+            currentUser._id
+          )
+        )
+        .flatMap((c) =>
+          c.participants.filter(
+            (id) =>
+              id !== currentUser._id
+          )
+        );
+
+    // ✅ REMOVE DUPLICATES
+    const uniqueIds = [
+      ...new Set(chattedUserIds),
+    ];
+
+    // ✅ FETCH USERS
+    const users = await Promise.all(
+      uniqueIds.map((id) =>
+        ctx.db.get(id)
       )
-      .take(15);
+    );
 
+    // ✅ SEARCH FILTER
     return users
-      .filter((u) => u._id !== currentUser._id && !u.isDeleted)
+      .filter(
+        (u) =>
+          u &&
+          !u.isDeleted &&
+          (
+            u.fullname
+              .toLowerCase()
+              .includes(search) ||
+
+            u.username
+              .toLowerCase()
+              .includes(search)
+          )
+      )
+      .slice(0, 15)
       .map((u) => ({
-        _id: u._id,
-        username: u.username,
-        fullname: u.fullname,
-        image: u.image,
+        _id: u!._id,
+        username: u!.username,
+        fullname: u!.fullname,
+        image: u!.image,
+        isOnline: u!.isOnline,
+        lastSeen: u!.lastSeen,
       }));
   },
 });

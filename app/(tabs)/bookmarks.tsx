@@ -1,6 +1,6 @@
 import EmptyCenter from "@/components/EmptyCenter";
-import ImageViewerModal from "@/components/ImageViewerModal";
-import { Loader } from "@/components/Loader";
+import { Loader } from "@/components/LoaderSkeletons/Loader";
+import ImageViewerModal from "@/components/modals/ImageViewerModal";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/feed.styles";
 import { Ionicons } from "@expo/vector-icons";

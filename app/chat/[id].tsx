@@ -85,6 +85,18 @@ const {
   loadingMore,
 } = useMessages(userId);
 
+const markAsDelivered =
+  useMutation(
+    api.messages.index
+      .markAsDelivered
+  );
+
+const markAsSeen =
+  useMutation(
+    api.messages.index.markAsSeen
+  );
+
+
 const typing = useQuery(
   api.messages.index.getTyping,
   conversationId
@@ -99,6 +111,19 @@ const resolvedThemeIndex =
       "number"
     ? themeIndex
     : cachedThemeIndex ?? 0;
+
+useEffect(() => {
+  if (!userId) return;
+
+  markAsDelivered({
+    userId,
+  }).catch(() => {});
+
+  markAsSeen({
+    userId,
+  }).catch(() => {});
+}, [messages.length]);
+
 
 const theme = useMemo(() => {
   return (

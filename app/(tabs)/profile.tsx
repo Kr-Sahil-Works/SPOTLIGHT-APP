@@ -1,4 +1,4 @@
-import { Loader } from "@/components/Loader";
+import { Loader } from "@/components/LoaderSkeletons/Loader";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/profile.styles";
 

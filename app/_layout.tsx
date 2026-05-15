@@ -72,7 +72,7 @@ const handleState =
     setOnline({
       isOnline: true,
     }).catch(() => {});
-  }, 30000);
+  }, 10000);
 
     return () => {
 
