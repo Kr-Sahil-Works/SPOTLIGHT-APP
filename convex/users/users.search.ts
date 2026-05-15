@@ -31,20 +31,62 @@ export const searchUsers = query({
 
 export const getAllUsers = query({
   handler: async (ctx) => {
-    const currentUser = await getAuthenticatedUserQuery(ctx);
+    const currentUser =
+      await getAuthenticatedUserQuery(
+        ctx
+      );
+
     if (!currentUser) return [];
 
     const users = await ctx.db
       .query("users")
       .take(20);
 
-    return users
-      .filter((u) => u._id !== currentUser._id && !u.isDeleted)
-      .map((u) => ({
-        _id: u._id,
-        username: u.username,
-        fullname: u.fullname,
-        image: u.image,
-      }));
+    const formatted =
+      await Promise.all(
+        users
+          .filter(
+            (u) =>
+              u._id !==
+                currentUser._id &&
+              !u.isDeleted
+          )
+          .map(async (u) => {
+            const follow =
+              await ctx.db
+                .query("follows")
+                .withIndex(
+                  "by_both",
+                  (q) =>
+                    q
+                      .eq(
+                        "followerId",
+                        currentUser._id
+                      )
+                      .eq(
+                        "followingId",
+                        u._id
+                      )
+                )
+                .first();
+
+            return {
+              _id: u._id,
+
+              username:
+                u.username,
+
+              fullname:
+                u.fullname,
+
+              image: u.image,
+
+              isFollowing:
+                !!follow,
+            };
+          })
+      );
+
+    return formatted;
   },
 });

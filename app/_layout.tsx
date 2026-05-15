@@ -149,12 +149,19 @@ useEffect(() => {
           {isSignedIn && <PushHandler />}
 
           <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: "fade",
-              animationDuration: 180,
-              gestureEnabled: true,
-            }}
+           screenOptions={{
+  headerShown: false,
+
+  animation: "fade",
+
+  animationDuration: 180,
+
+  gestureEnabled: true,
+
+  contentStyle: {
+    backgroundColor: "#000",
+  },
+}}
           />
         </SafeAreaView>
       </SafeAreaProvider>

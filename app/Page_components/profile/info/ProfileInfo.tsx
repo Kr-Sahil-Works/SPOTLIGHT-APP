@@ -3,11 +3,11 @@ import { styles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
-    Animated,
-    Image as RNImage,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Image as RNImage,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function ProfileInfo({
@@ -15,12 +15,14 @@ export default function ProfileInfo({
   glow,
   onEdit,
   onShare,
+  onFollowersPress,
+  onFollowingPress,
 }: any) {
   return (
     <View style={styles.profileInfo}>
-      {/* 🔥 AVATAR + STATS */}
+      {/* AVATAR + STATS */}
       <View style={styles.avatarAndStats}>
-        {/* AVATAR WITH GLOW */}
+        {/* AVATAR */}
         <Animated.View
           style={{
             shadowColor: COLORS.primary,
@@ -32,42 +34,114 @@ export default function ProfileInfo({
           }}
         >
           <RNImage
-            source={{ uri: user.image || "" }}
+            source={{
+              uri: user?.image || "",
+            }}
             style={styles.avatar}
           />
         </Animated.View>
 
-        {/* 📊 STATS */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{user.posts}</Text>
-            <Text style={styles.statLabel}>Posts</Text>
+        {/* STATS */}
+        <View
+          style={[
+            styles.statsContainer,
+            {
+              flex: 1,
+            },
+          ]}
+        >
+          {/* POSTS */}
+          <View
+            style={[
+              styles.statItem,
+              {
+                flex: 1,
+                alignItems: "center",
+              },
+            ]}
+          >
+            <Text style={styles.statNumber}>
+              {user?.posts || 0}
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Posts
+            </Text>
           </View>
 
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{user.followers}</Text>
-            <Text style={styles.statLabel}>Followers</Text>
-          </View>
+          {/* FOLLOWERS */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => onFollowersPress?.()}
+            style={[
+              styles.statItem,
+              {
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              },
+            ]}
+          >
+            <Text style={styles.statNumber}>
+              {user?.followers || 0}
+            </Text>
 
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{user.following}</Text>
-            <Text style={styles.statLabel}>Following</Text>
-          </View>
+            <Text style={styles.statLabel}>
+              Followers
+            </Text>
+          </TouchableOpacity>
+
+          {/* FOLLOWING */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => onFollowingPress?.()}
+            style={[
+              styles.statItem,
+              {
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              },
+            ]}
+          >
+            <Text style={styles.statNumber}>
+              {user?.following || 0}
+            </Text>
+
+            <Text style={styles.statLabel}>
+              Following
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* 🧾 NAME + BIO */}
-      <Text style={[styles.name, { marginLeft: 2 }]}>
-        {user.fullname}
+      {/* NAME */}
+      <Text
+        style={[
+          styles.name,
+          {
+            marginLeft: 2,
+          },
+        ]}
+      >
+        {user?.fullname}
       </Text>
 
-      {user.bio && (
-        <Text style={[styles.bio, { marginLeft: 2 }]}>
+      {/* BIO */}
+      {!!user?.bio && (
+        <Text
+          style={[
+            styles.bio,
+            {
+              marginLeft: 2,
+            },
+          ]}
+        >
           {user.bio}
         </Text>
       )}
 
-      {/* ⚙️ ACTION BUTTONS */}
+      {/* ACTION BUTTONS */}
       <View style={styles.actionButtons}>
         <TouchableOpacity
           style={styles.editButton}

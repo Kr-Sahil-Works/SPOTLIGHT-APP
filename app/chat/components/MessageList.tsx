@@ -186,11 +186,9 @@ useEffect(() => {
   </View>
 )}
       <FlashList
-maintainVisibleContentPosition={{
-  startRenderingFromBottom: true,
-}}
         ref={listRef}
         data={messages}
+        inverted={false}
         keyExtractor={(item) => item._id.toString()}
         contentContainerStyle={{
           paddingHorizontal: 12,

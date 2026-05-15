@@ -86,36 +86,60 @@ export default function ChatProfileScreen({
           </Text>
         </View>
 
-        {/* ACTIONS */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginTop: 26,
-            paddingHorizontal: 48,
-          }}
-        >
-          <TopAction
-            icon="person-outline"
-            label="Profile"
-          />
+    {/* ACTIONS */}
+<View
+  style={{
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 26,
+    paddingHorizontal: 48,
+  }}
+>
+  <TopAction
+    icon="person-outline"
+    label="Profile"
+    onPress={() =>
+      router.push({
+        pathname: "/user/[id]",
+        params: {
+          id: userId,
+        },
+      })
+    }
+  />
 
-          <TopAction
-            icon="search-outline"
-            label="Search"
-          />
+  <TopAction
+    icon="search-outline"
+    label="Search"
+    disabled
+  />
 
-          <TopAction
-            icon="notifications-outline"
-            label="Mute"
-          />
+  <TopAction
+    icon="notifications-outline"
+    label="Mute"
+    disabled
+  />
 
-          <TopAction
-            icon="ellipsis-horizontal"
-            label="Options"
-          />
-        </View>
+  <TopAction
+    icon="ellipsis-horizontal"
+    label="Options"
+    disabled
+  />
+</View>
       </View>
+
+<Text
+  style={{
+    color: "#ffffffbf",
+    textAlign: "center",
+    fontSize: 11,
+    letterSpacing: 1.2,
+    marginTop: 28,
+    marginBottom: -10,
+  }}
+>
+  MORE FEATURES SOON
+</Text>
 
       {/* MENU */}
       <ScrollView
@@ -126,12 +150,6 @@ export default function ChatProfileScreen({
           paddingBottom: 50,
         }}
       >
-        <MenuItem
-          icon="color-palette"
-          title="Theme"
-          subtitle="Love"
-        />
-
         <MenuItem
           icon="timer-outline"
           title="Disappearing messages"
@@ -156,19 +174,29 @@ export default function ChatProfileScreen({
     </View>
   );
 }
+const DISABLED_OPACITY = 0.45;
 
 function TopAction({
   icon,
   label,
+  onPress,
+  disabled,
 }: {
   icon: any;
   label: string;
+  onPress?: () => void;
+  disabled?: boolean;
 }) {
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={disabled ? 1 : 0.8}
+      disabled={disabled}
+      onPress={onPress}
       style={{
         alignItems: "center",
+        opacity: disabled
+          ? DISABLED_OPACITY
+          : 1,
       }}
     >
       <Ionicons
@@ -201,11 +229,13 @@ function MenuItem({
 }) {
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={1}
+      disabled
       style={{
         flexDirection: "row",
         alignItems: "center",
         marginBottom: 34,
+        opacity: 0.45,
       }}
     >
       <Ionicons

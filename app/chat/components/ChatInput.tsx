@@ -227,7 +227,7 @@ const handleTyping = (value: string) => {
   style={{
     width: disabled
   ? 55
-  : 68,
+  : 60,
 
     height: disabled
       ? 44
@@ -236,10 +236,6 @@ const handleTyping = (value: string) => {
 borderRadius: disabled
   ? 16
   : 30,
-
-    overflow: "visible",
-    borderWidth: 1,
-borderColor: "#ffffff15",
   }}
 >
   <TouchableOpacity
@@ -270,9 +266,9 @@ borderColor: disabled
 
       shadowColor: theme.sendBtn,
 
-      shadowOpacity: disabled
-        ? 0
-        : 0.35,
+shadowOpacity: disabled
+  ? 0
+  : 0.22,
 
       shadowRadius: 8,
 
@@ -281,7 +277,7 @@ borderColor: disabled
         height: 0,
       },
 
-      elevation: 6,
+      elevation: 0,
     }}
   >
     <Animated.View
@@ -313,6 +309,13 @@ borderColor: disabled
     ? "#ffffff90"
     : theme.sendIcon
 }
+style={{
+  transform: [
+    {
+      translateX: -2,
+    },
+  ],
+}}
 />
     </Animated.View>
   </TouchableOpacity>

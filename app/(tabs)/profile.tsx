@@ -200,13 +200,30 @@ setEditedProfile({
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* PROFILE INFO */}
-        <ProfileInfo
-          user={currentUser}
-          glow={glow}
-          onEdit={() => setIsEditModalVisible(true)}
-          onShare={handleShare}
-        />
-
+   <ProfileInfo
+  user={currentUser}
+  glow={glow}
+  onEdit={() => setIsEditModalVisible(true)}
+  onShare={handleShare}
+  onFollowersPress={() =>
+    router.push({
+  pathname: "/user/connections",
+      params: {
+        userId: currentUser._id,
+        type: "followers",
+      },
+    })
+  }
+  onFollowingPress={() =>
+    router.push({
+    pathname: "/user/connections",
+      params: {
+        userId: currentUser._id,
+        type: "following",
+      },
+    })
+  }
+/>
         {/* TABS */}
         <ProfileTabs
           activeTab={activeTab}

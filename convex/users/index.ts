@@ -7,7 +7,7 @@ export {
 
 // follow system
 export {
-    acceptFollowRequest, isFollowing, rejectFollowRequest, toggleFollow
+    acceptFollowRequest, getFollowUsers, isFollowing, rejectFollowRequest, toggleFollow
 } from "./users.follow";
 
 // profile

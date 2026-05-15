@@ -185,3 +185,52 @@ export const isFollowing = query({
     return !!follow;
   },
 });
+
+
+
+/* =========================
+   👥 FOLLOW USERS LIST
+========================= */
+export const getFollowUsers = query({
+  args: {
+    userId: v.id("users"),
+    type: v.union(
+      v.literal("followers"),
+      v.literal("following")
+    ),
+  },
+
+  handler: async (ctx, args) => {
+    if (args.type === "followers") {
+      const follows = await ctx.db
+        .query("follows")
+        .withIndex("by_following", (q) =>
+          q.eq("followingId", args.userId)
+        )
+        .collect();
+
+      const users = await Promise.all(
+        follows.map(async (f) => {
+          return await ctx.db.get(f.followerId);
+        })
+      );
+
+      return users.filter(Boolean);
+    }
+
+    const follows = await ctx.db
+      .query("follows")
+      .withIndex("by_follower", (q) =>
+        q.eq("followerId", args.userId)
+      )
+      .collect();
+
+    const users = await Promise.all(
+      follows.map(async (f) => {
+        return await ctx.db.get(f.followingId);
+      })
+    );
+
+    return users.filter(Boolean);
+  },
+});

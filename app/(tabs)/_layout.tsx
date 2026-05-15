@@ -1,8 +1,12 @@
 import { COLORS } from "@/constants/theme";
-import { useAuth } from "@clerk/clerk-expo";
+import {
+  useAuth,
+  useUser,
+} from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { Redirect } from "expo-router";
 import React, { memo, useRef, useState } from "react";
 import { Animated, Dimensions, TouchableOpacity, View } from "react-native";
@@ -14,17 +18,40 @@ const screenWidth = Dimensions.get("window").width;
 
 const iconMap: Record<
   string,
-  [keyof typeof Ionicons.glyphMap, keyof typeof Ionicons.glyphMap]
+  [
+    keyof typeof Ionicons.glyphMap,
+    keyof typeof Ionicons.glyphMap
+  ]
 > = {
-  index: ["home", "home-outline"],
-  bookmarks: ["bookmark", "bookmark-outline"],
-  create: ["add-circle", "add-circle"],
-  chats: ["chatbubble", "chatbubble-outline"], 
-  profile: ["person", "person-outline"],
+  index: [
+    "home",
+    "home-outline",
+  ],
+
+  bookmarks: [
+    "bookmark",
+    "bookmark-outline",
+  ],
+
+  create: [
+    "add-circle",
+    "add-circle-outline",
+  ],
+
+chats: [
+  "paper-plane",
+  "paper-plane",
+],
+
+  profile: [
+    "person",
+    "person-outline",
+  ],
 };
 
 function TabsLayout() {
   const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
 
   const insets = useSafeAreaInsets();
 
@@ -68,16 +95,16 @@ return (
   }}
 </Tab.Screen>
 
-<Tab.Screen name="create">
+<Tab.Screen name="chats">
   {() => {
-    const Screen = require("./create").default;
+    const Screen = require("./chats").default;
     return <Screen setSwipeEnabled={setSwipeEnabled} />;
   }}
 </Tab.Screen>
 
-<Tab.Screen name="chats">
+<Tab.Screen name="create">
   {() => {
-    const Screen = require("./chats").default;
+    const Screen = require("./create").default;
     return <Screen setSwipeEnabled={setSwipeEnabled} />;
   }}
 </Tab.Screen>
@@ -99,16 +126,22 @@ const TabIcon = memo(function TabIcon({
   size,
   color,
   focused,
+  profileImage,
 }: {
   name: string;
   size: number;
   color: string;
   focused: boolean;
+  profileImage?: string;
 }) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const scale = useRef(
+    new Animated.Value(1)
+  ).current;
 
   const handlePressIn = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(
+      Haptics.ImpactFeedbackStyle.Light
+    );
 
     Animated.sequence([
       Animated.timing(scale, {
@@ -116,6 +149,7 @@ const TabIcon = memo(function TabIcon({
         duration: 90,
         useNativeDriver: true,
       }),
+
       Animated.spring(scale, {
         toValue: 1,
         friction: 7,
@@ -124,35 +158,101 @@ const TabIcon = memo(function TabIcon({
     ]).start();
   };
 
-  /* ✅ SAFE ICON ACCESS */
-  const icons =
-    iconMap[name] || ["ellipse", "ellipse-outline"];
+if (name === "profile") {
+  return (
+    <Animated.View
+      style={{
+        transform: [
+          {
+            scale,
+          },
+        ],
+      }}
+    >
+      <Image
+        source={{
+          uri: profileImage,
+        }}
+        cachePolicy="memory-disk"
+        style={{
+          width: 28,
 
-  const iconName = focused ? icons[0] : icons[1];
+          height: 28,
+
+          borderRadius: 999,
+
+          borderWidth: focused
+            ? 2
+            : 0,
+
+          borderColor:
+           "#ffffff",
+        }}
+      />
+    </Animated.View>
+  );
+}
+
+  const icons =
+    iconMap[name] || [
+      "ellipse",
+      "ellipse-outline",
+    ];
+
+  const iconName = focused
+    ? icons[0]
+    : icons[1];
 
   return (
-    <View style={{ alignItems: "center", justifyContent: "center" }}>
-      <Animated.View style={{ transform: [{ scale }] }}>
-        <Ionicons
-          name={iconName}
-          size={name === "create" ? size + 4 : size}
-          color={focused ? COLORS.primary : color}
-          onPressIn={handlePressIn}
-        />
+    <View
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Animated.View
+        style={{
+          transform: [
+            {
+              scale,
+            },
+          ],
+        }}
+      >
+     <Ionicons
+  name={iconName}
+  size={
+    name === "create"
+      ? size + 4
+      : size
+  }
+  color={
+    focused
+      ? COLORS.primary
+      : color
+  }
+ style={
+  name === "chats"
+    ? {
+        transform: [
+          {
+  translateY: -1,
+},
+          {
+            rotate:"28deg",
+          },
+          {
+            scale: 1.08,
+          },
+        ],
+      }
+    : undefined
+}
+  onPressIn={
+    handlePressIn
+  }
+/>
       </Animated.View>
-
-      {focused && (
-        <View
-          style={{
-            marginTop: 3,
-            width: 4,
-            height: 4,
-            borderRadius: 2,
-            backgroundColor: COLORS.primary,
-            opacity: 0.7,
-          }}
-        />
-      )}
     </View>
   );
 });
@@ -161,6 +261,7 @@ import { BlurView } from "expo-blur";
 import { Platform } from "react-native";
 
 function CustomTabBar({ state, navigation }: any) {
+  const { user } = useUser();
   const insets = useSafeAreaInsets();
 
   return (
@@ -204,12 +305,13 @@ function CustomTabBar({ state, navigation }: any) {
               }}
               activeOpacity={0.8}
             >
-              <TabIcon
-                name={route.name}
-                size={24}
-                color="rgba(255,255,255,0.5)"
-                focused={isFocused}
-              />
+          <TabIcon
+  name={route.name}
+  size={24}
+  color="rgba(255,255,255,0.5)"
+  focused={isFocused}
+  profileImage={user?.imageUrl}
+/>
             </TouchableOpacity>
           );
         })}

@@ -101,7 +101,7 @@ const reorderedThemes = [
         {/* TITLE */}
         <Text
           style={{
-            color: "#0d0011e5",
+            color: "#44d800e5",
             fontSize: 24,
             fontWeight: "700",
             marginBottom: 20,

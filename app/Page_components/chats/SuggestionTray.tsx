@@ -1,7 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "convex/react";
-import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -133,22 +132,20 @@ useEffect(() => {
 
       {/* LIST + BLUR OVERLAY */}
       <View style={{ flex: 1 }}>
-        {/* 👇 BLUR ONLY WHEN COLLAPSED */}
-        {!open && (
-          <BlurView
-            intensity={0}
-            tint="dark"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 10,
-            }}
-          />
-        )}
-
+        <View
+  pointerEvents="none"
+  style={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: open
+      ? "transparent"
+      : "#00000094",
+    zIndex: 1,
+  }}
+/>
         <FlatList
           data={open ? shuffledUsers : users.slice(0, 3)}
           keyExtractor={(i) => i._id}
