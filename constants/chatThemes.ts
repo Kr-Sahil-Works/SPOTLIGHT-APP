@@ -76,7 +76,7 @@ export const CHAT_THEMES: ChatTheme[] = [
 
   {
     name: "Green",
-    bubbleMe: "#4ade80",
+    bubbleMe: "#00c548",
     bubbleOther: "#1f2937",
     background: "#000",
     header: "#000",

@@ -11,8 +11,8 @@ import {
   View
 } from "react-native";
 
+import useUser from "@/app/chat/hooks/useUser";
 import { useState } from "react";
-import useUser from "../hooks/useUser";
 import CallOptionsModal from "../modals/CallOptionsModal";
 
 type Props = {
@@ -96,7 +96,24 @@ return (
       }}
     >
       {/* BACK */}
-      <TouchableOpacity onPress={() => router.back()}>
+      <TouchableOpacity
+  onPress={() => router.back()}
+  hitSlop={{
+    top: 16,
+    bottom: 16,
+    left: 6,
+    right: 14,
+  }}
+  style={{
+    width: 42,
+
+    height: 42,
+
+    justifyContent: "center",
+
+    alignItems: "center",
+  }}
+>
         <Ionicons
           name="arrow-back"
           size={24}
@@ -177,11 +194,11 @@ return (
         style={{ marginRight: 14 }}
         onPress={() => setShowCallModal(true)}
       >
-        <Ionicons
-          name="call-sharp"
-          size={22}
-          color={theme.headerText}
-        />
+ <Ionicons
+  name="call-sharp"
+  size={22}
+  color={theme.headerText}
+/>
       </TouchableOpacity>
 
       {/* THEME BTN */}
@@ -189,11 +206,15 @@ return (
         style={{ marginRight: 5 }}
         onPress={onOpenTheme}
       >
-        <Ionicons
-          name="color-palette-sharp"
-          size={22}
-          color={theme.headerText}
-        />
+     <Image
+  source={require("@/assets/images/icons/theme.png")}
+  style={{
+    width: 24,
+    height: 24,
+    opacity: 0.92
+  }}
+  resizeMode="contain"
+/>
       </TouchableOpacity>
     </View>
 

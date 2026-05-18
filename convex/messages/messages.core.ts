@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { GenericId, v } from "convex/values";
 import { api } from "../_generated/api";
 import { mutation, query } from "../_generated/server";
 import { getConversationInternal } from "../conversations/conversations.core";
@@ -7,40 +7,127 @@ import { getAuthenticatedUser, getAuthenticatedUserQuery } from "../users/users.
 export const sendMessage = mutation({
   args: {
     receiverId: v.id("users"),
+
     text: v.string(),
-    replyTo: v.optional(v.id("messages")),
-    replyToText: v.optional(v.string()),
-    clientId: v.optional(v.string()),
+
+    replyTo: v.optional(
+      v.id("messages")
+    ),
+
+    replyToText:
+      v.optional(
+        v.string()
+      ),
+
+    clientId:
+      v.optional(
+        v.string()
+      ),
   },
-  handler: async (ctx, args) => {
-    if (!args.text.trim()) throw new Error("Empty message");
-    const current = await getAuthenticatedUser(ctx);
 
-const conversationId = await ctx.runMutation(
- api.conversations.index.createConversation,
-  { userId: args.receiverId }
-);
+  handler: async (
+    ctx,
+    args
+  ) => {
+    if (
+      !args.text.trim()
+    ) {
+      throw new Error(
+        "Empty message"
+      );
+    }
 
-    await ctx.db.insert("messages", {
+    const current =
+      await getAuthenticatedUser(
+        ctx
+      );
+
+    const conversationId =
+      await ctx.runMutation(
+        api.conversations
+          .index
+          .createConversation,
+        {
+          userId:
+            args.receiverId,
+        }
+      );
+
+    await ctx.db.insert(
+      "messages",
+      {
+        conversationId,
+
+        clientId:
+          args.clientId,
+
+        senderId:
+          current._id,
+
+        receiverId:
+          args.receiverId,
+
+        text: args.text,
+
+        createdAt:
+          Date.now(),
+
+        type: "text",
+
+        seen: false,
+
+        status: "sent",
+
+        replyTo:
+          args.replyTo,
+
+        replyToText:
+          args.replyToText,
+      }
+    );
+
+    await ctx.db.patch(
       conversationId,
-      clientId: args.clientId,
-      senderId: current._id,
-      receiverId: args.receiverId,
-      text: args.text,
-      createdAt: Date.now(),
-      type: "text",
-      seen: false,
-      status: "sent",
-      replyTo: args.replyTo,
-      replyToText: args.replyToText,
-    });
+      {
+        lastMessage:
+          args.text,
 
-    await ctx.db.patch(conversationId, {
-      lastMessage: args.text,
-      lastMessageAt: Date.now(),
-      lastMessageSenderId:
-  current._id,
-    });
+        lastMessageAt:
+          Date.now(),
+
+        lastMessageSenderId:
+          current._id,
+      }
+    );
+
+    /* 🔔 PUSH */
+
+    const receiver =
+      await ctx.db.get(
+        args.receiverId
+      );
+
+    if (
+      receiver?.pushToken
+    ) {
+      await sendPushNotification(
+        {
+          token:
+            receiver.pushToken,
+
+          title:
+            current.username,
+
+          body:
+            args.text,
+
+          data: {
+            userId:
+              current._id,
+          },
+        }
+      );
+    }
   },
 });
 
@@ -236,3 +323,7 @@ export const getMessages = query({
     };
   },
 });
+
+function sendPushNotification(arg0: { token: string; title: string; body: string; data: { userId: GenericId<"users">; }; }) {
+  throw new Error("Function not implemented.");
+}

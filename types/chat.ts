@@ -19,6 +19,8 @@ export type Message = {
 
   replyTo?: Id<"messages">;     // ✅ FIXED
   replyToText?: string;
+  
+  status?: "sent" | "delivered" | "seen";
 
   reactions?: Reaction[];
 
