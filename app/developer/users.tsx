@@ -6,10 +6,11 @@ import {
 } from "convex/react";
 
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   Image,
+  Modal,
   ScrollView,
   Text,
   TextInput,
@@ -23,6 +24,17 @@ export default function UsersPage() {
   const [search, setSearch] =
     useState("");
 
+const [showCodeModal,
+  setShowCodeModal] =
+  useState(false);
+
+const [accessCode,
+  setAccessCode] =
+  useState("");
+
+const ACCESS_CODE =
+  "SPOTLIGHT007";
+
   const [showDeleteModal,
     setShowDeleteModal] =
     useState(false);
@@ -35,69 +47,16 @@ export default function UsersPage() {
     setDeleting] =
     useState(false);
 
-    const [showDeniedToast,
-  setShowDeniedToast] =
-  useState(false);
-  
-  
-  const currentUser =
-    useQuery(
-      api.users.index
-        .getCurrentUser
-    );
-
-const isAdmin =
-  currentUser?.email ===
-  "sahillearn44@gmail.com";
-
-const users =
+  const users =
   useQuery(
-    api.admin.admin
-      .getAllUsers,
-
-    currentUser === undefined
-      ? "skip"
-      : isAdmin
-      ? {}
-      : "skip"
+    api.admin.admin.getAllUsers
   ) ?? [];
-
-
 
   const deleteUser =
     useMutation(
       api.admin.admin
         .deleteUserByAdmin
     );
-
-useEffect(() => {
-  if (
-    currentUser === undefined
-  ) {
-    return;
-  }
-
-  if (
-    !currentUser ||
-    currentUser.email !==
-      process.env.EXPO_PUBLIC_ADMIN_EMAIL
-  ) {
-    setShowDeniedToast(
-      true
-    );
-
-    setTimeout(() => {
-      router.replace("/");
-    }, 5000);
-
-    setTimeout(() => {
-      setShowDeniedToast(
-        false
-      );
-    }, 5000);
-  }
-}, [currentUser]);
-
 
 
   const confirmDelete =
@@ -133,51 +92,22 @@ useEffect(() => {
 
 
 const filteredUsers =
-  users.filter(
-    (u) =>
-      u.email !==
-        "sahillearn44@gmail.com" &&
-      u.username
-        .toLowerCase()
-        .includes(
-          search.toLowerCase()
-        )
+  users.filter((u) =>
+    (
+      u.username || ""
+    )
+      .toLowerCase()
+      .includes(
+        search.toLowerCase()
+      ) ||
+    (
+      u.fullname || ""
+    )
+      .toLowerCase()
+      .includes(
+        search.toLowerCase()
+      )
   );
-
-  {showDeniedToast && (
-  <View
-    style={{
-      position: "absolute",
-      top: 70,
-      alignSelf: "center",
-
-      backgroundColor:
-        "#ff2222",
-
-      paddingHorizontal: 18,
-      paddingVertical: 14,
-
-      borderRadius: 18,
-
-      zIndex: 9999,
-
-      shadowColor: "#ff0000",
-      shadowOpacity: 0.35,
-      shadowRadius: 12,
-      elevation: 10,
-    }}
-  >
-    <Text
-      style={{
-        color: "#fff",
-        fontWeight: "800",
-        fontSize: 14,
-      }}
-    >
-      Access denied • Admin only
-    </Text>
-  </View>
-)}
 
   return (
     <View
@@ -286,39 +216,66 @@ const filteredUsers =
         }}
       >
         {filteredUsers.map((item) => (
-          <TouchableOpacity
-            key={item._id}
-            activeOpacity={0.9}
-            onPress={() =>
-              router.push({
-             pathname:
-"/developer/[id]",
+       <View
+  key={item._id}
+  style={{
+    flexDirection: "row",
 
-                params: {
-                  id: item._id,
-                },
-              })
-            }
-            style={{
-              flexDirection: "row",
+    alignItems: "center",
 
-              alignItems: "center",
+    backgroundColor:
+      "rgba(255,255,255,0.03)",
 
-              backgroundColor:
-                "rgba(255,255,255,0.03)",
+    borderRadius: 20,
 
-              borderRadius: 20,
+    padding: 14,
 
-              padding: 14,
+    marginBottom: 12,
 
-              marginBottom: 12,
+    borderWidth: 1,
 
-              borderWidth: 1,
+    borderColor:
+      "rgba(255,255,255,0.05)",
+  }}
+>
+  {/* CLICKABLE USER AREA */}
+  <TouchableOpacity
+    activeOpacity={0.9}
+    onPress={() =>
+      router.push({
+        pathname:
+          "/developer/[id]",
 
-              borderColor:
-                "rgba(255,255,255,0.05)",
-            }}
-          >
+        params: {
+          id: item._id,
+        },
+      })
+    }
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      flex: 1,
+    }}
+  >
+
+            <TouchableOpacity
+  activeOpacity={0.9}
+  onPress={() =>
+    router.push({
+      pathname:
+        "/developer/[id]",
+
+      params: {
+        id: item._id,
+      },
+    })
+  }
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  }}
+>
             {/* IMAGE */}
             <Image
               source={{
@@ -363,12 +320,12 @@ const filteredUsers =
                 {item.fullname}
               </Text>
             </View>
+</TouchableOpacity>
+</TouchableOpacity>
 
             {/* DELETE */}
             <TouchableOpacity
-  onPress={(e) => {
-  e.stopPropagation();
-
+onPress={() => {
   setSelectedUser(item);
 
   setShowDeleteModal(true);
@@ -380,7 +337,7 @@ const filteredUsers =
                 color="#ff4444"
               />
             </TouchableOpacity>
-          </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
       {/* DELETE MODAL */}
@@ -532,9 +489,15 @@ const filteredUsers =
 
           {/* DELETE */}
           <TouchableOpacity
-            onPress={
-              confirmDelete
-            }
+       onPress={() => {
+  setShowDeleteModal(
+    false
+  );
+
+  setShowCodeModal(
+    true
+  );
+}}
             style={{
               flex: 1,
 
@@ -566,6 +529,158 @@ const filteredUsers =
       </View>
     </View>
 )}
+
+{/* ACCESS CODE MODAL */}
+<Modal
+  visible={showCodeModal}
+  transparent
+  animationType="fade"
+>
+  <View
+    style={{
+      flex: 1,
+      backgroundColor:
+        "rgba(0,0,0,0.82)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    }}
+  >
+    <View
+      style={{
+        width: "100%",
+        backgroundColor:
+          "rgba(18,18,18,0.96)",
+        borderRadius: 30,
+        padding: 22,
+        borderWidth: 1,
+        borderColor:
+          "rgba(255,0,0,0.18)",
+      }}
+    >
+      <Text
+        style={{
+          color: "#ff3b30",
+          fontSize: 22,
+          fontWeight: "800",
+        }}
+      >
+        Access Code
+      </Text>
+
+      <Text
+        style={{
+          color: "#888",
+          marginTop: 8,
+          lineHeight: 22,
+        }}
+      >
+        Enter developer access
+        code to permanently
+        delete this account.
+      </Text>
+
+      <TextInput
+        value={accessCode}
+        onChangeText={
+          setAccessCode
+        }
+        secureTextEntry
+        placeholder="Access code"
+        placeholderTextColor="#555"
+        style={{
+          height: 56,
+          borderRadius: 18,
+          backgroundColor:
+            "#0d0d0d",
+          marginTop: 18,
+          paddingHorizontal: 16,
+          color: "#fff",
+          borderWidth: 1,
+          borderColor:
+            "rgba(255,255,255,0.05)",
+        }}
+      />
+
+      <View
+        style={{
+          flexDirection: "row",
+          marginTop: 20,
+          gap: 12,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            setShowCodeModal(
+              false
+            );
+
+            setAccessCode("");
+          }}
+          style={{
+            flex: 1,
+            height: 52,
+            borderRadius: 16,
+            backgroundColor:
+              "#151515",
+            justifyContent:
+              "center",
+            alignItems:
+              "center",
+          }}
+        >
+          <Text
+            style={{
+              color: "#fff",
+              fontWeight: "700",
+            }}
+          >
+            Cancel
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={async () => {
+            if (
+              accessCode !==
+              ACCESS_CODE
+            ) {
+              return;
+            }
+
+            await confirmDelete();
+
+            setShowCodeModal(
+              false
+            );
+
+            setAccessCode("");
+          }}
+          style={{
+            flex: 1,
+            height: 52,
+            borderRadius: 16,
+            backgroundColor:
+              "#b30000",
+            justifyContent:
+              "center",
+            alignItems:
+              "center",
+          }}
+        >
+          <Text
+            style={{
+              color: "#fff",
+              fontWeight: "800",
+            }}
+          >
+            Delete
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </View>
+</Modal>
     </View>
   );
 }

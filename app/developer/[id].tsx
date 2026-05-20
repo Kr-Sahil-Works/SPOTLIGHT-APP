@@ -1,162 +1,109 @@
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
-import { useRouter } from "expo-router";
+import {
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 
 import {
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-export default function DeveloperPage() {
+export default function UserInspectPage() {
   const router = useRouter();
 
-  /* =========================
-     GLOBAL STATS
-  ========================= */
+  const { id } =
+    useLocalSearchParams();
+
+  const user =
+    useQuery(
+      api.users.index.getUser,
+      {
+        userId:
+          id as Id<"users">,
+      }
+    );
 
   const stats =
     useQuery(
-      api.admin.admin.getGlobalStats
-    ) || {
-      users: 0,
-      posts: 0,
-      comments: 0,
-      messages: 0,
-      likes: 0,
-      bookmarks: 0,
-    };
+      api.users.index
+        .getUserStats,
+      {
+        userId:
+          id as Id<"users">,
+      }
+    );
+
+  if (!user || !stats) {
+    return null;
+  }
 
   /* =========================
      CARD
   ========================= */
 
-  const Card = ({
-    icon,
+  const StatCard = ({
     title,
-    desc,
     value,
-    onPress,
+    icon,
   }: any) => (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={onPress}
+    <View
       style={{
+        width: "48%",
+
         backgroundColor:
-          "rgba(0,255,120,0.05)",
+          "#0f0f0f",
+
+        borderRadius: 22,
+
+        padding: 18,
+
+        marginBottom: 14,
 
         borderWidth: 1,
 
         borderColor:
           "rgba(0,255,120,0.08)",
-
-        borderRadius: 24,
-
-        padding: 18,
-
-        marginBottom: 14,
       }}
     >
-      {/* TOP */}
-      <View
+      <Ionicons
+        name={icon}
+        size={22}
+        color="#00ff88"
+      />
+
+      <Text
         style={{
-          flexDirection: "row",
-          alignItems: "center",
+          color: "#666",
+
+          marginTop: 12,
+
+          fontSize: 13,
         }}
       >
-        {/* ICON */}
-        <View
-          style={{
-            width: 52,
-            height: 52,
+        {title}
+      </Text>
 
-            borderRadius: 26,
+      <Text
+        style={{
+          color: "#fff",
 
-            backgroundColor:
-              "rgba(0,255,120,0.08)",
+          fontSize: 28,
 
-            justifyContent: "center",
+          fontWeight: "800",
 
-            alignItems: "center",
-          }}
-        >
-          <Ionicons
-            name={icon}
-            size={24}
-            color="#00ff88"
-          />
-        </View>
-
-        {/* TEXT */}
-        <View
-          style={{
-            marginLeft: 14,
-            flex: 1,
-          }}
-        >
-          <Text
-            style={{
-              color: "#fff",
-
-              fontSize: 16,
-
-              fontWeight: "800",
-            }}
-          >
-            {title}
-          </Text>
-
-          <Text
-            style={{
-              color: "#777",
-
-              fontSize: 12,
-
-              marginTop: 4,
-            }}
-          >
-            {desc}
-          </Text>
-        </View>
-
-        {/* VALUE */}
-        {value !== undefined && (
-          <View
-            style={{
-              backgroundColor:
-                "rgba(0,255,120,0.08)",
-
-              paddingHorizontal: 12,
-
-              paddingVertical: 6,
-
-              borderRadius: 999,
-            }}
-          >
-            <Text
-              style={{
-                color: "#00ff88",
-
-                fontWeight: "800",
-              }}
-            >
-              {value}
-            </Text>
-          </View>
-        )}
-
-        <Ionicons
-          name="chevron-forward"
-          size={18}
-          color="#666"
-          style={{
-            marginLeft: 12,
-          }}
-        />
-      </View>
-    </TouchableOpacity>
+          marginTop: 6,
+        }}
+      >
+        {value}
+      </Text>
+    </View>
   );
 
   /* ========================= */
@@ -178,7 +125,7 @@ export default function DeveloperPage() {
 
           paddingTop: 10,
 
-          paddingBottom: 24,
+          paddingBottom: 20,
         }}
       >
         <TouchableOpacity
@@ -192,11 +139,13 @@ export default function DeveloperPage() {
             borderRadius: 21,
 
             backgroundColor:
-              "rgba(255,255,255,0.05)",
+              "#111",
 
-            justifyContent: "center",
+            justifyContent:
+              "center",
 
-            alignItems: "center",
+            alignItems:
+              "center",
           }}
         >
           <Ionicons
@@ -208,7 +157,7 @@ export default function DeveloperPage() {
 
         <View
           style={{
-            marginLeft: 16,
+            marginLeft: 14,
           }}
         >
           <Text
@@ -217,24 +166,21 @@ export default function DeveloperPage() {
               fontSize: 12,
             }}
           >
-            Internal Access
+            User Inspection
           </Text>
 
           <Text
             style={{
               color: "#00ff88",
-
               fontSize: 24,
-
               fontWeight: "800",
             }}
           >
-            Developer Mode
+            @{user.username}
           </Text>
         </View>
       </View>
 
-      {/* CONTENT */}
       <ScrollView
         contentContainerStyle={{
           padding: 16,
@@ -244,195 +190,337 @@ export default function DeveloperPage() {
           false
         }
       >
-        {/* WARNING */}
+        {/* PROFILE */}
         <View
           style={{
             backgroundColor:
-              "rgba(255,180,0,0.08)",
+              "#0d0d0d",
+
+            borderRadius: 28,
+
+            padding: 22,
 
             borderWidth: 1,
 
             borderColor:
-              "rgba(255,180,0,0.12)",
-
-            borderRadius: 22,
-
-            padding: 18,
-
-            marginBottom: 24,
+              "rgba(255,255,255,0.05)",
           }}
         >
-          <Text
+          {/* TOP */}
+          <View
             style={{
-              color: "#ffcc66",
-
-              fontWeight: "800",
-
-              fontSize: 15,
+              flexDirection: "row",
+              alignItems: "center",
             }}
           >
-            Restricted Area
-          </Text>
-
-          <Text
-            style={{
-              color: "#b8b8b8",
-
-              marginTop: 8,
-
-              lineHeight: 22,
-
-              fontSize: 13,
-            }}
-          >
-            Internal admin tools,
-            analytics, moderation and
-            hidden systems live here.
-          </Text>
-        </View>
-
-        {/* QUICK STATS */}
-        <View
-          style={{
-            flexDirection: "row",
-            flexWrap: "wrap",
-            gap: 12,
-            marginBottom: 22,
-          }}
-        >
-          {[
-            {
-              label: "Users",
-              value: stats.users,
-            },
-
-            {
-              label: "Posts",
-              value: stats.posts,
-            },
-
-            {
-              label: "Messages",
-              value:
-                stats.messages,
-            },
-
-            {
-              label: "Comments",
-              value:
-                stats.comments,
-            },
-          ].map((item) => (
-            <View
-              key={item.label}
+            <Image
+              source={{
+                uri: user.image,
+              }}
               style={{
-                width: "47%",
+                width: 92,
+                height: 92,
 
-                backgroundColor:
-                  "rgba(255,255,255,0.03)",
+                borderRadius: 999,
 
-                borderRadius: 20,
-
-                padding: 16,
-
-                borderWidth: 1,
+                borderWidth: 3,
 
                 borderColor:
-                  "rgba(255,255,255,0.05)",
+                  "#00ff88",
+              }}
+            />
+
+            <View
+              style={{
+                marginLeft: 18,
+                flex: 1,
               }}
             >
               <Text
                 style={{
-                  color: "#777",
-                  fontSize: 12,
+                  color: "#fff",
+
+                  fontSize: 22,
+
+                  fontWeight: "800",
                 }}
               >
-                {item.label}
+                {user.fullname}
               </Text>
 
               <Text
                 style={{
                   color: "#00ff88",
 
-                  fontSize: 26,
+                  marginTop: 4,
 
-                  fontWeight: "800",
-
-                  marginTop: 8,
+                  fontSize: 15,
                 }}
               >
-                {item.value}
+                @{user.username}
               </Text>
+
+              <View
+                style={{
+                  flexDirection:
+                    "row",
+
+                  alignItems:
+                    "center",
+
+                  marginTop: 10,
+                }}
+              >
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+
+                    borderRadius: 99,
+
+                    backgroundColor:
+                      user.isOnline
+                        ? "#00ff88"
+                        : "#666",
+                  }}
+                />
+
+                <Text
+                  style={{
+                    color: "#888",
+
+                    marginLeft: 8,
+                  }}
+                >
+                  {user.isOnline
+                    ? "Online"
+                    : "Offline"}
+                </Text>
+              </View>
             </View>
-          ))}
+          </View>
+
+          {/* BIO */}
+          {!!user.bio && (
+            <Text
+              style={{
+                color: "#ccc",
+
+                marginTop: 20,
+
+                lineHeight: 24,
+
+                fontSize: 14,
+              }}
+            >
+              {user.bio}
+            </Text>
+          )}
+
+          {/* DETAILS */}
+          <View
+            style={{
+              marginTop: 24,
+            }}
+          >
+            <DetailRow
+              label="User ID"
+              value={user._id}
+            />
+
+            <DetailRow
+              label="Clerk ID"
+              value={user.clerkId}
+            />
+
+            <DetailRow
+              label="Email"
+              value={user.email}
+            />
+
+            <DetailRow
+              label="Account Type"
+              value={
+                user.accountType
+              }
+            />
+
+            <DetailRow
+              label="Created"
+   value={
+  user.createdAt
+    ? new Date(
+        user.createdAt
+      ).toLocaleString()
+    : "-"
+}
+            />
+
+            <DetailRow
+              label="Last Active"
+         value={
+  user.lastActiveAt
+    ? new Date(
+        user.lastActiveAt
+      ).toLocaleString()
+    : "-"
+}
+            />
+
+            <DetailRow
+              label="Estimated Profile Storage"
+              value={
+                "~150 KB"
+              }
+            />
+          </View>
         </View>
 
-        {/* MAIN TOOLS */}
-        <Card
-          icon="people-outline"
-          title="User Management"
-          desc="Search, inspect and moderate all users"
-          value={stats.users}
-          onPress={() =>
-            router.push(
-              "/developer/users"
-            )
-          }
-        />
-
-        <Card
-          icon="analytics-outline"
-          title="Global Analytics"
-          desc="Full application statistics dashboard"
-          onPress={() =>
-            router.push(
-              "/developer/stats"
-            )
-          }
-        />
-
-        <Card
-          icon="bug-outline"
-          title="Debug Console"
-          desc="Logs, runtime info and diagnostics"
-        />
-
-        <Card
-          icon="flask-outline"
-          title="Experimental Features"
-          desc="Upcoming hidden features"
-        />
-
-        <Card
-          icon="hardware-chip-outline"
-          title="Performance Monitor"
-          desc="FPS, memory and rendering stats"
-        />
-
-        <Card
-          icon="server-outline"
-          title="Backend Control"
-          desc="Convex database and API controls"
-        />
-
-        {/* FOOTER */}
+        {/* STATS */}
         <View
           style={{
-            marginTop: 30,
-            alignItems: "center",
+            flexDirection: "row",
+
+            flexWrap: "wrap",
+
+            justifyContent:
+              "space-between",
+
+            marginTop: 20,
+          }}
+        >
+          <StatCard
+            title="Posts"
+            value={stats.posts}
+            icon="images-outline"
+          />
+
+          <StatCard
+            title="Followers"
+            value={
+              stats.followers
+            }
+            icon="people-outline"
+          />
+
+          <StatCard
+            title="Following"
+            value={
+              stats.following
+            }
+            icon="person-add-outline"
+          />
+
+          <StatCard
+            title="Likes"
+            value={stats.likes}
+            icon="heart-outline"
+          />
+
+          <StatCard
+            title="Comments"
+            value={
+              stats.comments
+            }
+            icon="chatbubble-outline"
+          />
+
+          <StatCard
+            title="Messages"
+            value={
+              stats.messages
+            }
+            icon="mail-outline"
+          />
+        </View>
+
+        {/* DANGER */}
+        <View
+          style={{
+            marginTop: 20,
+
+            backgroundColor:
+              "rgba(255,0,0,0.05)",
+
+            borderWidth: 1,
+
+            borderColor:
+              "rgba(255,0,0,0.12)",
+
+            borderRadius: 24,
+
+            padding: 20,
           }}
         >
           <Text
             style={{
-              color: "#444",
-              fontSize: 12,
+              color: "#ff3b30",
+
+              fontSize: 18,
+
+              fontWeight: "800",
             }}
           >
-            Internal Developer Build
-            v0.1
+            Danger Zone
+          </Text>
+
+          <Text
+            style={{
+              color: "#999",
+
+              marginTop: 10,
+
+              lineHeight: 22,
+            }}
+          >
+            Deleting this user
+            permanently removes
+            all posts, messages,
+            follows, collections,
+            notifications and
+            profile storage data.
           </Text>
         </View>
       </ScrollView>
+    </View>
+  );
+}
+
+/* =========================
+   DETAIL ROW
+========================= */
+
+function DetailRow({
+  label,
+  value,
+}: any) {
+  return (
+    <View
+      style={{
+        marginBottom: 14,
+      }}
+    >
+      <Text
+        style={{
+          color: "#666",
+          fontSize: 12,
+        }}
+      >
+        {label}
+      </Text>
+
+      <Text
+        selectable
+        style={{
+          color: "#fff",
+
+          marginTop: 4,
+
+          fontSize: 14,
+        }}
+      >
+        {String(value || "-")}
+      </Text>
     </View>
   );
 }

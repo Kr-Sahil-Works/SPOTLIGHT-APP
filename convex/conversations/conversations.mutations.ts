@@ -3,12 +3,12 @@ import { mutation } from "../_generated/server";
 import { getAuthenticatedUser } from "../users/users.core";
 
 import {
-    clearChatInternal,
-    deleteChatInternal,
-    getOrCreateConversationInternal,
-    toggleHiddenInternal,
-    toggleMuteInternal,
-    togglePinInternal,
+  clearChatInternal,
+  deleteChatInternal,
+  getOrCreateConversationInternal,
+  toggleHiddenInternal,
+  toggleMuteInternal,
+  togglePinInternal,
 } from "./conversations.core";
 
 /* =========================
@@ -91,6 +91,8 @@ export const togglePin = mutation({
   },
 });
 
+
+
 /* =========================
    👻 HIDE
 ========================= */
@@ -106,3 +108,52 @@ export const toggleHidden = mutation({
     );
   },
 });
+
+
+export const setPinnedMessage =
+  mutation({
+    args: {
+      conversationId:
+        v.id(
+          "conversations"
+        ),
+
+      text:
+        v.optional(
+          v.string()
+        ),
+
+      messageId:
+        v.optional(
+          v.id(
+            "messages"
+          )
+        ),
+        pinnedBy:
+  v.optional(
+    v.id("users")
+  ),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      await getAuthenticatedUser(
+        ctx
+      );
+
+      await ctx.db.patch(
+        args.conversationId,
+        {
+          pinnedMessageText:
+            args.text,
+
+          pinnedMessageId:
+            args.messageId,
+            pinnedBy:
+  args.pinnedBy,
+        }
+      );
+    },
+  });

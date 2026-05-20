@@ -4,24 +4,38 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import {
-    useLocalSearchParams,
-    useRouter,
+  useLocalSearchParams,
+  useRouter,
 } from "expo-router";
 import React, {
-    useMemo,
-    useRef,
-    useState,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
-import PagerView from "react-native-pager-view";
 
 import {
-    FlatList,
-    SafeAreaView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+
+import {
+  Platform,
+} from "react-native";
+
+let PagerView: any;
+
+if (
+  Platform.OS !== "web"
+) {
+  PagerView =
+    require(
+      "react-native-pager-view"
+    ).default;
+}
 
 export default function ConnectionsPage() {
   const router = useRouter();
@@ -402,82 +416,96 @@ const filterUsers = (
       </View>
 
       {/* PAGER */}
-      <PagerView
-        ref={pagerRef}
-        style={{ flex: 1 }}
-        initialPage={
-          initialTab ===
-          "following"
-            ? 1
-            : 0
-        }
-        onPageSelected={(e) =>
-          setTab(
-            e.nativeEvent
-              .position
-          )
-        }
-      >
-        {/* FOLLOWERS */}
-        <View key="1">
-          <FlatList
-            data={
-              followerFiltered
-            }
-            renderItem={
-              renderUser
-            }
-            keyExtractor={(
-              item,
-              index
-            ) =>
-              item?._id ||
-              index.toString()
-            }
-            showsVerticalScrollIndicator={
-              false
-            }
-            removeClippedSubviews
-            windowSize={8}
-            initialNumToRender={
-              12
-            }
-            maxToRenderPerBatch={
-              10
-            }
-          />
-        </View>
+ {/* PAGER */}
 
-        {/* FOLLOWING */}
-        <View key="2">
-          <FlatList
-            data={
-              followingFiltered
-            }
-            renderItem={
-              renderUser
-            }
-            keyExtractor={(
-              item,
-              index
-            ) =>
-              item?._id ||
-              index.toString()
-            }
-            showsVerticalScrollIndicator={
-              false
-            }
-            removeClippedSubviews
-            windowSize={8}
-            initialNumToRender={
-              12
-            }
-            maxToRenderPerBatch={
-              10
-            }
-          />
-        </View>
-      </PagerView>
+{Platform.OS ===
+"web" ? (
+  <View style={{ flex: 1 }}>
+    <FlatList
+      data={
+        tab === 0
+          ? followerFiltered
+          : followingFiltered
+      }
+      renderItem={
+        renderUser
+      }
+      keyExtractor={(
+        item,
+        index
+      ) =>
+        item?._id ||
+        index.toString()
+      }
+      showsVerticalScrollIndicator={
+        false
+      }
+    />
+  </View>
+) : (
+  <PagerView
+    ref={pagerRef}
+    style={{ flex: 1 }}
+    initialPage={
+      initialTab ===
+      "following"
+        ? 1
+        : 0
+    }
+    onPageSelected={(
+  e: any
+) =>
+      setTab(
+        e.nativeEvent
+          .position
+      )
+    }
+  >
+    {/* FOLLOWERS */}
+    <View key="1">
+      <FlatList
+        data={
+          followerFiltered
+        }
+        renderItem={
+          renderUser
+        }
+        keyExtractor={(
+          item,
+          index
+        ) =>
+          item?._id ||
+          index.toString()
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
+      />
+    </View>
+
+    {/* FOLLOWING */}
+    <View key="2">
+      <FlatList
+        data={
+          followingFiltered
+        }
+        renderItem={
+          renderUser
+        }
+        keyExtractor={(
+          item,
+          index
+        ) =>
+          item?._id ||
+          index.toString()
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
+      />
+    </View>
+  </PagerView>
+)}
     </SafeAreaView>
   );
 }

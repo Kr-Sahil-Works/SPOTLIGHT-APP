@@ -1,11 +1,11 @@
 import React, {
-  useEffect,
+  useEffect
 } from "react";
 
 import {
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import {
@@ -20,14 +20,15 @@ import {
   OverlayRenderer,
 } from "./overlays";
 
+import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { useMutation } from "convex/react";
 import {
   useAutoScroll,
   useChatScroll,
   useKeyboardScroll,
   useOverlay,
-  useScrollToMessage,
-  useThemeScrollSync,
+  useThemeScrollSync
 } from "./hooks";
 
 
@@ -43,6 +44,10 @@ type Props = {
   loadingMore?: boolean;
 
   loadOlder?: () => void;
+
+  pinnedMessageId?: string;
+
+  flatListRef?: any;
 
   onReply: (
     msg: any
@@ -63,6 +68,12 @@ type Props = {
   onEdit?: (
     msg: any
   ) => void;
+  onPin?: (
+  msg: any
+) => void;
+onScrollTo?: (
+  targetId: string
+) => void;
 
   onLongPress: (
     msg: any,
@@ -85,6 +96,11 @@ export default function MessageList({
   theme,
 
   highlightId,
+  onScrollTo,
+
+  flatListRef,
+
+  pinnedMessageId,
 
   loadingMore,
 
@@ -93,6 +109,8 @@ export default function MessageList({
   onReply,
 
   onReact,
+
+  onPin,
 
   onDelete,
 
@@ -104,11 +122,24 @@ export default function MessageList({
 
   toggleReaction,
 }: Props) {
+  const [
+  deletingIds,
+  setDeletingIds,
+] = React.useState<
+  string[]
+>([]);
 const {
   openReaction,
   highlightMessage,
   highlightedMessageId,
 } = useOverlay();
+
+const [
+  scrollHighlightId,
+  setScrollHighlightId,
+] = React.useState<
+  string | null
+>(null);
   const {
     listRef,
 
@@ -139,12 +170,43 @@ const {
     scrollOffsetRef,
     theme
   );
-
-  const scrollToMessage =
-    useScrollToMessage(
-      listRef,
-      messages
+const scrollToMessage = (
+  targetId: string
+) => {
+  const targetIndex =
+    messages.findIndex(
+      (m) =>
+        String(m._id) ===
+        String(targetId)
     );
+
+  if (
+    targetIndex === -1
+  ) {
+    return;
+  }
+
+  flatListRef.current?.scrollToIndex(
+    {
+      index:
+        targetIndex,
+
+      animated: true,
+
+      viewPosition:
+        0.5,
+    }
+  );
+setScrollHighlightId(
+  targetId
+);
+
+setTimeout(() => {
+  setScrollHighlightId(
+    null
+  );
+}, 1200);
+};
 
   useEffect(() => {
     if (
@@ -153,6 +215,18 @@ const {
       onNewMessage();
     }
   }, [messages]);
+
+  const editMessage =
+  useMutation(
+    api.messages.index
+      .editMessage
+  );
+
+const deleteMessage =
+  useMutation(
+    api.messages.index
+      .deleteMessage
+  );
 
   return (
     <View
@@ -201,7 +275,8 @@ const {
       )}
 
       <FlashList
-        ref={listRef}
+      keyboardShouldPersistTaps="always"
+        ref={flatListRef}
         data={messages}
         drawDistance={
           300
@@ -239,6 +314,9 @@ const {
           <MessageRenderer
             item={item}
             index={index}
+            isDeleting={deletingIds.includes(
+  item._id
+)}
             messages={
               messages
             }
@@ -246,7 +324,8 @@ const {
               currentUserId
             }
             theme={theme}
-     highlightId={
+highlightId={
+  scrollHighlightId ||
   highlightedMessageId ||
   undefined
 }
@@ -313,7 +392,7 @@ const {
         >
           <Text
             style={{
-              color: "#000",
+              color: "#e8dddd",
 
               fontWeight:
                 "600",
@@ -325,16 +404,61 @@ const {
       )}
 
       <OverlayRenderer
+      
         currentUserId={
           currentUserId
         }
+
+
         onReply={onReply}
-        onDelete={onDelete}
+
+
+        onDelete={async (msg) => {
+  try {
+    setDeletingIds(
+      (prev) => [
+        ...prev,
+        msg._id,
+      ]
+    );
+
+    setTimeout(
+      async () => {
+        await deleteMessage(
+          {
+            messageId:
+              msg._id,
+          }
+        );
+
+        setDeletingIds(
+          (prev) =>
+            prev.filter(
+              (id) =>
+                id !==
+                msg._id
+            )
+        );
+      },
+      260
+    );
+  } catch (e: any) {
+    alert(
+      e.message
+    );
+  }
+}}
         onCopy={onCopy}
-        onEdit={onEdit}
+onEdit={onEdit}
         toggleReaction={
           toggleReaction
         }
+
+        onPin={onPin}
+
+pinnedMessageId={
+  pinnedMessageId
+}
       />
     </View>
   );

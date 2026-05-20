@@ -13,6 +13,7 @@ import type * as bookmarks from "../bookmarks.js";
 import type * as collections from "../collections.js";
 import type * as comments from "../comments.js";
 import type * as conversations_index from "../conversations/index.js";
+import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as messages_index from "../messages/index.js";
 import type * as notes_index from "../notes/index.js";
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   collections: typeof collections;
   comments: typeof comments;
   "conversations/index": typeof conversations_index;
+  files: typeof files;
   http: typeof http;
   "messages/index": typeof messages_index;
   "notes/index": typeof notes_index;

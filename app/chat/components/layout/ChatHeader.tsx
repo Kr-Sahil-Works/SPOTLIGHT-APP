@@ -19,12 +19,22 @@ type Props = {
   userId: Id<"users">;
   onOpenTheme: () => void;
   theme: ChatTheme;
+
+  pinnedMessages?: any[];
+
+onPinPress?: () => void;
+
+onUnpin?: () => void;
 };
 
 export default function ChatHeader({
   userId,
   onOpenTheme,
-  theme,
+theme,
+onUnpin,
+pinnedMessages = [],
+
+onPinPress,
 }: Props) {
   const router = useRouter();
 
@@ -32,7 +42,20 @@ export default function ChatHeader({
 
   const [showCallModal, setShowCallModal] = useState(false);
 
-  
+  const [
+  showPinActions,
+  setShowPinActions,
+] = useState(false);
+
+const [
+  showUnpinConfirm,
+  setShowUnpinConfirm,
+] = useState(false);
+
+const [
+  showPinInfo,
+  setShowPinInfo,
+] = useState(false);
 
 const openWhatsApp = async () => {
   try {
@@ -144,19 +167,22 @@ return (
             alignItems: "center",
           }}
         >
-          <Image
-            source={
-              user?.image
-                ? { uri: user.image }
-                : require("@/assets/images/iconbg.png")
-            }
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              marginLeft: 14,
-            }}
-          />
+        <Image
+  source={
+    user?.image
+      ? {
+          uri:
+            user.image,
+        }
+      : require("@/assets/images/iconbg.png")
+  }
+  style={{
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginLeft: 14,
+  }}
+/>
 
           <View
             style={{
@@ -217,7 +243,309 @@ return (
 />
       </TouchableOpacity>
     </View>
+{pinnedMessages.length >
+  0 && (
+  <TouchableOpacity
+    activeOpacity={0.9}
+   onPress={() => {
+  onPinPress?.();
+}}
+    style={{
+      backgroundColor:
+        theme.header,
 
+      borderBottomWidth: 1,
+
+      borderBottomColor:
+        "#ffffff10",
+
+      paddingHorizontal: 14,
+
+      paddingVertical: 10,
+
+      flexDirection: "row",
+
+      alignItems:
+        "center",
+    }}
+  >
+    <Ionicons
+      name="pin"
+      size={16}
+      color="#00b7ff"
+    />
+
+    <Text
+      numberOfLines={1}
+      style={{
+        flex: 1,
+
+        marginLeft: 12,
+
+        color: "#fff",
+
+        fontSize: 13,
+      }}
+    >
+      {
+        pinnedMessages[0]
+          ?.text
+      }
+    </Text>
+  <View
+  style={{
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    marginLeft: 10,
+  }}
+>
+  <TouchableOpacity
+onPress={() => {
+  if (
+    showPinActions
+  ) {
+    setShowUnpinConfirm(
+      true
+    );
+
+    setTimeout(() => {
+      setShowUnpinConfirm(
+        false
+      );
+    }, 4500);
+
+    return;
+  }
+
+  setShowPinActions(
+    true
+  );
+
+  setTimeout(() => {
+    setShowPinActions(
+      false
+    );
+  }, 5000);
+
+  if (
+    showPinInfo
+  ) {
+    setShowPinInfo(
+      false
+    );
+  }
+}}
+  >
+    <Ionicons
+      name={
+        showPinActions
+          ? "remove-circle"
+          : "options-outline"
+      }
+      size={18}
+      style= {
+        {
+         marginRight: 12, 
+        }
+      }
+      color={
+        showPinActions
+          ? "#ff4d4f"
+          : "#fff"
+      }
+    />
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    onPress={() => {
+      setShowPinInfo(
+        (p) => !p
+      );
+
+      if (
+        showPinActions
+      ) {
+        setShowPinActions(
+          false
+        );
+      }
+
+      if (
+        !showPinInfo
+      ) {
+        setTimeout(() => {
+          setShowPinInfo(
+            false
+          );
+        }, 8000);
+      }
+    }}
+  >
+    <Ionicons
+      name="information-circle-outline"
+      size={18}
+      color="#8e8e93"
+    />
+  </TouchableOpacity>
+</View>
+  </TouchableOpacity>
+)}
+
+{showUnpinConfirm && (
+  <View
+    style={{
+      position:
+        "absolute",
+
+      top: 102,
+
+      alignSelf:
+        "center",
+
+      zIndex: 9999,
+
+      backgroundColor:
+        "rgba(120,0,0,0.72)",
+
+      borderWidth: 1,
+
+      borderColor:
+        "#ff4d4f55",
+
+      paddingHorizontal: 14,
+
+      paddingVertical: 12,
+
+      borderRadius: 18,
+
+      flexDirection: "row",
+
+      alignItems:
+        "center",
+
+      shadowColor:
+        "#ff4d4f",
+
+      shadowOpacity: 0.25,
+
+      shadowRadius: 12,
+
+      elevation: 10,
+
+      backdropFilter:
+        "blur(20px)",
+    }}
+  >
+    <Text
+      style={{
+        color: "#fff",
+
+        fontSize: 12,
+
+        marginRight: 14,
+
+        fontWeight: "600",
+      }}
+    >
+      Remove pinned
+      message?
+    </Text>
+
+    <TouchableOpacity
+      onPress={async () => {
+        setShowUnpinConfirm(
+          false
+        );
+
+        setShowPinActions(
+          false
+        );
+
+        await onUnpin?.();
+      }}
+      style={{
+        backgroundColor:
+          "#ff4d4f",
+
+        paddingHorizontal: 10,
+
+        paddingVertical: 5,
+
+        borderRadius: 999,
+      }}
+    >
+      <Text
+        style={{
+          color: "#fff",
+
+          fontSize: 11,
+
+          fontWeight: "700",
+        }}
+      >
+        Remove
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
+
+{showPinInfo && (
+  <TouchableOpacity
+    activeOpacity={0.95}
+    onPress={() =>
+      setShowPinInfo(
+        false
+      )
+    }
+    style={{
+      backgroundColor:
+        "#111",
+
+      marginHorizontal: 12,
+
+      marginTop: 8,
+
+      paddingHorizontal: 16,
+
+      paddingVertical: 15,
+
+      borderRadius: 18,
+
+      borderWidth: 1,
+
+      borderColor:
+        "#ffffff10",
+
+      minHeight: 95,
+    }}
+  >
+    <Text
+      style={{
+        color: "#ddd",
+
+        fontSize: 12,
+
+        lineHeight: 20,
+      }}
+    >
+      Only one message
+      can be pinned at a
+      time. Pinning a
+      new message
+      replaces the old
+      pinned message.
+
+      {"\n\n"}
+
+      Tap the pinned
+      message bar to
+      jump directly to
+      that message.
+    </Text>
+  </TouchableOpacity>
+)}
     <CallOptionsModal
   visible={showCallModal}
   onClose={() => setShowCallModal(false)}

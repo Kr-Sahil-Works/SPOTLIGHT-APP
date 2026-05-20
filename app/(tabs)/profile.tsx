@@ -13,7 +13,7 @@ import {
   PanResponder,
   ScrollView,
   Share,
-  View,
+  View
 } from "react-native";
 
 import ProfileGrid from "@/app/Page_components/profile/grid/ProfileGrid";
@@ -22,6 +22,7 @@ import SecureOverlay from "@/app/Page_components/profile/header/SecureOverlay";
 import ProfileInfo from "@/app/Page_components/profile/info/ProfileInfo";
 import ProfileTabs from "@/app/Page_components/profile/tabs/ProfileTabs";
 import * as Clipboard from "expo-clipboard";
+import * as ImagePicker from "expo-image-picker";
 
 
 /* ✅ MODALS */
@@ -29,6 +30,7 @@ import EditProfileModal from "@/app/Page_components/profile/modals/EditProfileMo
 import ImagePreviewModal from "@/app/Page_components/profile/modals/ImagePreviewModal";
 
 /* ✅ HOOKS */
+import { Id } from "@/convex/_generated/dataModel";
 import useProfileTabs from "@/hooks/useProfileTabs";
 
 export default function Profile() {
@@ -40,6 +42,19 @@ export default function Profile() {
   const posts = useQuery(api.posts.index.getPostsByUser, {});
   const updateProfile = useMutation(api.users.index.updateProfile);
 
+
+  const generateUploadUrl = useMutation(
+  api.files.generateUploadUrl
+);
+
+const deleteStorageFile = useMutation(
+  api.files.deleteStorageFile
+);
+
+const getStorageUrl = useMutation(
+  api.files.getStorageUrl
+);
+
   /* 🔥 STATES */
   const [selectedPost, setSelectedPost] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -47,10 +62,24 @@ export default function Profile() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const [saving, setSaving] =
+  useState(false);
+
+  const [imageVersion, setImageVersion] =
+  useState(Date.now());
+  
+  const [hasLocalChanges, setHasLocalChanges] =
+  useState(false);
+
 const [editedProfile, setEditedProfile] = useState({
   username: "",
   fullname: "",
   bio: "",
+  image: "",
+  imageStorageId:
+  undefined as
+    | Id<"_storage">
+    | undefined,
 });
 
   /* 🔥 ANIMATIONS */
@@ -135,15 +164,24 @@ const modalPanResponder = useRef(
   };
 
   /* 🔥 LOAD PROFILE */
-  useEffect(() => {
-    if (currentUser) {
-setEditedProfile({
-  username: currentUser.username || "",
-  fullname: currentUser.fullname || "",
-  bio: currentUser.bio || "",
-});
-    }
-  }, [currentUser]);
+useEffect(() => {
+  if (
+    currentUser &&
+    !hasLocalChanges
+  ) {
+    setEditedProfile({
+      username:
+        currentUser.username || "",
+      fullname:
+        currentUser.fullname || "",
+      bio: currentUser.bio || "",
+      image:
+        currentUser.image || "",
+      imageStorageId:
+        currentUser.imageStorageId,
+    });
+  }
+}, [currentUser, hasLocalChanges]);
 
   /* 🔥 GLOW ANIMATION */
   useEffect(() => {
@@ -164,12 +202,108 @@ setEditedProfile({
     ).start();
   }, []);
   
+  const pickImage = async () => {
+  const result =
+    await ImagePicker.launchImageLibraryAsync({
+      mediaTypes:
+        ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
 
-  /* 🔥 SAVE PROFILE */
-  const handleSaveProfile = async () => {
-    await updateProfile(editedProfile);
+  if (result.canceled) return;
+
+  const asset = result.assets[0];
+
+ setHasLocalChanges(true);
+
+setEditedProfile((p: any) => ({
+  ...p,
+  image: asset.uri,
+}));
+};
+
+const handleSaveProfile = async () => {
+  try {
+    setSaving(true);
+
+    let imageUrl = editedProfile.image;
+    let imageStorageId =
+      editedProfile.imageStorageId;
+
+    /* NEW LOCAL IMAGE */
+    if (
+      editedProfile.image?.startsWith(
+        "file"
+      )
+    ) {
+      /* GET UPLOAD URL */
+      const uploadUrl =
+        await generateUploadUrl();
+
+      /* FILE -> BLOB */
+      const response = await fetch(
+        editedProfile.image
+      );
+
+      const blob = await response.blob();
+
+      /* UPLOAD */
+      const uploadResult = await fetch(
+        uploadUrl,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": blob.type,
+          },
+          body: blob,
+        }
+      );
+
+      const { storageId } =
+        await uploadResult.json();
+
+      /* DELETE OLD IMAGE */
+     if (
+  currentUser?.imageStorageId
+) {
+        try {
+        if (currentUser?.imageStorageId) {
+  try {
+    await deleteStorageFile({
+      storageId:
+        currentUser.imageStorageId,
+    });
+  } catch {}
+}
+        } catch {}
+      }
+
+      imageStorageId = storageId;
+
+      imageUrl =
+  await getStorageUrl({
+    storageId,
+  });
+    }
+
+    await updateProfile({
+      username:
+        editedProfile.username,
+      fullname:
+        editedProfile.fullname,
+      bio: editedProfile.bio,
+      image: imageUrl,
+      imageStorageId,
+    });
+setHasLocalChanges(false);
+setImageVersion(Date.now());
     setIsEditModalVisible(false);
-  };
+  } finally {
+    setSaving(false);
+  }
+};
 
   /* 🔥 LOADING */
   if (!currentUser || posts === undefined) return <Loader />;
@@ -263,14 +397,20 @@ setEditedProfile({
          panResponder={modalPanResponder} 
       />
 
-      <EditProfileModal
-        visible={isEditModalVisible}
-        setVisible={setIsEditModalVisible}
-        profile={editedProfile}
-        setProfile={setEditedProfile}
-        onSave={handleSaveProfile}
-        btnScale={btnScale}
-      />
+   <EditProfileModal
+  visible={isEditModalVisible}
+  setVisible={setIsEditModalVisible}
+  profile={editedProfile}
+  setProfile={setEditedProfile}
+  originalProfile={currentUser}
+  onSave={handleSaveProfile}
+  onChangePhoto={pickImage}
+  saving={saving}
+  btnScale={btnScale}
+  setHasLocalChanges={
+  setHasLocalChanges
+}
+/>
     </View>
   );
 }

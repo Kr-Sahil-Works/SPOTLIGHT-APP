@@ -36,6 +36,40 @@ export const deleteMessage = mutation({
       throw new Error("Delete time expired");
     }
 
-    await ctx.db.delete(args.messageId);
+    const conversationId =
+  msg.conversationId;
+
+await ctx.db.delete(
+  args.messageId
+);
+
+const latest =
+  await ctx.db
+    .query("messages")
+    .withIndex(
+      "by_conversation_time",
+      (q) =>
+        q.eq(
+          "conversationId",
+          conversationId
+        )
+    )
+    .order("desc")
+    .first();
+
+await ctx.db.patch(
+  conversationId,
+  {
+    lastMessage:
+      latest?.text || "",
+
+    lastMessageAt:
+      latest?.createdAt ||
+      0,
+
+    lastMessageSenderId:
+      latest?.senderId,
+  }
+);
   },
 });

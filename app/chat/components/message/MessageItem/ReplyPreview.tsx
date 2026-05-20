@@ -1,8 +1,8 @@
 import React from "react";
 
 import {
-    Pressable,
-    Text
+  Pressable,
+  Text,
 } from "react-native";
 
 import { ChatTheme } from "@/constants/chatThemes";
@@ -13,6 +13,9 @@ type Props = {
   replyToText?: string;
 
   onPress?: () => void;
+  onScrollTo?: (
+  id: string
+) => void;
 
   theme: ChatTheme;
 };
@@ -20,25 +23,49 @@ type Props = {
 function ReplyPreview({
   replyTo,
   replyToText,
+  onScrollTo,
   onPress,
   theme,
 }: Props) {
-  if (!replyTo || !replyToText) {
+  if (
+    !replyTo ||
+    !replyToText
+  ) {
     return null;
   }
 
   return (
     <Pressable
-      onPress={onPress}
+onPress={() => {
+  if (
+    replyTo
+  ) {
+    onScrollTo?.(
+      String(replyTo)
+    );
+  }
+
+  onPress?.();
+}}
+      android_ripple={{
+        color:
+          "rgba(255,255,255,0.08)",
+      }}
       style={{
         borderLeftWidth: 3,
 
         borderLeftColor:
-          theme.bubbleMe,
+          "#00b7ff",
 
-        paddingLeft: 8,
+        paddingLeft: 10,
 
-        marginBottom: 6,
+        paddingVertical: 4,
+
+        marginBottom: 8,
+
+        borderRadius: 8,
+
+        opacity: 0.92,
       }}
     >
       <Text

@@ -35,3 +35,5 @@ export {
     setTyping
 } from "./messages.typing";
 
+export { togglePin } from "./messages.pin";
+

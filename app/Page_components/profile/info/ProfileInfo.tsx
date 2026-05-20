@@ -1,14 +1,19 @@
 import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
   Animated,
+  Dimensions,
+  Modal,
+  Pressable,
   Image as RNImage,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+
+import IconBg from "@/assets/images/iconbg.png";
 
 export default function ProfileInfo({
   user,
@@ -18,6 +23,10 @@ export default function ProfileInfo({
   onFollowersPress,
   onFollowingPress,
 }: any) {
+  const [showAvatarModal, setShowAvatarModal] =
+  useState(false);
+
+const screenWidth = Dimensions.get("window").width;
   return (
     <View style={styles.profileInfo}>
       {/* AVATAR + STATS */}
@@ -33,12 +42,22 @@ export default function ProfileInfo({
             shadowRadius: 12,
           }}
         >
-          <RNImage
-            source={{
-              uri: user?.image || "",
-            }}
-            style={styles.avatar}
-          />
+        <TouchableOpacity
+  activeOpacity={0.9}
+  onLongPress={() => setShowAvatarModal(true)}
+>
+<RNImage
+  source={
+    user?.image
+      ? {
+          uri:
+            user.image,
+        }
+      : IconBg
+  }
+  style={styles.avatar}
+/>
+</TouchableOpacity>
         </Animated.View>
 
         {/* STATS */}
@@ -163,6 +182,78 @@ export default function ProfileInfo({
           />
         </TouchableOpacity>
       </View>
+      <Modal
+  visible={showAvatarModal}
+  transparent
+  animationType="fade"
+  statusBarTranslucent
+>
+  <Pressable
+    onPress={() => setShowAvatarModal(false)}
+    style={{
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.92)",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    {/* CLOSE */}
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => setShowAvatarModal(false)}
+      style={{
+        position: "absolute",
+        top: 60,
+        right: 24,
+        zIndex: 10,
+      }}
+    >
+      <Ionicons
+        name="close"
+        size={30}
+        color={COLORS.white}
+      />
+    </TouchableOpacity>
+
+    {/* IMAGE */}
+    <Animated.View
+      style={{
+        width: screenWidth * 0.82,
+        height: screenWidth * 0.82,
+        borderRadius: 999,
+        overflow: "hidden",
+        borderWidth: 1.5,
+        borderColor: "rgba(255,255,255,0.12)",
+        shadowColor: COLORS.primary,
+        shadowOpacity: 0.4,
+        shadowRadius: 24,
+      }}
+    >
+      <RNImage
+        source={{
+          uri: user?.image || "",
+        }}
+        resizeMode="cover"
+        style={{
+          width: "100%",
+          height: "100%",
+        }}
+      />
+    </Animated.View>
+
+    {/* NAME */}
+    <Text
+      style={{
+        color: COLORS.white,
+        fontSize: 20,
+        fontWeight: "700",
+        marginTop: 24,
+      }}
+    >
+      {user?.fullname}
+    </Text>
+  </Pressable>
+</Modal>
     </View>
   );
 }

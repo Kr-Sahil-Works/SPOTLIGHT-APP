@@ -8,6 +8,7 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Keyboard,
   Pressable,
   Text,
   TouchableOpacity,
@@ -56,10 +57,15 @@ export default function ReactionPicker({
     new Animated.Value(0)
   ).current;
 
+
 const translateY =
   useRef(
     new Animated.Value(8)
   ).current;
+
+    const [keyboardHeight,
+setKeyboardHeight] =
+  React.useState(0);
 
   const visible =
     overlay.type ===
@@ -102,6 +108,35 @@ const translateY =
     translateY.setValue(8);
   }
 }, [visible]);
+
+
+
+  React.useEffect(() => {
+  const showSub =
+    Keyboard.addListener(
+      "keyboardDidShow",
+      (e) => {
+        setKeyboardHeight(
+          e.endCoordinates
+            .height
+        );
+      }
+    );
+
+  const hideSub =
+    Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
+
 
 
   if (!visible) {
@@ -148,9 +183,16 @@ const SAFE_BOTTOM =
 const showAbove =
   msgY > 120;
 
+const keyboardTop =
+  SCREEN_HEIGHT -
+  keyboardHeight;
+
+const safeBottom =
+  keyboardTop - 90;
+
 const top =
-  msgY -
-  -240;
+  msgY + 240;
+
 
 const centerX =
   msg.fingerX ??

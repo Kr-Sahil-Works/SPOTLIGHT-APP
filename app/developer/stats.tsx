@@ -14,31 +14,31 @@ import {
 export default function StatsPage() {
   const router = useRouter();
 
-const currentUser =
-  useQuery(
-    api.users.index
-      .getCurrentUser
-  );
+  /* =========================
+     GLOBAL STATS
+  ========================= */
 
-const isAdmin =
-  currentUser?.email ===
-  "sahillearn44@gmail.com";
+  const stats =
+    useQuery(
+      api.admin.admin
+        .getGlobalStats
+    ) ?? {
+      users: 0,
+      posts: 0,
+      comments: 0,
+      messages: 0,
+      likes: 0,
+      bookmarks: 0,
+      follows: 0,
+      notifications: 0,
+      collections: 0,
+      conversations: 0,
+      followRequests: 0,
+    };
 
-const stats =
-  useQuery(
-    api.admin.admin
-      .getGlobalStats,
-    isAdmin
-      ? {}
-      : "skip"
-  ) ?? {
-    users: 0,
-    posts: 0,
-    comments: 0,
-    messages: 0,
-    likes: 0,
-    bookmarks: 0,
-  };
+  /* =========================
+     CARD
+  ========================= */
 
   const Box = ({
     title,
@@ -50,9 +50,9 @@ const stats =
         width: "47%",
 
         backgroundColor:
-          "rgba(255,255,255,0.04)",
+          "#0d0d0d",
 
-        borderRadius: 22,
+        borderRadius: 24,
 
         padding: 18,
 
@@ -61,20 +61,40 @@ const stats =
         borderWidth: 1,
 
         borderColor:
-          "rgba(255,255,255,0.05)",
+          "rgba(0,255,120,0.08)",
       }}
     >
-      <Ionicons
-        name={icon}
-        size={22}
-        color="#00ff88"
-      />
+      <View
+        style={{
+          width: 46,
+          height: 46,
+
+          borderRadius: 23,
+
+          backgroundColor:
+            "rgba(0,255,120,0.08)",
+
+          justifyContent:
+            "center",
+
+          alignItems:
+            "center",
+        }}
+      >
+        <Ionicons
+          name={icon}
+          size={22}
+          color="#00ff88"
+        />
+      </View>
 
       <Text
         style={{
-          color: "#777",
+          color: "#666",
 
-          marginTop: 12,
+          marginTop: 14,
+
+          fontSize: 13,
         }}
       >
         {title}
@@ -84,7 +104,7 @@ const stats =
         style={{
           color: "#fff",
 
-          fontSize: 28,
+          fontSize: 30,
 
           fontWeight: "800",
 
@@ -95,6 +115,8 @@ const stats =
       </Text>
     </View>
   );
+
+  /* ========================= */
 
   return (
     <View
@@ -120,10 +142,25 @@ const stats =
           onPress={() =>
             router.back()
           }
+          style={{
+            width: 42,
+            height: 42,
+
+            borderRadius: 21,
+
+            backgroundColor:
+              "#111",
+
+            justifyContent:
+              "center",
+
+            alignItems:
+              "center",
+          }}
         >
           <Ionicons
             name="arrow-back"
-            size={24}
+            size={22}
             color="#00ff88"
           />
         </TouchableOpacity>
@@ -139,33 +176,87 @@ const stats =
               fontSize: 12,
             }}
           >
-            Admin Control
+            Internal Metrics
           </Text>
 
           <Text
             style={{
               color: "#00ff88",
 
-              fontSize: 24,
+              fontSize: 26,
 
               fontWeight: "800",
             }}
           >
-            Analytics
+            Global Analytics
           </Text>
         </View>
       </View>
 
+      {/* CONTENT */}
       <ScrollView
         contentContainerStyle={{
           padding: 16,
           paddingBottom: 120,
         }}
+        showsVerticalScrollIndicator={
+          false
+        }
       >
+        {/* TOP INFO */}
+        <View
+          style={{
+            backgroundColor:
+              "rgba(0,255,120,0.05)",
+
+            borderWidth: 1,
+
+            borderColor:
+              "rgba(0,255,120,0.08)",
+
+            borderRadius: 24,
+
+            padding: 20,
+
+            marginBottom: 24,
+          }}
+        >
+          <Text
+            style={{
+              color: "#00ff88",
+
+              fontSize: 16,
+
+              fontWeight: "800",
+            }}
+          >
+            Realtime Database Overview
+          </Text>
+
+          <Text
+            style={{
+              color: "#999",
+
+              marginTop: 10,
+
+              lineHeight: 22,
+            }}
+          >
+            Live application metrics,
+            social engagement,
+            messaging activity,
+            user growth and backend
+            object tracking.
+          </Text>
+        </View>
+
+        {/* GRID */}
         <View
           style={{
             flexDirection: "row",
+
             flexWrap: "wrap",
+
             justifyContent:
               "space-between",
           }}
@@ -179,7 +270,7 @@ const stats =
           <Box
             title="Posts"
             value={stats.posts}
-            icon="image-outline"
+            icon="images-outline"
           />
 
           <Box
@@ -207,6 +298,70 @@ const stats =
             }
             icon="bookmark-outline"
           />
+
+          <Box
+            title="Follows"
+            value={
+              stats.follows || 0
+            }
+            icon="git-network-outline"
+          />
+
+          <Box
+            title="Collections"
+            value={
+              stats.collections ||
+              0
+            }
+            icon="albums-outline"
+          />
+
+          <Box
+            title="Notifications"
+            value={
+              stats.notifications ||
+              0
+            }
+            icon="notifications-outline"
+          />
+
+          <Box
+            title="Conversations"
+            value={
+              stats.conversations ||
+              0
+            }
+            icon="chatbubbles-outline"
+          />
+
+          <Box
+            title="Follow Requests"
+            value={
+              stats.followRequests ||
+              0
+            }
+            icon="person-add-outline"
+          />
+        </View>
+
+        {/* FOOTER */}
+        <View
+          style={{
+            marginTop: 26,
+
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              color: "#444",
+
+              fontSize: 12,
+            }}
+          >
+            Spotlight Internal
+            Metrics v1.0
+          </Text>
         </View>
       </ScrollView>
     </View>

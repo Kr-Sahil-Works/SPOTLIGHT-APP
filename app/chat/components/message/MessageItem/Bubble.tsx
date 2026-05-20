@@ -1,6 +1,7 @@
 import React from "react";
 
 import {
+  Linking,
   Text,
   View,
 } from "react-native";
@@ -43,18 +44,35 @@ function Bubble({
   const trimmed =
     text.trim();
 
-  const emojiOnly =
-    /^[\p{Emoji}\s]+$/u.test(
-      trimmed
-    );
+    const isPhoneNumber =
+  /^(\+?\d[\d\s-]{8,})$/.test(
+    text.trim()
+  );
+
+const isLink =
+  /(https?:\/\/|www\.)/i.test(
+    text
+  );
+
+
+const cleanText =
+  text.trim();
+
+const emojiOnly =
+  cleanText.length >
+    0 &&
+  /^[\p{Extended_Pictographic}\s\u200d]+$/u.test(
+    cleanText
+  );
 
 const emojiCount =
-  [...trimmed].length;
+  [...cleanText].length;
 
 const emojiMessage =
   emojiOnly &&
   emojiCount > 0 &&
   emojiCount <= 8;
+
 
 let emojiFontSize = 22;
 
@@ -62,26 +80,114 @@ if (emojiCount === 1) {
   emojiFontSize = 32;
 } else if (
   emojiCount >= 2 &&
-  emojiCount <= 4
+  emojiCount <= 6
 ) {
-  emojiFontSize = 26;
+  emojiFontSize = 28;
 }
 
 if (emojiMessage) {
   return (
-    <Text
-      style={{
-        fontSize:
-          emojiFontSize,
+    <View>
+  <Text
+  selectable
+  suppressHighlighting
+  onPress={async () => {
+    if (
+      isPhoneNumber
+    ) {
+    const rawNumber =
+  text.replace(
+    /\D/g,
+    ""
+  );
 
-        lineHeight:
-          emojiFontSize + 6,
+const indianNumber =
+  rawNumber.length ===
+  10
+    ? `+91${rawNumber}`
+    : rawNumber.startsWith(
+        "91"
+      )
+    ? `+${rawNumber}`
+    : rawNumber;
 
-        marginVertical: 2,
-      }}
-    >
-      {text}
-    </Text>
+await Linking.openURL(
+  `tel:${indianNumber}`
+)
+
+      return;
+    }
+
+    if (isLink) {
+      let url = text;
+
+      if (
+        !url.startsWith(
+          "http"
+        )
+      ) {
+        url = `https://${url}`;
+      }
+
+      await Linking.openURL(
+        url
+      );
+    }
+  }}
+  style={{
+    fontSize:
+      emojiOnly
+        ? 34
+        : 14,
+
+    lineHeight:
+      emojiOnly
+        ? 42
+        : 20,
+
+    color:
+      isMe
+        ? theme.textMe
+        : theme.textOther,
+
+    textDecorationLine:
+      isPhoneNumber ||
+      isLink
+        ? "underline"
+        : "none",
+  }}
+>
+  {text}
+</Text>
+
+      {edited && (
+        <View
+          style={{
+            alignItems:
+              "flex-end",
+
+            marginTop: 2,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 10,
+
+              opacity: 0.7,
+
+              color:
+                isHighlighted
+                  ? "#fff"
+                  : isMe
+                  ? theme.textMe
+                  : theme.textOther,
+            }}
+          >
+            edited
+          </Text>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -115,6 +221,38 @@ if (emojiMessage) {
 const content = (
   <>
     <Text
+      selectable
+      suppressHighlighting
+      onPress={async () => {
+        if (
+          isPhoneNumber
+        ) {
+          await Linking.openURL(
+            `tel:${text.replace(
+              /\s/g,
+              ""
+            )}`
+          );
+
+          return;
+        }
+
+        if (isLink) {
+          let url = text;
+
+          if (
+            !url.startsWith(
+              "http"
+            )
+          ) {
+            url = `https://${url}`;
+          }
+
+          await Linking.openURL(
+            url
+          );
+        }
+      }}
       style={{
         color:
           isHighlighted
@@ -126,29 +264,28 @@ const content = (
         fontSize: 14,
 
         lineHeight: 20,
+
+        textDecorationLine:
+          isPhoneNumber ||
+          isLink
+            ? "underline"
+            : "none",
       }}
     >
       {text}
     </Text>
 
-    {edited && (
-      <Text
-        style={{
-          fontSize: 10,
+    <View
+      style={{
+        flexDirection:
+          "row",
 
-          color:
-            isHighlighted
-              ? "#ffffff"
-              : isMe
-              ? theme.textMe
-              : theme.textOther,
+        justifyContent:
+          "flex-end",
 
-          marginTop: 4,
-        }}
-      >
-        edited
-      </Text>
-    )}
+        marginTop: 4,
+      }}
+    />
   </>
 );
 
@@ -201,42 +338,86 @@ if (
 
 /* ✅ NORMAL BUBBLE */
 return (
-  <View
-    style={{
-      backgroundColor:
-        isHighlighted
-          ? "#050505"
-          : isMe
-          ? theme.bubbleMe
-          : theme.bubbleOther,
+  <View>
+    <View
+      style={{
+        backgroundColor:
+          isHighlighted
+            ? "#050505"
+            : isMe
+            ? theme.bubbleMe
+            : theme.bubbleOther,
 
-      borderWidth:
-        isHighlighted
-          ? 2.2
-          : 0,
+        borderWidth:
+          isHighlighted
+            ? 2
+            : 0,
 
-      borderColor:
-        isHighlighted
-          ? "#00ffe1"
-          : "transparent",
+        borderColor:
+          isHighlighted
+            ? "#00c8ff"
+            : "transparent",
 
-      transform: [
-        {
-          scale:
-            isHighlighted
-              ? 1.04
-              : 1,
-        },
-      ],
+        shadowColor:
+          isHighlighted
+            ? "#00c8ff"
+            : "transparent",
 
-      paddingVertical: 10,
+        shadowOpacity:
+          isHighlighted
+            ? 0.9
+            : 0,
 
-      paddingHorizontal: 14,
+        shadowRadius:
+          isHighlighted
+            ? 18
+            : 0,
 
-      ...bubbleStyle,
-    }}
-  >
-    {content}
+        elevation:
+          isHighlighted
+            ? 18
+            : 0,
+
+        transform: [
+          {
+            scale:
+              isHighlighted
+                ? 1.04
+                : 1,
+          },
+        ],
+
+        paddingVertical: 10,
+
+        paddingHorizontal: 14,
+
+        ...bubbleStyle,
+      }}
+    >
+      {content}
+    </View>
+
+    {edited && (
+      <Text
+        style={{
+          fontSize: 10,
+
+          marginTop: 4,
+
+          marginHorizontal: 8,
+
+          alignSelf:
+            isMe
+              ? "flex-end"
+              : "flex-start",
+
+          color:
+            "#8e8e93",
+        }}
+      >
+        edited
+      </Text>
+    )}
   </View>
 );
 }

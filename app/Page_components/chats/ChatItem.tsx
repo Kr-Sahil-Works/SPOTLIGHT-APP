@@ -167,8 +167,11 @@ style={{
       : "400",
 }}
 >
-  {item.lastMessage?.text ||
-    item.lastMessage ||
+  {typeof item.lastMessage ===
+"string"
+  ? item.lastMessage
+  : item.lastMessage
+      ?.text ||
     "Start chatting"}
 </Text>
 
@@ -210,7 +213,11 @@ style={{
         fontWeight: "500",
       }}
     >
-      {formatChatTime(item.createdAt)}
+      {formatChatTime(
+  item.lastMessageAt ||
+    item.updatedAt ||
+    item.createdAt
+)}
     </Text>
 
     {item.unreadCount > 0 && (

@@ -4,13 +4,15 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Animated,
+  Linking,
   Modal,
   ScrollView,
   Switch,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 /* ================= TYPES ================= */
 
@@ -34,7 +36,7 @@ const Item = ({
   onToggle,
 }: ItemProps) => {
   const isAllowed =
-    title === "Support Developer" ||
+    title === "About Developer" ||
     title === "Backup chats" ||
     title === "Export data" ||
     title === "Account settings" ||
@@ -145,6 +147,12 @@ export default function Settings() {
   const [showDevSection, setShowDevSection] =
   useState(false);
 
+  const scaleAnim =
+  useState(
+    new Animated.Value(1)
+  )[0];
+  
+
 const [secretTapCount, setSecretTapCount] =
   useState(0);
 
@@ -236,11 +244,15 @@ router.push("/developer");
         <Section title="Support">
           <Item
   icon="heart-outline"
-  title="Support Developer"
+  title="About Developer"
 onPress={() =>
   router.push("/(app)/webview?url=https://github.com/Kr-Sahil-Works")
 }
 />
+
+
+
+
         </Section>
 {showDevSection && (
   <Section title="Dev settings">
@@ -330,6 +342,133 @@ onPress={() =>
             onPress={() => setShowLogoutModal(true)}
           />
         </Section>
+
+
+        <View
+  style={{
+    marginTop: 400,
+    alignItems: "center",
+  }}
+>
+  {/* CONNECT BUTTON */}
+  <TouchableOpacity
+    activeOpacity={0.9}
+    onPress={async () => {
+      Animated.sequence([
+        Animated.spring(
+          scaleAnim,
+          {
+            toValue: 0.96,
+            useNativeDriver: true,
+          }
+        ),
+
+        Animated.spring(
+          scaleAnim,
+          {
+            toValue: 1,
+            friction: 3,
+            tension: 120,
+            useNativeDriver: true,
+          }
+        ),
+      ]).start();
+
+      const phone =
+        "+919608540597";
+
+      const whatsappUrl =
+`whatsapp://send?phone=${phone}`;
+
+      const dialerUrl =
+        `tel:${phone}`;
+
+      const supported =
+        await Linking.canOpenURL(
+          whatsappUrl
+        );
+
+      if (supported) {
+        await Linking.openURL(
+          whatsappUrl
+        );
+      } else {
+        await Linking.openURL(
+          dialerUrl
+        );
+      }
+    }}
+    style={{
+      width: "100%",
+    }}
+  >
+    <Animated.View
+      style={{
+        transform: [
+          {
+            scale: scaleAnim,
+          },
+        ],
+
+        flexDirection: "row",
+
+        alignItems: "center",
+
+        justifyContent:
+          "center",
+
+        backgroundColor:
+          "rgba(0,255,120,0.08)",
+
+        borderWidth: 1,
+
+        borderColor:
+          "rgba(0,255,120,0.14)",
+
+        borderRadius: 18,
+
+        paddingVertical: 15,
+      }}
+    >
+      <Ionicons
+        name="logo-whatsapp"
+        size={20}
+        color="#00ff88"
+      />
+
+      <Text
+        style={{
+          color: "#eafff3",
+
+          marginLeft: 10,
+
+          fontWeight: "700",
+
+          fontSize: 15,
+        }}
+      >
+        Connect Developer
+      </Text>
+    </Animated.View>
+  </TouchableOpacity>
+
+  {/* WATERMARK */}
+  <Text
+    style={{
+      color: "#2d2d2d",
+
+      marginTop: 18,
+
+      fontSize: 12,
+
+      letterSpacing: 2,
+
+      fontWeight: "700",
+    }}
+  >
+    SPOTLIGHT V.1.7
+  </Text>
+</View>
       </ScrollView>
 
       {/* DEV SECRET MODAL */}

@@ -45,15 +45,18 @@ handler: async (ctx, args) => {
   ========================= */
   if (existing) {
     await ctx.db.patch(existing._id, {
-      fullname: args.fullname,
-      email: args.email,
-      image: args.image,
+  fullname: args.fullname,
+  email: args.email,
 
-      // 🔥 only set username if not already set properly
-      ...(existing.username === "user"
-        ? { username }
-        : {}),
-    });
+  // ✅ don't overwrite custom uploaded avatar
+  ...(existing.imageStorageId
+    ? {}
+    : { image: args.image }),
+
+  ...(existing.username === "user"
+    ? { username }
+    : {}),
+});
 
     return existing._id;
   }

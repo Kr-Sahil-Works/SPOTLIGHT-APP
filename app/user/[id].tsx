@@ -6,9 +6,28 @@ import { styles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { FlatList, Pressable, Image as RNImage, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import {
+  Dimensions,
+  FlatList,
+  Modal,
+  Pressable,
+  Image as RNImage,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+
 
 export default function UserProfileScreen() {
+
+  const [showAvatarModal, setShowAvatarModal] =
+  React.useState(false);
+
+const screenWidth =
+  Dimensions.get("window").width;
+
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
@@ -44,11 +63,18 @@ const profile = useQuery(
         <View style={styles.profileInfo}>
           <View style={styles.avatarAndStats}>
             {/* AVATAR */}
-         {profile.image && (
-<RNImage
-  source={{ uri: profile.image }}
-  style={styles.avatar}
-/>
+{profile.image && (
+  <TouchableOpacity
+    activeOpacity={0.9}
+    onLongPress={() =>
+      setShowAvatarModal(true)
+    }
+  >
+    <RNImage
+      source={{ uri: profile.image }}
+      style={styles.avatar}
+    />
+  </TouchableOpacity>
 )}
 
             {/* STATS */}
@@ -72,22 +98,30 @@ const profile = useQuery(
           {profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
 
          <Pressable
-  style={[
-    {
-      marginTop: 16,
-      paddingVertical: 12,
-      borderRadius: 14,
-      alignItems: "center",
-      backgroundColor: isFollowing ? "#111" : COLORS.lime,
-      borderWidth: isFollowing ? 1 : 0,
-      borderColor: "rgba(255,255,255,0.08)",
-    },
-  ]}
+  android_ripple={{
+    color: "rgba(255,255,255,0.06)",
+  }}
+style={[
+  {
+    marginTop: 18,
+    height: 50,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: isFollowing
+      ? "#0f0f0f"
+      : "#166534",
+    borderWidth: 1,
+    borderColor: isFollowing
+      ? "rgba(255,255,255,0.06)"
+      : "rgba(34,197,94,0.25)",
+  },
+]}
   onPress={() => toggleFollow({ followingId: id as Id<"users"> })}
 >
 <Text
   style={{
-    color: isFollowing ? "#fff" : "#e8f8bc",
+    color: "#fff",
     fontWeight: "600",
     fontSize: 14,
   }}
@@ -121,6 +155,95 @@ const profile = useQuery(
           )}
         </View>
       </ScrollView>
+      <Modal
+  visible={showAvatarModal}
+  transparent
+  animationType="fade"
+  statusBarTranslucent
+>
+  <Pressable
+    onPress={() =>
+      setShowAvatarModal(false)
+    }
+    style={{
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.94)",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    {/* CLOSE */}
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() =>
+        setShowAvatarModal(false)
+      }
+      style={{
+        position: "absolute",
+        top: 60,
+        right: 24,
+        zIndex: 20,
+      }}
+    >
+      <Ionicons
+        name="close"
+        size={30}
+        color="#fff"
+      />
+    </TouchableOpacity>
+
+    {/* IMAGE */}
+    <View
+      style={{
+        width: screenWidth * 0.82,
+        height: screenWidth * 0.82,
+        borderRadius: 999,
+        overflow: "hidden",
+        borderWidth: 1.5,
+        borderColor:
+          "rgba(255,255,255,0.08)",
+        backgroundColor: "#111",
+      }}
+    >
+      <RNImage
+        source={{
+          uri: profile.image,
+        }}
+        resizeMode="cover"
+        style={{
+          width: "100%",
+          height: "100%",
+        }}
+      />
+    </View>
+
+    {/* NAME */}
+    <Text
+      style={{
+        color: "#fff",
+        fontSize: 22,
+        fontWeight: "700",
+        marginTop: 24,
+      }}
+    >
+      {profile.fullname}
+    </Text>
+
+    {!!profile.bio && (
+      <Text
+        style={{
+          color: "rgba(255,255,255,0.68)",
+          fontSize: 14,
+          marginTop: 8,
+          textAlign: "center",
+          paddingHorizontal: 36,
+        }}
+      >
+        {profile.bio}
+      </Text>
+    )}
+  </Pressable>
+</Modal>
     </View>
   );
 }

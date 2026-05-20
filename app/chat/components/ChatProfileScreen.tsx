@@ -51,18 +51,21 @@ export default function ChatProfileScreen({
             alignItems: "center",
           }}
         >
-          <Image
-            source={
-              user?.image
-                ? { uri: user.image }
-                : require("@/assets/images/iconbg.png")
-            }
-            style={{
-              width: 86,
-              height: 86,
-              borderRadius: 99,
-            }}
-          />
+       <Image
+  source={
+    user?.image
+      ? {
+          uri:
+            user.image,
+        }
+      : require("@/assets/images/iconbg.png")
+  }
+  style={{
+    width: 86,
+    height: 86,
+    borderRadius: 99,
+  }}
+/>
 
           <Text
             style={{

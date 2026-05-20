@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -69,6 +70,7 @@ import useMessages from "./hooks/useMessages";
 
 import useSend from "./hooks/useSend";
 
+import { Ionicons } from "@expo/vector-icons";
 import useTheme from "./hooks/useTheme";
 
 export default function ChatScreen() {
@@ -76,6 +78,11 @@ export default function ChatScreen() {
     useLocalSearchParams<{
       id: string;
     }>();
+
+    const flatListRef =
+  React.useRef<any>(
+    null
+  );
 
   const userId =
     params.id as Id<"users">;
@@ -96,6 +103,21 @@ export default function ChatScreen() {
   ] = useState<
     Message | null
   >(null);
+
+  const [
+  highlightedId,
+  setHighlightedId,
+] = useState<
+  string | null
+>(null);
+
+
+const [
+  editingMessage,
+  setEditingMessage,
+] = useState<any>(
+  null
+);
 
   const [
     themeOpen,
@@ -157,6 +179,20 @@ export default function ChatScreen() {
       : "skip"
   );
 
+
+  const conversation =
+  useQuery(
+    api.conversations
+      .index
+      .getConversation,
+
+    conversationId
+      ? {
+          conversationId,
+        }
+      : "skip"
+  );
+
   const markAsDelivered =
     useMutation(
       api.messages.index
@@ -174,7 +210,24 @@ export default function ChatScreen() {
       api.messages.index
         .toggleReaction
     );
+const editMessage =
+  useMutation(
+    api.messages.index
+      .editMessage
+  );
 
+  const setPinnedMessage =
+  useMutation(
+    api.conversations
+      .index
+      .setPinnedMessage
+  );
+
+const deleteMessage =
+  useMutation(
+    api.messages.index
+      .deleteMessage
+  );
   useEffect(() => {
     if (!userId) {
       return;
@@ -210,17 +263,17 @@ export default function ChatScreen() {
     [resolvedThemeIndex]
   );
 
-  const {
-    text,
-
-    setText,
-
-    handleSend,
-  } = useSend(
-    userId,
-    replyMsg,
-    setReplyMsg
-  );
+const {
+  text,
+  setText,
+  handleSend,
+} = useSend(
+  userId,
+  replyMsg,
+  setReplyMsg,
+  editingMessage,
+  setEditingMessage
+);
 
   if (!userId) {
     return (
@@ -233,13 +286,88 @@ export default function ChatScreen() {
   const renderContent =
     () => (
       <>
-        <ChatHeader
-          userId={userId}
-          onOpenTheme={() =>
-            setThemeOpen(true)
-          }
-          theme={theme}
-        />
+     <ChatHeader
+  userId={userId}
+
+  onOpenTheme={() =>
+    setThemeOpen(true)
+  }
+onUnpin={async () => {
+  if (!conversationId)
+    return;
+
+  await setPinnedMessage(
+    {
+      conversationId,
+
+      text:
+        undefined,
+
+      messageId:
+        undefined,
+    }
+  );
+}}
+  theme={theme}
+
+  pinnedMessages={
+    conversation
+      ?.pinnedMessageText
+      ? [
+          {
+            text:
+              conversation.pinnedMessageText,
+          },
+        ]
+      : []
+  }
+
+  onPinPress={() => {
+    const target =
+      messages.find(
+        (m) =>
+          String(m._id) ===
+          String(
+            conversation
+              ?.pinnedMessageId
+          )
+      );
+
+    if (!target)
+      return;
+
+    const scrollIndex =
+      messages.findIndex(
+        (m) =>
+          String(m._id) ===
+          String(
+            target._id
+          )
+      );
+if (
+  scrollIndex >= 0
+) {
+  flatListRef.current?.scrollToIndex(
+    {
+      index:
+        scrollIndex,
+
+      animated: true,
+    }
+  );
+
+  setHighlightedId(
+    String(target._id)
+  );
+
+  setTimeout(() => {
+    setHighlightedId(
+      null
+    );
+  }, 1800);
+}
+  }}
+/>
 
         <ThemeModal
           visible={themeOpen}
@@ -299,7 +427,7 @@ export default function ChatScreen() {
               : "height"
           }
           keyboardVerticalOffset={
-            56
+            40
           }
         >
           <View
@@ -397,6 +525,65 @@ export default function ChatScreen() {
                   messages={
                     messages
                   }
+                  flatListRef={
+  flatListRef
+}
+highlightId={
+  highlightedId ||
+  undefined
+}
+ 
+onScrollTo={(
+  targetId: string
+) => {
+  const target =
+    messages.find(
+      (m) =>
+        String(m._id) ===
+        String(
+          targetId
+        )
+    );
+
+  if (!target)
+    return;
+
+  const scrollIndex =
+    messages.findIndex(
+      (m) =>
+        String(m._id) ===
+        String(
+          targetId
+        )
+    );
+
+  if (
+    scrollIndex >= 0
+  ) {
+    flatListRef.current?.scrollToIndex(
+      {
+        index:
+          scrollIndex,
+
+        animated: true,
+      }
+    );
+
+    setHighlightedId(
+      String(
+        targetId
+      )
+    );
+
+    setTimeout(() => {
+      setHighlightedId(
+        null
+      );
+    }, 1800);
+  }
+}}
+
+
                   theme={theme}
                   loadOlder={
                     loadOlder
@@ -407,9 +594,49 @@ export default function ChatScreen() {
                   currentUserId={
                     currentUserId
                   }
-                  onReply={
+                  
+
+onPin={async (msg) => {
+  if (!conversationId)
+    return;
+
+  const alreadyPinned =
+    String(
+      conversation
+        ?.pinnedMessageId
+    ) ===
+    String(msg._id);
+
+ await setPinnedMessage(
+  {
+    conversationId,
+
+    text:
+      alreadyPinned
+        ? undefined
+        : msg.text,
+
+    messageId:
+      alreadyPinned
+        ? undefined
+        : msg._id,
+
+    pinnedBy:
+      currentUserId,
+  }
+);
+}}
+
+onReply={
                     setReplyMsg
                   }
+      onEdit={(msg) => {
+  setEditingMessage(
+    msg
+  );
+
+  setText(msg.text);
+}}
                 onReact={async ({
   messageId,
   reaction,
@@ -432,9 +659,37 @@ export default function ChatScreen() {
     );
   }
 }}
-                  onDelete={() =>
-                    {}
-                  }
+                onDelete={async (
+  msg
+) => {
+  try {
+    const target =
+      messages.find(
+        (m) =>
+          m._id ===
+          msg._id
+      );
+
+    if (target) {
+      target.deleting =
+        true;
+    }
+
+    setTimeout(
+      async () => {
+        await deleteMessage(
+          {
+            messageId:
+              msg._id,
+          }
+        );
+      },
+      260
+    );
+  } catch (e) {
+    console.log(e);
+  }
+}}
                   onCopy={() =>
                     {}
                   }
@@ -504,6 +759,78 @@ export default function ChatScreen() {
                 </Text>
               </View>
             )}
+
+
+{editingMessage && (
+  <View
+    style={{
+      backgroundColor:
+        "#111",
+
+      borderTopWidth: 1,
+
+      borderTopColor:
+        "#ffffff10",
+
+      paddingHorizontal: 16,
+
+      paddingVertical: 10,
+
+      flexDirection: "row",
+
+      alignItems:
+        "center",
+
+      justifyContent:
+        "space-between",
+    }}
+  >
+    <View>
+      <Text
+        style={{
+          color: "#00b7ff",
+
+          fontSize: 12,
+
+          fontWeight: "700",
+        }}
+      >
+        EDITING MESSAGE
+      </Text>
+
+      <Text
+        numberOfLines={1}
+        style={{
+          color: "#fff",
+
+          marginTop: 2,
+
+          fontSize: 13,
+        }}
+      >
+        {
+          editingMessage.text
+        }
+      </Text>
+    </View>
+
+    <TouchableOpacity
+      onPress={() => {
+        setEditingMessage(
+          null
+        );
+
+        setText("");
+      }}
+    >
+      <Ionicons
+        name="close"
+        size={22}
+        color="#fff"
+      />
+    </TouchableOpacity>
+  </View>
+)}
 
             <ChatInput
               text={text}

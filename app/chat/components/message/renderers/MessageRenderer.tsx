@@ -29,6 +29,8 @@ type Props = {
 
   highlightId?: string;
 
+  isDeleting?: boolean;
+
   onReply: (
     msg: any
   ) => void;
@@ -61,6 +63,8 @@ export default function MessageRenderer({
   theme,
 
   highlightId,
+
+  isDeleting,
 
   onReply,
 
@@ -151,6 +155,9 @@ isHighlighted={
   )
 }
       onReply={onReply}
+      isDeleting={
+  isDeleting
+}
       onReact={onReact}
       onLongPress={
         onLongPress

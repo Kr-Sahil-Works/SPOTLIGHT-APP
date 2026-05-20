@@ -1,11 +1,12 @@
 import React, {
-  useRef,
+  useEffect,
+  useRef
 } from "react";
 
 import {
   Animated,
   Pressable,
-  View,
+  View
 } from "react-native";
 
 
@@ -46,6 +47,8 @@ type Props = {
   isGrouped?: boolean;
 
  isHighlighted?: boolean;
+
+ isDeleting?: boolean;
 
   onReply: (
     msg: Message
@@ -116,6 +119,8 @@ function MessageItem({
 
 isHighlighted,
 
+isDeleting,
+
   onReply,
 
   onReact,
@@ -138,6 +143,48 @@ isHighlighted,
 
     onReply,
   });
+  const deleteOpacity =
+  useRef(
+    new Animated.Value(1)
+  ).current;
+
+const deleteScale =
+  useRef(
+    new Animated.Value(1)
+  ).current;
+
+useEffect(() => {
+  if (isDeleting) {
+    Animated.parallel([
+      Animated.timing(
+        deleteOpacity,
+        {
+          toValue: 0,
+
+          duration: 220,
+
+          useNativeDriver: true,
+        }
+      ),
+
+      Animated.timing(
+        deleteScale,
+        {
+          toValue: 0.92,
+
+          duration: 220,
+
+          useNativeDriver: true,
+        }
+      ),
+    ]).start();
+  } else {
+    deleteOpacity.setValue(1);
+
+    deleteScale.setValue(1);
+  }
+}, [isDeleting]);
+
 
   const handleTap =
     useDoubleTap({
@@ -191,13 +238,21 @@ isHighlighted,
   return (
     <Animated.View
       {...panResponder.panHandlers}
-      style={{
-        transform: [
-          {
-            translateX: panX,
-          },
-        ],
-      }}
+style={{
+  opacity:
+    deleteOpacity,
+
+  transform: [
+    {
+      translateX:
+        panX,
+    },
+    {
+      scale:
+        deleteScale,
+    },
+  ],
+}}
     >
       <Pressable
         ref={msgRef}
@@ -223,32 +278,40 @@ onPress={handleTap}
   );
 }}
       >
-        <View
-          style={{
-            flexDirection: "row",
+       <Animated.View
+  style={{
+    flexDirection: "row",
 
-            alignItems:
-              "flex-end",
+    alignItems:
+      "flex-end",
 
-            alignSelf: isMe
-              ? "flex-end"
-              : "flex-start",
+    alignSelf: isMe
+      ? "flex-end"
+      : "flex-start",
 
-           marginBottom:
-  isGrouped
-    ? 2
-    : 16,
+    marginBottom:
+      isGrouped
+        ? 2
+        : 16,
 
-  
-  
-  
-  marginLeft:
-  !isMe &&
-  isGrouped
-    ? 0
-    : 0,
-          }}
-        >
+    marginLeft:
+      !isMe &&
+      isGrouped
+        ? 0
+        : 0,
+
+    opacity:
+      deleteOpacity,
+
+    transform: [
+      {
+        scale:
+          deleteScale,
+      },
+    ],
+  }}
+>
+
           <Avatar
             avatar={avatar}
             isMe={isMe}
@@ -278,6 +341,9 @@ onPress={handleTap}
               replyToText={
                 item.replyToText
               }
+              onScrollTo={
+  onScrollTo
+}
               onPress={() => {
                 if (
                   item.replyTo
@@ -290,20 +356,45 @@ onPress={handleTap}
               theme={theme}
             />
 
-            <Bubble
-              text={item.text}
-              edited={
-                item.edited
-              }
-              isMe={isMe}
-              isGrouped={
-                isGrouped
-              }
-              isHighlighted={
-                isHighlighted
-              }
-              theme={theme}
-            />
+          <View
+  style={{
+    position:
+      "relative",
+  }}
+>
+  <Bubble
+    text={item.text}
+    edited={
+      item.edited
+    }
+    isMe={isMe}
+    isGrouped={
+      isGrouped
+    }
+    isHighlighted={
+      isHighlighted
+    }
+    theme={theme}
+  />
+
+  {isDeleting && (
+    <Animated.View
+      pointerEvents="none"
+      style={{
+        position:
+          "absolute",
+
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+
+        opacity:
+          deleteOpacity,
+      }}
+    />
+  )}
+</View>
 
             <Reactions
               reactions={
@@ -311,7 +402,7 @@ onPress={handleTap}
               }
             />
           </View>
-        </View>
+   </Animated.View>
       </Pressable>
     </Animated.View>
   );

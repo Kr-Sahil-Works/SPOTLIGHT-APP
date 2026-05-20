@@ -17,31 +17,18 @@ export default function DeveloperPage() {
      GLOBAL STATS
   ========================= */
 
-const currentUser =
-  useQuery(
-    api.users.index
-      .getCurrentUser
-  );
-
-const isAdmin =
-  currentUser?.email ===
-  "sahillearn44@gmail.com";
-
 const stats =
   useQuery(
     api.admin.admin
-      .getGlobalStats,
-    isAdmin
-      ? {}
-      : "skip"
-  )?? {
-  users: 0,
-  posts: 0,
-  comments: 0,
-  messages: 0,
-  likes: 0,
-  bookmarks: 0,
-};
+      .getGlobalStats
+  ) ?? {
+    users: 0,
+    posts: 0,
+    comments: 0,
+    messages: 0,
+    likes: 0,
+    bookmarks: 0,
+  };
 
   /* =========================
      CARD
@@ -329,19 +316,6 @@ const stats =
             )
           }
         />
-
-        <Card
-          icon="bug-outline"
-          title="Debug Console"
-          desc="Logs, runtime info and diagnostics"
-        />
-
-        <Card
-          icon="server-outline"
-          title="Backend Control"
-          desc="Convex database and API controls"
-        />
-
         {/* FOOTER */}
         <View
           style={{

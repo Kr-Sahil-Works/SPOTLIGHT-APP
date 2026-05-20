@@ -13,6 +13,7 @@ users: defineTable({
 ),
   bio: v.optional(v.string()),
   image: v.string(),
+imageStorageId: v.optional(v.id("_storage")),
 
   // 🔐 privacy / presence
   isPrivate: v.boolean(),
@@ -218,6 +219,26 @@ conversations: defineTable({
   lastMessageAt: v.optional(v.number()),
   lastMessageSenderId: v.optional(v.id("users")),
 
+  pinnedMessageId:
+  v.optional(
+    v.id("messages")
+  ),
+
+  pinnedBy:
+  v.optional(
+    v.id("users")
+  ),
+
+pinnedMessageText:
+  v.optional(
+    v.string()
+  ),
+
+pinnedAt:
+  v.optional(
+    v.number()
+  ),
+
   /* 🎨 UI */
   themeIndex: v.optional(v.number()),
 
@@ -281,6 +302,7 @@ conversations: defineTable({
 
     clientId: v.optional(v.string()),
     seen: v.optional(v.boolean()),
+    seenAt: v.optional(v.number()),
 
     type: v.optional(
       v.union(
@@ -312,6 +334,13 @@ conversations: defineTable({
   )
 ),
 
+pinned: v.optional(
+  v.boolean()
+),
+
+pinnedAt: v.optional(
+  v.number()
+),
 
     reactions: v.optional(
       v.array(

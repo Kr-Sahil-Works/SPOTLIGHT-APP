@@ -5,8 +5,10 @@ import { getAuthenticatedUser } from "./users.core";
 export const updateProfile = mutation({
   args: {
     fullname: v.optional(v.string()),
-    bio: v.optional(v.string()),
-    username: v.optional(v.string()),
+bio: v.optional(v.string()),
+username: v.optional(v.string()),
+image: v.optional(v.string()),
+imageStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     const user = await getAuthenticatedUser(ctx);
@@ -45,6 +47,16 @@ export const updateProfile = mutation({
     if (args.bio !== undefined) {
       patch.bio = args.bio.trim();
     }
+if (args.image !== undefined) {
+  patch.image = args.image;
+}
+
+if (
+  args.imageStorageId !== undefined
+) {
+  patch.imageStorageId =
+    args.imageStorageId;
+}
 
     if (Object.keys(patch).length === 0) return;
 

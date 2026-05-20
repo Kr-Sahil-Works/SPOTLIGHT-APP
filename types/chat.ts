@@ -22,6 +22,14 @@ export type Message = {
   
   status?: "sent" | "delivered" | "seen";
 
+  seen?: boolean;
+
+seenAt?: number;
+
+pinned?: boolean;
+
+pinnedAt?: number;
+
   reactions?: Reaction[];
 
   edited?: boolean;
@@ -35,6 +43,8 @@ systemCount?: number;
 
 meta?: any;
   optimistic?: boolean;
+
+  deleting?: boolean;
 
   // layout (measured)
   x?: number;

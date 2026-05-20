@@ -21,6 +21,12 @@ type Props = {
 
   onEdit?: (msg: any) => void;
 
+  onPin?: (
+  msg: any
+) => void;
+
+pinnedMessageId?: string;
+
   toggleReaction: (data: {
     messageId: Id<"messages">;
     reaction: string;
@@ -37,6 +43,8 @@ export default function OverlayRenderer({
   onCopy,
 
   onEdit,
+  onPin,
+pinnedMessageId,
 
   toggleReaction,
 }: Props) {
@@ -54,6 +62,11 @@ export default function OverlayRenderer({
         onDelete={onDelete}
         onCopy={onCopy}
         onEdit={onEdit}
+        onPin={onPin}
+
+pinnedMessageId={
+  pinnedMessageId
+}
       />
 
       <ReactionPicker

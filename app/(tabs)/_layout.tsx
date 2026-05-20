@@ -1,7 +1,6 @@
 import { COLORS } from "@/constants/theme";
 import {
-  useAuth,
-  useUser,
+  useAuth
 } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
@@ -11,7 +10,6 @@ import { Redirect } from "expo-router";
 import React, { memo, useRef, useState } from "react";
 import { Animated, Dimensions, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 
 const Tab = createMaterialTopTabNavigator();
 const screenWidth = Dimensions.get("window").width;
@@ -51,7 +49,10 @@ chats: [
 
 function TabsLayout() {
   const { isLoaded, isSignedIn } = useAuth();
-  const { user } = useUser();
+
+  const currentUser = useQuery(
+  api.users.index.getCurrentUser
+);
 
   const insets = useSafeAreaInsets();
 
@@ -157,8 +158,25 @@ const TabIcon = memo(function TabIcon({
       }),
     ]).start();
   };
-
 if (name === "profile") {
+  if (!profileImage) {
+    return (
+      <Ionicons
+        name={
+          focused
+            ? "person"
+            : "person-outline"
+        }
+        size={24}
+        color={
+          focused
+            ? COLORS.primary
+            : color
+        }
+      />
+    );
+  }
+
   return (
     <Animated.View
       style={{
@@ -174,19 +192,15 @@ if (name === "profile") {
           uri: profileImage,
         }}
         cachePolicy="memory-disk"
+        transition={120}
         style={{
           width: 28,
-
           height: 28,
-
           borderRadius: 999,
-
           borderWidth: focused
             ? 2
             : 0,
-
-          borderColor:
-           "#ffffff",
+          borderColor: "#ffffff",
         }}
       />
     </Animated.View>
@@ -254,11 +268,18 @@ if (name === "profile") {
   );
 });
 
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
 import { Platform } from "react-native";
 
 function CustomTabBar({ state, navigation }: any) {
-  const { user } = useUser();
+
+
+  const currentUser = useQuery(
+  api.users.index.getCurrentUser
+);
+
   const insets = useSafeAreaInsets();
 
   return (
@@ -307,7 +328,9 @@ function CustomTabBar({ state, navigation }: any) {
   size={24}
   color="rgba(255,255,255,0.5)"
   focused={isFocused}
-  profileImage={user?.imageUrl}
+  profileImage={
+  currentUser?.image
+}
 />
             </TouchableOpacity>
           );

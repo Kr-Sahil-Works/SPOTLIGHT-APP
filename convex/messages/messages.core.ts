@@ -213,6 +213,7 @@ api.conversations.index.createConversation,
   msg._id,
   {
     seen: true,
+    seenAt: Date.now(),
     status: "seen",
   }
 );

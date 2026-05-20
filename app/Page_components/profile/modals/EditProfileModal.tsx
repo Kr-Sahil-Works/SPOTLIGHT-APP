@@ -1,14 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import {
+  ActivityIndicator,
   Image,
   Modal,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 export default function EditProfileModal({
@@ -16,35 +17,62 @@ export default function EditProfileModal({
   setVisible,
   profile,
   setProfile,
+  originalProfile,
   onSave,
+  onChangePhoto,
+saving,
+setHasLocalChanges,
 }: any) {
+  const scrollRef = React.useRef<any>(null);
   const [activeTab, setActiveTab] =
     useState<"info" | "extra">("info");
 
+  const hasChanges = useMemo(() => {
+    return (
+      profile?.fullname !==
+        originalProfile?.fullname ||
+      profile?.username !==
+        originalProfile?.username ||
+      profile?.bio !== originalProfile?.bio ||
+      profile?.image !== originalProfile?.image
+    );
+  }, [profile, originalProfile]);
+
   return (
-    <Modal visible={visible} animationType="slide">
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#050807",
-        }}
-      >
-        <ScrollView
-          contentContainerStyle={{
-            paddingTop: 58,
-            paddingBottom: 40,
-            paddingHorizontal: 16,
-          }}
-          showsVerticalScrollIndicator={false}
-        >
+<Modal
+  hardwareAccelerated
+  statusBarTranslucent
+      visible={visible}
+      animationType="slide"
+    >
+<View
+  style={{
+    flex: 1,
+    backgroundColor: "#000",
+  }}
+>
+  <ScrollView
+  ref={scrollRef}
+  showsVerticalScrollIndicator={false}
+  keyboardShouldPersistTaps="handled"
+  keyboardDismissMode="interactive"
+  nestedScrollEnabled
+  contentContainerStyle={{
+    flexGrow: 1,
+    paddingTop: 58,
+    paddingBottom: 140,
+    paddingHorizontal: 16,
+  }}
+>
           {/* CARD */}
           <View
             style={{
-              backgroundColor: "#0b1210",
-              borderRadius: 28,
+              backgroundColor: "#090909",
+              borderRadius: 30,
               padding: 18,
               borderWidth: 1,
-              borderColor: "rgba(34,197,94,0.28)",
+              borderColor:
+                "rgba(34,197,94,0.14)",
             }}
           >
             {/* HEADER */}
@@ -52,24 +80,27 @@ export default function EditProfileModal({
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginBottom: 24,
+                marginBottom: 28,
               }}
             >
               <TouchableOpacity
-                onPress={() => setVisible(false)}
+                onPress={() => {
+  setHasLocalChanges?.(false);
+  setVisible(false);
+}}
                 style={{
                   width: 42,
                   height: 42,
                   borderRadius: 999,
                   justifyContent: "center",
                   alignItems: "center",
-                  backgroundColor: "#111917",
+                  backgroundColor: "#111",
                 }}
               >
                 <Ionicons
                   name="arrow-back"
                   size={22}
-                  color="#d2ffe9"
+                  color="#fff"
                 />
               </TouchableOpacity>
 
@@ -80,7 +111,7 @@ export default function EditProfileModal({
                   marginRight: 42,
                   fontSize: 22,
                   fontWeight: "700",
-                  color: "#ecfdf5",
+                  color: "#fff",
                 }}
               >
                 Edit Profile
@@ -91,51 +122,38 @@ export default function EditProfileModal({
             <View
               style={{
                 alignItems: "center",
-                marginBottom: 24,
+                marginBottom: 28,
               }}
             >
-              {/* OUTER RING */}
               <View
                 style={{
-                  width: 132,
-                  height: 132,
+                  width: 128,
+                  height: 128,
                   borderRadius: 999,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  backgroundColor: "rgba(34,197,94,0.14)",
-                  shadowColor: "#fff",
-                  shadowOpacity: 0.18,
-                  shadowRadius: 12,
+                  padding: 4,
+                  backgroundColor:
+                    "rgba(34,197,94,0.18)",
                 }}
               >
-                {/* INNER RING */}
-                <View
-                  style={{
-                    width: 120,
-                    height: 120,
-                    borderRadius: 999,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "#0d1513",
-                    borderWidth: 2,
-                    borderColor: "rgba(34,197,94,0.22)",
+                <Image
+                  source={{
+                    uri:
+  profile?.image ||
+  "https://ui-avatars.com/api/?background=111111&color=ffffff&name=U",
                   }}
-                >
-                  <Image
-                    source={{
-                      uri: profile.image,
-                    }}
-                    style={{
-                      width: 108,
-                      height: 108,
-                      borderRadius: 999,
-                    }}
-                    resizeMode="cover"
-                  />
-                </View>
+                  resizeMode="cover"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 999,
+                    backgroundColor: "#111",
+                  }}
+                />
               </View>
 
               <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={onChangePhoto}
                 style={{
                   marginTop: 14,
                 }}
@@ -147,38 +165,40 @@ export default function EditProfileModal({
                     fontSize: 15,
                   }}
                 >
-                  Change profile picture
+                  Change profile photo
                 </Text>
               </TouchableOpacity>
             </View>
 
-            {/* SWITCH BUTTONS */}
+            {/* CONNECTED TABS */}
             <View
               style={{
                 flexDirection: "row",
-                marginBottom: 24,
-                gap: 10,
+                backgroundColor: "#0f0f0f",
+                borderRadius: 18,
+                padding: 4,
+                marginBottom: 26,
               }}
             >
               <TouchableOpacity
-                onPress={() => setActiveTab("info")}
+                activeOpacity={0.9}
+                onPress={() =>
+                  setActiveTab("info")
+                }
                 style={{
                   flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 14,
+                  alignItems: "center",
                   backgroundColor:
                     activeTab === "info"
                       ? "#166534"
-                      : "#111917",
-                  borderRadius: 18,
-                  paddingVertical: 14,
-                  alignItems: "center",
+                      : "transparent",
                 }}
               >
                 <Text
                   style={{
-                    color:
-                      activeTab === "info"
-                        ? "#fff"
-                        : "#0f172a",
+                    color: "#fff",
                     fontWeight: "700",
                   }}
                 >
@@ -187,40 +207,43 @@ export default function EditProfileModal({
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => setActiveTab("extra")}
+                activeOpacity={1}
+                disabled
                 style={{
                   flex: 1,
+                  paddingVertical: 14,
+                  borderRadius: 14,
+                  alignItems: "center",
                   backgroundColor:
                     activeTab === "extra"
-                      ? "#0f766e"
-                      : "#c7d0d7",
-                  borderRadius: 18,
-                  paddingVertical: 14,
-                  alignItems: "center",
+                      ? "#166534"
+                      : "transparent",
+                  opacity: 0.45,
                 }}
               >
                 <Text
                   style={{
-                    color:
-                      activeTab === "extra"
-                        ? "#fff"
-                        : "#0f172a",
+                    color: "#fff",
                     fontWeight: "700",
                   }}
                 >
-                  Extra Settings
+                  Extra
                 </Text>
               </TouchableOpacity>
             </View>
 
-            {/* INFO FORM */}
+            {/* INFO */}
             {activeTab === "info" && (
               <>
                 {/* USERNAME */}
-                <View style={{ marginBottom: 18 }}>
+                <View
+                  style={{
+                    marginBottom: 18,
+                  }}
+                >
                   <Text
                     style={{
-                      color: "#ecfdf5",
+                      color: "#fff",
                       marginBottom: 8,
                       fontWeight: "600",
                     }}
@@ -228,34 +251,41 @@ export default function EditProfileModal({
                     Username
                   </Text>
 
-                  <TextInput
-                    value={profile.username}
-                    onChangeText={(t) =>
-                      setProfile((p: any) => ({
-                        ...p,
-                        username: t,
-                      }))
-                    }
+           <TextInput
+  value={profile.username}
+  onChangeText={(t) => {
+    setHasLocalChanges?.(true);
+
+    setProfile((p: any) => ({
+      ...p,
+      username: t,
+    }));
+  }}
                     placeholder="Username"
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor="#666"
                     style={{
-                      backgroundColor: "#101715",
-                      borderRadius: 16,
+                      backgroundColor: "#0f0f0f",
+                      borderRadius: 18,
                       borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.06)",
+                      borderColor:
+                        "rgba(255,255,255,0.05)",
                       paddingHorizontal: 16,
                       paddingVertical: 15,
-                      color: "#ecfdf5",
+                      color: "#fff",
                       fontSize: 15,
                     }}
                   />
                 </View>
 
                 {/* FULLNAME */}
-                <View style={{ marginBottom: 18 }}>
+                <View
+                  style={{
+                    marginBottom: 18,
+                  }}
+                >
                   <Text
                     style={{
-                      color: "#ecfdf5",
+                      color: "#fff",
                       marginBottom: 8,
                       fontWeight: "600",
                     }}
@@ -265,32 +295,35 @@ export default function EditProfileModal({
 
                   <TextInput
                     value={profile.fullname}
-                    onChangeText={(t) =>
+                    onChangeText={(t) => {
+                          setHasLocalChanges?.(true);
+                    
                       setProfile((p: any) => ({
                         ...p,
                         fullname: t,
                       }))
-                    }
+                    }}
                     placeholder="Full name"
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor="#666"
                     style={{
-                      backgroundColor: "#101715",
-                      borderRadius: 16,
+                      backgroundColor: "#0f0f0f",
+                      borderRadius: 18,
                       borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.06)",
+                      borderColor:
+                        "rgba(255,255,255,0.05)",
                       paddingHorizontal: 16,
                       paddingVertical: 15,
-                      color: "#ecfdf5",
+                      color: "#fff",
                       fontSize: 15,
                     }}
                   />
                 </View>
 
                 {/* BIO */}
-                <View style={{ marginBottom: 10 }}>
+                <View>
                   <Text
                     style={{
-                      color: "#ecfdf5",
+                      color: "#fff",
                       marginBottom: 8,
                       fontWeight: "600",
                     }}
@@ -298,26 +331,32 @@ export default function EditProfileModal({
                     Bio
                   </Text>
 
-                  <TextInput
-                    value={profile.bio}
-                    onChangeText={(t) =>
+               <TextInput
+  value={profile.bio}
+  scrollEnabled={false}
+  blurOnSubmit={false}
+  returnKeyType="done"
+                    multiline
+                    onChangeText={(t) => {
+                          setHasLocalChanges?.(true);
                       setProfile((p: any) => ({
                         ...p,
                         bio: t,
                       }))
-                    }
+                    }}
                     placeholder="Write something..."
-                    placeholderTextColor="#64748b"
-                    multiline
+                    placeholderTextColor="#666"
                     style={{
-                      backgroundColor: "#101715",
-                      borderRadius: 16,
+                      backgroundColor: "#0f0f0f",
+                      borderRadius: 18,
                       borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.06)",
+                      borderColor:
+                        "rgba(255,255,255,0.05)",
                       paddingHorizontal: 16,
                       paddingTop: 16,
-                      height: 120,
-                      color: "#ecfdf5",
+                      minHeight: 120,
+maxHeight: 160,
+                      color: "#fff",
                       textAlignVertical: "top",
                       fontSize: 15,
                     }}
@@ -326,10 +365,11 @@ export default function EditProfileModal({
               </>
             )}
 
-            {/* EXTRA SETTINGS */}
+            {/* DISABLED EXTRA SETTINGS */}
             {activeTab === "extra" && (
               <View
                 style={{
+                  opacity: 0.45,
                   gap: 14,
                 }}
               >
@@ -337,23 +377,24 @@ export default function EditProfileModal({
                   "Private account",
                   "Show activity",
                   "Allow messages",
-                  "Show online status",
+                  "Online status",
                 ].map((item) => (
-                  <TouchableOpacity
+                  <View
                     key={item}
                     style={{
-                      backgroundColor: "#101715",
+                      backgroundColor: "#111",
                       borderRadius: 18,
                       paddingVertical: 16,
                       paddingHorizontal: 16,
                       flexDirection: "row",
-                      justifyContent: "space-between",
+                      justifyContent:
+                        "space-between",
                       alignItems: "center",
                     }}
                   >
                     <Text
                       style={{
-                        color: "#ecfdf5",
+                        color: "#fff",
                         fontWeight: "600",
                       }}
                     >
@@ -361,43 +402,55 @@ export default function EditProfileModal({
                     </Text>
 
                     <Ionicons
-                      name="chevron-forward"
+                      name="lock-closed"
                       size={18}
-                      color="#d2ffe9"
+                      color="#777"
                     />
-                  </TouchableOpacity>
+                  </View>
                 ))}
               </View>
             )}
 
-            {/* SAVE BUTTON */}
+            {/* SAVE */}
             <TouchableOpacity
-              onPress={onSave}
+              disabled={!hasChanges || saving}
               activeOpacity={0.9}
+              onPress={onSave}
               style={{
-                marginTop: 28,
-                backgroundColor: "#15803d",
-                borderRadius: 18,
-                paddingVertical: 16,
+                marginTop: 30,
+                backgroundColor:
+                  !hasChanges || saving
+                    ? "#1a1a1a"
+                    : "#166534",
+                borderRadius: 20,
+                paddingVertical: 17,
                 alignItems: "center",
-                shadowColor: "#065f5b",
-                shadowOpacity: 0.35,
-                shadowRadius: 10,
+                justifyContent: "center",
+                opacity:
+                  !hasChanges || saving
+                    ? 0.6
+                    : 1,
               }}
             >
-              <Text
-                style={{
-                  color: "#fff",
-                  fontWeight: "700",
-                  fontSize: 16,
-                }}
-              >
-                Save Changes
-              </Text>
+              {saving ? (
+                <ActivityIndicator
+                  color="#fff"
+                />
+              ) : (
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "700",
+                    fontSize: 16,
+                  }}
+                >
+                  Save Changes
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
-      </View>
+</View>
     </Modal>
   );
 }

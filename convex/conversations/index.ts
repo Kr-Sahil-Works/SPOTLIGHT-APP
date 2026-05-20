@@ -1,10 +1,10 @@
 export {
-    clearChat, createConversation, deleteChat, toggleHidden, toggleMute,
+    clearChat, createConversation, deleteChat, setPinnedMessage, toggleHidden, toggleMute,
     togglePin
 } from "./conversations.mutations";
 
 export {
-    getAuthenticatedUser
+    getAuthenticatedUser, getConversation
 } from "./conversations.queries";
 
 export {

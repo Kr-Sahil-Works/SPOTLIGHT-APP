@@ -8,47 +8,21 @@ import {
 /* =========================
    👥 ALL USERS
 ========================= */
+
 export const getAllUsers = query({
   handler: async (ctx) => {
-    const identity =
-  await ctx.auth.getUserIdentity();
-
-if (!identity) {
-  throw new Error(
-    "Unauthorized"
-  );
-}
-
-const admin =
-  await ctx.db
-    .query("users")
-    .withIndex(
-      "by_clerk_id",
-      (q) =>
-        q.eq(
-          "clerkId",
-          identity.subject
-        )
-    )
-    .first();
-
-if (
-  !admin ||
-  admin.email !==
-  process.env.EXPO_PUBLIC_ADMIN_EMAIL
-) {
-  throw new Error(
-    "Admin access only"
-  );
-}
-    const users = await ctx.db
-      .query("users")
-      .collect();
+    const users =
+      await ctx.db
+        .query("users")
+        .collect();
 
     return users.sort((a, b) =>
-      a.username.localeCompare(
-        b.username
-      )
+      (a.username || "")
+        .toLowerCase()
+        .localeCompare(
+          (b.username || "")
+            .toLowerCase()
+        )
     );
   },
 });
@@ -56,71 +30,93 @@ if (
 /* =========================
    📊 GLOBAL STATS
 ========================= */
+
 export const getGlobalStats = query({
   handler: async (ctx) => {
-    const identity =
-  await ctx.auth.getUserIdentity();
+    const [
+      users,
+      posts,
+      comments,
+      messages,
+      likes,
+      bookmarks,
+      follows,
+      notifications,
+      collections,
+      conversations,
+      followRequests,
+    ] = await Promise.all([
+      ctx.db.query("users").collect(),
 
-if (!identity) {
-  throw new Error(
-    "Unauthorized"
-  );
-}
+      ctx.db.query("posts").collect(),
 
-const admin =
-  await ctx.db
-    .query("users")
-    .withIndex(
-      "by_clerk_id",
-      (q) =>
-        q.eq(
-          "clerkId",
-          identity.subject
+      ctx.db
+        .query("comments")
+        .collect(),
+
+      ctx.db
+        .query("messages")
+        .collect(),
+
+      ctx.db.query("likes").collect(),
+
+      ctx.db
+        .query("bookmarks")
+        .collect(),
+
+      ctx.db
+        .query("follows")
+        .collect(),
+
+      ctx.db
+        .query("notifications")
+        .collect(),
+
+      ctx.db
+        .query("collections")
+        .collect(),
+
+      ctx.db
+        .query("conversations")
+        .collect(),
+
+      ctx.db
+        .query(
+          "followRequests"
         )
-    )
-    .first();
-
-if (
-  !admin ||
-  admin.email !==
-    "YOUR_REAL_EMAIL@gmail.com"
-) {
-  throw new Error(
-    "Admin access only"
-  );
-}
-    const users = await ctx.db
-      .query("users")
-      .collect();
-
-    const posts = await ctx.db
-      .query("posts")
-      .collect();
-
-    const comments = await ctx.db
-      .query("comments")
-      .collect();
-
-    const messages = await ctx.db
-      .query("messages")
-      .collect();
-
-    const likes = await ctx.db
-      .query("likes")
-      .collect();
-
-    const bookmarks = await ctx.db
-      .query("bookmarks")
-      .collect();
+        .collect(),
+    ]);
 
     return {
       users: users.length,
+
       posts: posts.length,
-      comments: comments.length,
-      messages: messages.length,
+
+      comments:
+        comments.length,
+
+      messages:
+        messages.length,
+
       likes: likes.length,
+
       bookmarks:
         bookmarks.length,
+
+      follows:
+        follows.length,
+
+      notifications:
+        notifications.length,
+
+      collections:
+        collections.length,
+
+      conversations:
+        conversations.length,
+
+      followRequests:
+        followRequests.length,
     };
   },
 });
@@ -128,6 +124,7 @@ if (
 /* =========================
    ❌ DELETE USER
 ========================= */
+
 export const deleteUserByAdmin =
   mutation({
     args: {
@@ -138,37 +135,9 @@ export const deleteUserByAdmin =
       ctx,
       args
     ) => {
-      const userId = args.userId;
-const identity =
-  await ctx.auth.getUserIdentity();
+      const userId =
+        args.userId;
 
-if (!identity) {
-  throw new Error(
-    "Unauthorized"
-  );
-}
-
-const admin =
-  await ctx.db
-    .query("users")
-    .withIndex(
-      "by_clerk_id",
-      (q) =>
-        q.eq(
-          "clerkId",
-          identity.subject
-        )
-    )
-    .first();
-
-if (
-  admin?.email !==
-  "YOUR_ADMIN_EMAIL@gmail.com"
-) {
-  throw new Error(
-    "Not admin"
-  );
-}
       /* =========================
          POSTS
       ========================= */
@@ -187,7 +156,7 @@ if (
           .collect();
 
       for (const p of posts) {
-        /* COMMENTS ON POST */
+        /* COMMENTS */
         const comments =
           await ctx.db
             .query("comments")
@@ -207,7 +176,7 @@ if (
           );
         }
 
-        /* LIKES ON POST */
+        /* LIKES */
         const likes =
           await ctx.db
             .query("likes")
@@ -246,9 +215,13 @@ if (
             b._id
           );
         }
-        await ctx.storage.delete(
-  p.storageId
-);
+
+        /* STORAGE */
+        try {
+          await ctx.storage.delete(
+            p.storageId
+          );
+        } catch {}
 
         /* DELETE POST */
         await ctx.db.delete(
@@ -291,7 +264,7 @@ if (
       }
 
       /* =========================
-         BOOKMARKS
+         USER BOOKMARKS
       ========================= */
 
       const bookmarks =
@@ -324,14 +297,44 @@ if (
 
       for (const m of messages) {
         if (
-          m.senderId === userId ||
-          m.receiverId === userId
+          m.senderId ===
+            userId ||
+          m.receiverId ===
+            userId
         ) {
           await ctx.db.delete(
             m._id
           );
         }
       }
+
+      /* =========================
+   EMPTY CONVERSATIONS
+========================= */
+
+const conversations =
+  await ctx.db
+    .query("conversations")
+    .collect();
+
+for (const c of conversations) {
+  const msgs =
+    await ctx.db
+      .query("messages")
+      .withIndex(
+        "by_conversation",
+        (q) =>
+          q.eq(
+            "conversationId",
+            c._id
+          )
+      )
+      .take(1);
+
+  if (msgs.length === 0) {
+    await ctx.db.delete(c._id);
+  }
+}
 
       /* =========================
          FOLLOWS
@@ -366,7 +369,8 @@ if (
 
       for (const r of requests) {
         if (
-          r.senderId === userId ||
+          r.senderId ===
+            userId ||
           r.receiverId ===
             userId
         ) {
@@ -421,10 +425,62 @@ if (
       }
 
       /* =========================
-         FINAL USER DELETE
+         PROFILE IMAGE
       ========================= */
 
-      await ctx.db.delete(userId);
+      const user =
+        await ctx.db.get(
+          userId
+        );
+
+      if (
+        user?.imageStorageId
+      ) {
+        try {
+          await ctx.storage.delete(
+            user.imageStorageId
+          );
+        } catch {}
+      }
+
+      /* =========================
+   NOTIFICATIONS
+========================= */
+
+const notifications =
+  await ctx.db
+    .query("notifications")
+    .collect();
+
+for (const n of notifications) {
+if (
+  n.receiverId === userId ||
+  n.senderId === userId
+) {
+    await ctx.db.delete(n._id);
+  }
+}
+/* =========================
+   TYPING
+========================= */
+
+const typing =
+  await ctx.db
+    .query("typing")
+    .collect();
+
+for (const t of typing) {
+  if (t.userId === userId) {
+    await ctx.db.delete(t._id);
+  }
+}
+      /* =========================
+         DELETE USER
+      ========================= */
+
+      await ctx.db.delete(
+        userId
+      );
 
       return true;
     },

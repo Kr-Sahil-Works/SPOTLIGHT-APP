@@ -1,4 +1,5 @@
-import { MutationCtx, QueryCtx } from "../_generated/server";
+import { v } from "convex/values";
+import { MutationCtx, query, QueryCtx } from "../_generated/server";
 
 type Ctx = QueryCtx | MutationCtx;
 
@@ -20,3 +21,22 @@ export async function getAuthenticatedUser(ctx: Ctx) {
 
   return user;
 }
+
+export const getConversation =
+  query({
+    args: {
+      conversationId:
+        v.id(
+          "conversations"
+        ),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      return await ctx.db.get(
+        args.conversationId
+      );
+    },
+  });
