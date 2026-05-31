@@ -63,41 +63,54 @@ export function ChatOverlayProvider({
   ] = useState<string | null>(
     null
   );
+  const setOverlayState =
+  useCallback(
+    (
+      type: OverlayType,
+      message: Message | null
+    ) => {
+      setOverlay({
+        type,
+        message,
+      });
+    },
+    []
+  );
 
   const openMenu = useCallback(
     (msg: Message) => {
-      setOverlay({
-        type: "menu",
-        message: msg,
-      });
+     setOverlayState(
+  "menu",
+  msg
+);
     },
     []
   );
 
   const openReaction =
     useCallback((msg: Message) => {
-      setOverlay({
-        type: "reaction",
-        message: msg,
-      });
+      setOverlayState(
+       "reaction",
+        msg,
+      );
     }, []);
 
   const openDelete = useCallback(
     (msg: Message) => {
-      setOverlay({
-        type: "delete",
-        message: msg,
-      });
+      setOverlayState(
+       "delete",
+     msg,
+      );
     },
     []
   );
 
 const closeOverlay =
   useCallback(() => {
-    setOverlay({
-      type: null,
-      message: null,
-    });
+    setOverlayState(
+      null,
+      null,
+    );
 
     setHighlightedMessageId(
       null

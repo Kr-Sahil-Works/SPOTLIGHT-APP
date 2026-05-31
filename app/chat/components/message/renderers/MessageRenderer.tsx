@@ -1,4 +1,7 @@
-import React from "react";
+import React, {
+  memo,
+  useMemo,
+} from "react";
 
 import MessageItem from "../MessageItem/MessageItem";
 
@@ -51,7 +54,7 @@ type Props = {
   ) => void;
 };
 
-export default function MessageRenderer({
+function MessageRenderer({
   item,
 
   index,
@@ -74,28 +77,41 @@ export default function MessageRenderer({
 
   onScrollTo,
 }: Props) {
-const previous =
-  messages[index - 1];
+const previous = useMemo(
+  () => messages[index - 1],
+  [messages, index]
+);
 
-const next =
-  messages[index + 1];
+const next = useMemo(
+  () => messages[index + 1],
+  [messages, index]
+);
 
-    const showDate =
-  shouldShowDate(
-    item,
-    previous
-  );
+const showDate = useMemo(
+  () =>
+    shouldShowDate(
+      item,
+      previous
+    ),
+  [item, previous]
+);
 
-const dateLabel =
-  formatMessageDate(
-    item.createdAt
-  );
+const dateLabel = useMemo(
+  () =>
+    formatMessageDate(
+      item.createdAt
+    ),
+  [item.createdAt]
+);
 
-  const grouped =
+const grouped = useMemo(
+  () =>
     isGroupedMessage(
       item,
       next
-    );
+    ),
+  [item, next]
+);
 
  return (
   <>
@@ -169,3 +185,5 @@ isHighlighted={
   </>
 );
 }
+
+export default memo(MessageRenderer);

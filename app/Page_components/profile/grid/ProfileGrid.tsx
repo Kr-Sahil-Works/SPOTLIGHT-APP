@@ -1,10 +1,12 @@
 import { styles } from "@/styles/profile.styles";
 import React from "react";
 import {
-  FlatList, Image, TouchableOpacity,
+  FlatList, TouchableOpacity,
   View
 } from "react-native";
 import NoPosts from "./NoPosts";
+
+import { AppImage } from "@/shared/ui/AppImage";
 
 export default function ProfileGrid({
   posts,
@@ -24,14 +26,15 @@ export default function ProfileGrid({
             style={styles.gridItem}
             onPress={() => setSelectedPost(item)}
           >
-       <Image
+<AppImage
+  uri={item?.imageUrl}
   source={
-    item?.imageUrl && item.imageUrl.trim() !== ""
-      ? { uri: item.imageUrl }
-      : require("@/assets/images/iconbg.png")
+    item?.imageUrl?.trim()
+      ? undefined
+      : require("@/assets/images/icons/iconbg.png")
   }
   style={styles.gridImage}
-  resizeMode="cover"
+  contentFit="cover"
 />
           </TouchableOpacity>
         )}

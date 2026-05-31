@@ -237,6 +237,7 @@ useEffect(() => {
 
   return (
     <Animated.View
+    renderToHardwareTextureAndroid={false}
       {...panResponder.panHandlers}
 style={{
   opacity:

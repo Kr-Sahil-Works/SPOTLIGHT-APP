@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-import IconBg from "@/assets/images/iconbg.png";
+import IconBg from "@/assets/images/icons/iconbg.png";
 
 export default function ProfileInfo({
   user,

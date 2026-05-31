@@ -91,7 +91,7 @@ export default function TypingDots({
   source={
     avatar
       ? { uri: avatar }
-      : require("@/assets/images/iconbg.png")
+      : require("@/assets/images/icons/iconbg.png")
   }
   style={{
     width: 28,

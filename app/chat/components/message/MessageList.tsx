@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useEffect
 } from "react";
 
@@ -228,6 +229,55 @@ const deleteMessage =
       .deleteMessage
   );
 
+  const renderItem = useCallback(
+  ({ item, index }: any) => (
+    <MessageRenderer
+      item={item}
+      index={index}
+      isDeleting={deletingIds.includes(
+        item._id
+      )}
+      messages={messages}
+      currentUserId={
+        currentUserId
+      }
+      theme={theme}
+      highlightId={
+        scrollHighlightId ||
+        highlightedMessageId ||
+        undefined
+      }
+      onReply={onReply}
+      onReact={async (msg) => {
+        await toggleReaction({
+          messageId: msg._id,
+          reaction: "❤️",
+        });
+      }}
+      onLongPress={(msg) => {
+        highlightMessage(msg._id);
+
+        openReaction(msg);
+      }}
+      onScrollTo={
+        scrollToMessage
+      }
+    />
+  ),
+  [
+    deletingIds,
+    messages,
+    currentUserId,
+    theme,
+    scrollHighlightId,
+    highlightedMessageId,
+    onReply,
+    toggleReaction,
+    highlightMessage,
+    openReaction,
+  ]
+);
+
   return (
     <View
       style={{
@@ -278,6 +328,7 @@ const deleteMessage =
       keyboardShouldPersistTaps="always"
         ref={flatListRef}
         data={messages}
+        renderItem={renderItem}
         drawDistance={
           300
         }
@@ -307,55 +358,6 @@ const deleteMessage =
             loadOlder?.();
           }
         }}
-        renderItem={({
-          item,
-          index,
-        }) => (
-          <MessageRenderer
-            item={item}
-            index={index}
-            isDeleting={deletingIds.includes(
-  item._id
-)}
-            messages={
-              messages
-            }
-            currentUserId={
-              currentUserId
-            }
-            theme={theme}
-highlightId={
-  scrollHighlightId ||
-  highlightedMessageId ||
-  undefined
-}
-            onReply={
-              onReply
-            }
-   onReact={
-  async (msg) => {
-    await toggleReaction({
-      messageId:
-        msg._id,
-
-      reaction: "❤️",
-    });
-  }
-}
-          onLongPress={(
-  msg
-) => {
-  highlightMessage(
-    msg._id
-  );
-
-  openReaction(msg);
-}}
-            onScrollTo={
-              scrollToMessage
-            }
-          />
-        )}
       />
 
       {showScrollBtn && (

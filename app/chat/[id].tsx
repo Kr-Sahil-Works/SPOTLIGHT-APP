@@ -7,8 +7,12 @@ import {
   Platform,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
+
+import {
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import {
   CHAT_THEMES,
@@ -74,6 +78,9 @@ import { Ionicons } from "@expo/vector-icons";
 import useTheme from "./hooks/useTheme";
 
 export default function ChatScreen() {
+  const insets =
+  useSafeAreaInsets();
+
   const params =
     useLocalSearchParams<{
       id: string;
@@ -416,20 +423,22 @@ if (
           }}
         />
 
-        <KeyboardAvoidingView
-          style={{
-            flex: 1,
-          }}
-          behavior={
-            Platform.OS ===
-            "ios"
-              ? "padding"
-              : "height"
-          }
-          keyboardVerticalOffset={
-            40
-          }
-        >
+<KeyboardAvoidingView
+  style={{
+    flex: 1,
+  }}
+  behavior={
+    Platform.OS === "ios"
+      ? "padding"
+      : "padding"
+  }
+  keyboardVerticalOffset={
+    Platform.OS === "android"
+      ? 60
+      : 0
+  }
+>
+
           <View
             style={{
               flex: 1,
@@ -845,17 +854,21 @@ onReply={
             />
 
           </View>
-        </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
       </>
     );
 
   return (
     <ChatOverlayProvider>
       <View
-        style={{
-          flex: 1,
-        }}
-      >
+  style={{
+    flex: 1,
+paddingBottom:
+  Platform.OS === "android"
+    ? 40
+    : 0,
+  }}
+>
         {theme.wallpaper ? (
           <ImageBackground
             source={

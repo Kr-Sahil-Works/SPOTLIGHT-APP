@@ -23,15 +23,16 @@ export default function useMessageGestures<
     new Animated.Value(0)
   ).current;
 
-  const resetPosition = () => {
+const resetPosition = useMemo(
+  () => () => {
     Animated.spring(panX, {
       toValue: 0,
-
       useNativeDriver: true,
-
       friction: 7,
     }).start();
-  };
+  },
+  [panX]
+);
 
   const panResponder = useMemo(
     () =>
@@ -39,7 +40,7 @@ export default function useMessageGestures<
         onMoveShouldSetPanResponder:
           (_, g) => {
             return (
-              Math.abs(g.dx) > 12 &&
+              Math.abs(g.dx) > 18 &&
               Math.abs(g.dx) >
                 Math.abs(g.dy)
             );
@@ -50,9 +51,10 @@ export default function useMessageGestures<
           g
         ) => {
           if (
-            g.dx <= 0 ||
-            Math.abs(g.dy) >
-              Math.abs(g.dx)
+        g.dx <= 0 ||
+Math.abs(g.dy) >
+  Math.abs(g.dx) ||
+Math.abs(g.vy) > 0.55
           ) {
             return;
           }

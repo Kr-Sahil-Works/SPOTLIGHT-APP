@@ -1,4 +1,7 @@
-import React from "react";
+import React, {
+  memo,
+  useCallback,
+} from "react";
 
 import {
   Pressable,
@@ -27,6 +30,22 @@ function ReplyPreview({
   onPress,
   theme,
 }: Props) {
+
+  const handlePress =
+  useCallback(() => {
+    if (replyTo) {
+      onScrollTo?.(
+        String(replyTo)
+      );
+    }
+
+    onPress?.();
+  }, [
+    replyTo,
+    onScrollTo,
+    onPress,
+  ]);
+
   if (
     !replyTo ||
     !replyToText
@@ -36,37 +55,7 @@ function ReplyPreview({
 
   return (
     <Pressable
-onPress={() => {
-  if (
-    replyTo
-  ) {
-    onScrollTo?.(
-      String(replyTo)
-    );
-  }
-
-  onPress?.();
-}}
-      android_ripple={{
-        color:
-          "rgba(255,255,255,0.08)",
-      }}
-      style={{
-        borderLeftWidth: 3,
-
-        borderLeftColor:
-          "#00b7ff",
-
-        paddingLeft: 10,
-
-        paddingVertical: 4,
-
-        marginBottom: 8,
-
-        borderRadius: 8,
-
-        opacity: 0.92,
-      }}
+onPress={handlePress}
     >
       <Text
         numberOfLines={2}
@@ -84,6 +73,6 @@ onPress={() => {
   );
 }
 
-export default React.memo(
+export default memo(
   ReplyPreview
 );

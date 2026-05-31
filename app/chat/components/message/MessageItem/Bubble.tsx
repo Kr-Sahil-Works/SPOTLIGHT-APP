@@ -1,4 +1,8 @@
-import React from "react";
+import React, {
+  memo,
+  useCallback,
+  useMemo
+} from "react";
 
 import {
   Linking,
@@ -41,38 +45,45 @@ function Bubble({
 
   theme,
 }: Props) {
-  const trimmed =
-    text.trim();
+const cleanText = useMemo(
+  () => text.trim(),
+  [text]
+);
 
-    const isPhoneNumber =
-  /^(\+?\d[\d\s-]{8,})$/.test(
-    text.trim()
-  );
+const isPhoneNumber = useMemo(
+  () =>
+    /^(\+?\d[\d\s-]{8,})$/.test(
+      cleanText
+    ),
+  [cleanText]
+);
 
-const isLink =
-  /(https?:\/\/|www\.)/i.test(
-    text
-  );
+const isLink = useMemo(
+  () =>
+    /(https?:\/\/|www\.)/i.test(
+      cleanText
+    ),
+  [cleanText]
+);
 
+const emojiOnly = useMemo(
+  () =>
+    cleanText.length > 0 &&
+    /^[\p{Extended_Pictographic}\s\u200d]+$/u.test(
+      cleanText
+    ),
+  [cleanText]
+);
 
-const cleanText =
-  text.trim();
-
-const emojiOnly =
-  cleanText.length >
-    0 &&
-  /^[\p{Extended_Pictographic}\s\u200d]+$/u.test(
-    cleanText
-  );
-
-const emojiCount =
-  [...cleanText].length;
+const emojiCount = useMemo(
+  () => [...cleanText].length,
+  [cleanText]
+);
 
 const emojiMessage =
   emojiOnly &&
   emojiCount > 0 &&
   emojiCount <= 8;
-
 
 let emojiFontSize = 22;
 
@@ -85,35 +96,24 @@ if (emojiCount === 1) {
   emojiFontSize = 28;
 }
 
-if (emojiMessage) {
-  return (
-    <View>
-  <Text
-  selectable
-  suppressHighlighting
-  onPress={async () => {
-    if (
-      isPhoneNumber
-    ) {
-    const rawNumber =
-  text.replace(
-    /\D/g,
-    ""
-  );
+const handleOpen = useCallback(
+  async () => {
+    if (isPhoneNumber) {
+      const rawNumber =
+        text.replace(/\D/g, "");
 
-const indianNumber =
-  rawNumber.length ===
-  10
-    ? `+91${rawNumber}`
-    : rawNumber.startsWith(
-        "91"
-      )
-    ? `+${rawNumber}`
-    : rawNumber;
+      const indianNumber =
+        rawNumber.length === 10
+          ? `+91${rawNumber}`
+          : rawNumber.startsWith(
+              "91"
+            )
+          ? `+${rawNumber}`
+          : rawNumber;
 
-await Linking.openURL(
-  `tel:${indianNumber}`
-)
+      await Linking.openURL(
+        `tel:${indianNumber}`
+      );
 
       return;
     }
@@ -122,18 +122,28 @@ await Linking.openURL(
       let url = text;
 
       if (
-        !url.startsWith(
-          "http"
-        )
+        !url.startsWith("http")
       ) {
         url = `https://${url}`;
       }
 
-      await Linking.openURL(
-        url
-      );
+      await Linking.openURL(url);
     }
-  }}
+  },
+  [isPhoneNumber, isLink, text]
+);
+
+if (emojiMessage) {
+  return (
+    <View>
+  <Text
+  selectable={false}
+  suppressHighlighting
+onPress={
+  isPhoneNumber || isLink
+    ? handleOpen
+    : undefined
+}
   style={{
     fontSize:
       emojiOnly
@@ -221,38 +231,13 @@ await Linking.openURL(
 const content = (
   <>
     <Text
-      selectable
+      selectable={false}
       suppressHighlighting
-      onPress={async () => {
-        if (
-          isPhoneNumber
-        ) {
-          await Linking.openURL(
-            `tel:${text.replace(
-              /\s/g,
-              ""
-            )}`
-          );
-
-          return;
-        }
-
-        if (isLink) {
-          let url = text;
-
-          if (
-            !url.startsWith(
-              "http"
-            )
-          ) {
-            url = `https://${url}`;
-          }
-
-          await Linking.openURL(
-            url
-          );
-        }
-      }}
+onPress={
+  isPhoneNumber || isLink
+    ? handleOpen
+    : undefined
+}
       style={{
         color:
           isHighlighted
@@ -422,6 +407,6 @@ return (
 );
 }
 
-export default React.memo(
+export default memo(
   Bubble
 );

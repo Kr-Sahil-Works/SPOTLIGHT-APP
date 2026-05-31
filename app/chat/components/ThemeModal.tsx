@@ -12,6 +12,8 @@ import {
 } from "react-native";
 
 import { CHAT_THEMES } from "@/constants/chatThemes";
+import { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   visible: boolean;
@@ -33,6 +35,7 @@ export default function ThemeModal({
   onApply,
 }: Props) {
 
+  const insets = useSafeAreaInsets();
 
 const reorderedThemes = [
   ...CHAT_THEMES.slice(0, 2),
@@ -43,7 +46,8 @@ const reorderedThemes = [
 
   ...CHAT_THEMES.slice(2, 12),
 ];
-
+const [expanded, setExpanded] =
+  useState(false);
   return (
 <Modal
   transparent
@@ -53,7 +57,7 @@ const reorderedThemes = [
   <Pressable
     style={{
       flex: 1,
-      backgroundColor: "#00000055",
+      backgroundColor: "rgba(0,0,0,0.18)",
     }}
     onPress={onClose}
   >
@@ -65,8 +69,9 @@ const reorderedThemes = [
         position: "absolute",
         bottom: 0,
         width: "100%",
-        height: "60%",
+        height: expanded ? "90%" : "72%",
         overflow: "hidden",
+        paddingBottom: insets.bottom,
         borderTopLeftRadius: 34,
         borderTopRightRadius: 34,
       }}
@@ -74,12 +79,12 @@ const reorderedThemes = [
       {/* GLASS BG */}
     <BlurView
         intensity={70}
-        tint="dark"
+        tint="systemChromeMaterialDark"
         style={{
           flex: 1,
           paddingTop: 18,
           paddingHorizontal: 16,
-          backgroundColor: "#11111188",
+          backgroundColor: "transparent",
           borderTopLeftRadius: 34,
           borderTopRightRadius: 34,
           borderWidth: 1,
@@ -99,17 +104,52 @@ const reorderedThemes = [
         />
 
         {/* TITLE */}
-        <Text
-          style={{
-            color: "#44d800e5",
-            fontSize: 24,
-            fontWeight: "700",
-            marginBottom: 20,
-            letterSpacing: 0.3,
-          }}
-        >
-          Chat Themes
-        </Text>
+    <View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  }}
+>
+  <Text
+    style={{
+      color: "#44d800e5",
+      fontSize: 24,
+      fontWeight: "700",
+      letterSpacing: 0.3,
+    }}
+  >
+    Chat Themes
+  </Text>
+
+  <TouchableOpacity
+    onPress={() =>
+      setExpanded(!expanded)
+    }
+    activeOpacity={0.8}
+    style={{
+      width: 42,
+      height: 42,
+      borderRadius: 14,
+      backgroundColor: "#ffffff10",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: "#ffffff10",
+    }}
+  >
+    <Ionicons
+      name={
+        expanded
+          ? "contract"
+          : "expand"
+      }
+      size={18}
+      color="#fff"
+    />
+  </TouchableOpacity>
+</View>
 
     <FlatList
   data={reorderedThemes}
@@ -148,7 +188,7 @@ const selected =
         activeOpacity={0.9}
         style={{
           width: "48%",
-          height: 220,
+          aspectRatio: 0.72,
           marginBottom: 16,
           borderRadius: 24,
           overflow: "hidden",
@@ -160,6 +200,7 @@ const selected =
         }}
       >
         {theme.wallpaper ? (
+
           <ImageBackground
             source={theme.wallpaper}
             resizeMode="cover"
@@ -264,7 +305,33 @@ const selected =
           </View>
         )}
 
-        {selected && (
+<View
+  style={{
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "#0000003c",
+    borderTopWidth: 1,
+    borderTopColor: "#ffffff10",
+    overflow: "hidden",
+  }}
+>
+  <Text
+    numberOfLines={1}
+    style={{
+      color: "#fff",
+      fontSize: 14,
+      fontWeight: "700",
+      textAlign: "center",
+      letterSpacing: 0.3,
+    }}
+  >
+    {theme.name}
+  </Text>
+</View>
+
+
+
+{selected && (
           <View
             style={{
               position: "absolute",

@@ -6,12 +6,12 @@ import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
+import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  FlatList,
   RefreshControl,
   Text,
   TouchableOpacity,
@@ -29,17 +29,14 @@ export default function Index() {
   const listRef = useRef<any>(null);
 
   const [swipeEnabled, setSwipeEnabled] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-const [showRefreshSkeleton, setShowRefreshSkeleton] = useState(false);
+
 
 
   // ✅ FIXED QUERY
-  const posts = useQuery(
-    api.posts.index.getFeedPosts,
-    isSignedIn ? { refreshKey } : "skip"
-  );
-
+const posts = useQuery(
+  api.posts.index.getFeedPosts,
+  isSignedIn ? {} : "skip"
+);
   // ✅ CACHE (PREVENT BLANK UI)
   const [cachedPosts, setCachedPosts] = useState<any[]>([]);
 
@@ -52,18 +49,24 @@ const [showRefreshSkeleton, setShowRefreshSkeleton] = useState(false);
   const unreadCount =
     useQuery(api.notifications.getUnreadCount, isSignedIn ? {} : "skip") ?? 0;
 
+const [refreshing, setRefreshing] = useState(false);
+const [storiesRefreshKey, setStoriesRefreshKey] = useState(0);
+const [showRefreshSkeleton, setShowRefreshSkeleton] = useState(false);
+
+
 const onRefresh = async () => {
   setRefreshing(true);
 
-  // 🔥 show skeleton instantly
   setShowRefreshSkeleton(true);
 
-  setRefreshKey((prev) => prev + 1);
+  setStoriesRefreshKey((p) => p + 1);
 
-  // 🔥 keep skeleton for short illusion
-  await new Promise((r) => setTimeout(r, 180));
+  await new Promise((r) =>
+    setTimeout(r, 900)
+  );
 
   setShowRefreshSkeleton(false);
+
   setRefreshing(false);
 };
 
@@ -130,31 +133,30 @@ const onRefresh = async () => {
       </View>
 
       {/* 🔥 CONTENT */}
-   {posts === undefined && cachedPosts.length === 0 ? (
-  <FeedSkeleton /> // first load
+{posts === undefined && cachedPosts.length === 0 ? (
+  <FeedSkeleton />
 ) : showRefreshSkeleton ? (
-  <FeedSkeleton /> // 🔥 refresh flash
+  <FeedSkeleton />
 ) : finalPosts.length === 0 ? (
   <NoPostsFound />
 ) : (
     
-        <FlatList
+        <FlashList
           ref={listRef}
           data={finalPosts}
-          extraData={refreshKey}
-          initialNumToRender={5}
-          maxToRenderPerBatch={5}
-          windowSize={5}
+          drawDistance={600}
           removeClippedSubviews
-          renderItem={({ item }) => <AnimatedPost item={item} />}
+          renderItem={({ item }) => (
+  <Post post={item} />
+)}
           keyExtractor={(item) => item._id.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 80 }}
           ListHeaderComponent={
-            <StoriesSection
-              refreshKey={refreshKey}
-              setSwipeEnabled={setSwipeEnabled}
-            />
+       <StoriesSection
+  refreshKey={storiesRefreshKey}
+  setSwipeEnabled={setSwipeEnabled}
+/>
           }
           refreshControl={
             <RefreshControl
@@ -168,26 +170,6 @@ const onRefresh = async () => {
     </View>
   );
 }
-
-/* ========================= */
-
-const AnimatedPost = ({ item }: any) => {
-  const fade = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fade, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  return (
-    <Animated.View style={{ opacity: fade, transform: [{ scale: fade }] }}>
-      <Post post={item} />
-    </Animated.View>
-  );
-};
 
 /* ========================= */
 

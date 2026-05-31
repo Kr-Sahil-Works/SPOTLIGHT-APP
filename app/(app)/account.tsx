@@ -129,7 +129,7 @@ const stats = useQuery(
   source={
     dbUser?.image && dbUser.image.trim() !== ""
       ? { uri: dbUser.image }
-      : require("@/assets/images/iconbg.png")
+      : require("@/assets/images/icons/iconbg.png")
   }
   style={styles.avatar}
   resizeMode="cover"

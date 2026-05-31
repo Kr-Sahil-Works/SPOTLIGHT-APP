@@ -8,8 +8,8 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { useRef, useState } from "react";
-import { Animated, Image, Pressable, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Pressable, Text, View } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
 const redirectUrl = AuthSession.makeRedirectUri();
@@ -19,6 +19,25 @@ export default function Login() {
   const { startSSOFlow } = useSSO();
 
   const [loading,setLoading] = useState(false);
+
+
+  const images = [
+  require("../../assets/images/loginpage/login1.webp"),
+  require("../../assets/images/loginpage/login2.webp"),
+  require("../../assets/images/loginpage/login3.webp"),
+  require("../../assets/images/loginpage/login4.webp"),
+  require("../../assets/images/loginpage/login5.webp"),
+];
+
+const [currentImage, setCurrentImage] = useState(0);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentImage((prev) => (prev + 1) % images.length);
+  }, 4000);
+
+  return () => clearInterval(interval);
+}, []);
 
   const pressScale = useRef(new Animated.Value(1)).current;
   const morph = useRef(new Animated.Value(0)).current;
@@ -60,7 +79,7 @@ const router = useRouter();
 
     Animated.timing(morph,{
       toValue:1,
-      duration:300,
+      duration:500,
       useNativeDriver:true
     }).start();
 
@@ -144,12 +163,23 @@ setLoading(false);
       </View>
 
       <View style={styles.illustrationContainer}>
-       <Image
-  source={require("../../assets/images/loginpage/login1.png")}
-  style={styles.illustration}
-  resizeMode="cover"
-  fadeDuration={0}   // 👈 prevents bitmap issue
-/>
+<View style={styles.illustrationContainer}>
+
+  <Animated.Image
+    key={currentImage}
+    source={images[currentImage]}
+    style={[
+      styles.illustration,
+      {
+        opacity: 1,
+        transform: [{ scale: 1 }],
+      },
+    ]}
+    resizeMode="contain"
+    fadeDuration={600}
+  />
+
+</View>
       </View>
 
       <View style={styles.loginSection}>

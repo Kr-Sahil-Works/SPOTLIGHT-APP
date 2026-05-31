@@ -1,8 +1,12 @@
-import React from "react";
+import React, {
+  memo,
+  useMemo,
+} from "react";
+
 
 import {
-    Text,
-    View,
+  Text,
+  View,
 } from "react-native";
 
 type Reaction = {
@@ -16,6 +20,30 @@ type Props = {
 function Reactions({
   reactions,
 }: Props) {
+
+  const reactionItems = useMemo(
+  () =>
+    reactions?.map(
+      (reaction, index) => (
+        <Text
+          key={`${reaction.value}-${index}`}
+          style={{
+            fontSize: 13,
+            marginRight:
+              index ===
+              reactions.length - 1
+                ? 0
+                : 2,
+          }}
+        >
+          {reaction.value}
+        </Text>
+      )
+    ),
+  [reactions]
+);
+
+
   if (
     !reactions ||
     reactions.length === 0
@@ -46,26 +74,9 @@ function Reactions({
         alignSelf: "flex-start",
       }}
     >
-      {reactions.map(
-        (reaction, index) => (
-          <Text
-            key={`${reaction.value}-${index}`}
-            style={{
-              fontSize: 13,
-
-              marginRight:
-                index ===
-                reactions.length - 1
-                  ? 0
-                  : 2,
-            }}
-          >
-            {reaction.value}
-          </Text>
-        )
-      )}
+   {reactionItems}
     </View>
   );
 }
 
-export default React.memo(Reactions);
+export default memo(Reactions);

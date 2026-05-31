@@ -174,7 +174,7 @@ return (
           uri:
             user.image,
         }
-      : require("@/assets/images/iconbg.png")
+      : require("@/assets/images/icons/iconbg.png")
   }
   style={{
     width: 36,

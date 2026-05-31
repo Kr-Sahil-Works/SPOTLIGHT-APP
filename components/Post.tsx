@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { AppImage } from "@/shared/ui/AppImage";
 import { styles } from "@/styles/feed.styles";
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,7 +11,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated, Image, Modal,
+  Animated,
+  Modal,
   Pressable,
   Text,
   TouchableOpacity,
@@ -37,7 +39,7 @@ type PostProps = {
   };
 };
 
-export default function Post({ post, onDelete }: PostProps) {
+function Post({ post, onDelete }: PostProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked);
   const [likesCount, setLikesCount] = useState(post.likes);
@@ -46,6 +48,11 @@ export default function Post({ post, onDelete }: PostProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+  setLoaded(false);
+}, [post.imageUrl]);
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const shimmer = useRef(new Animated.Value(0)).current;
@@ -58,15 +65,23 @@ const currentUser = useQuery(api.users.index.getCurrentUser);
   const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
   const deletePost = useMutation(api.posts.index.deletePost);
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(shimmer, {
-        toValue: 1,
-        duration: 1200,
-        useNativeDriver: true,
-      })
-    ).start();
-  }, []);
+useEffect(() => {
+  if (loaded) return;
+
+  const animation = Animated.loop(
+    Animated.timing(shimmer, {
+      toValue: 1,
+      duration: 1200,
+      useNativeDriver: true,
+    })
+  );
+
+  animation.start();
+
+  return () => {
+    animation.stop();
+  };
+}, [loaded]);
 
   const translateX = shimmer.interpolate({
     inputRange: [0, 1],
@@ -91,7 +106,10 @@ const handleDelete = async () => {
 };
 
   return (
-    <View style={styles.post}>
+    <View
+  key={post._id.toString()}
+  style={styles.post}
+>
       {/* HEADER */}
       <View style={styles.postHeader}>
         <Link
@@ -103,10 +121,10 @@ const handleDelete = async () => {
           asChild
         >
           <TouchableOpacity style={styles.postHeaderLeft}>
-        <Image
-  source={{ uri: post.author.image }}
+ <AppImage
+  uri={post.author.image}
   style={styles.postAvatar}
-  resizeMode="cover"
+  contentFit="cover"
 />
             <Text style={styles.postUsername}>{post.author.username}</Text>
           </TouchableOpacity>
@@ -210,6 +228,7 @@ const handleDelete = async () => {
             }}
           >
             <Animated.View
+            renderToHardwareTextureAndroid={false}
               style={{
                 width: "100%",
                 height: "100%",
@@ -226,10 +245,11 @@ const handleDelete = async () => {
           </View>
         )}
 
-<Image
-  source={{ uri: post.imageUrl }}
-  style={styles.postImage}
-  resizeMode="cover"
+<AppImage
+  uri={post.imageUrl}
+style={styles.postImage}
+  contentFit="cover"
+  transition={180}
   onLoadEnd={() => setLoaded(true)}
 />
       </View>
@@ -375,6 +395,19 @@ const handleDelete = async () => {
     </View>
   );
 }
+export default React.memo(
+  Post,
+  (prev, next) => {
+    return (
+      prev.post._id === next.post._id &&
+      prev.post.imageUrl === next.post.imageUrl &&
+      prev.post.likes === next.post.likes &&
+      prev.post.comments === next.post.comments &&
+      prev.post.isLiked === next.post.isLiked &&
+      prev.post.isBookmarked === next.post.isBookmarked
+    );
+  }
+);
 
 function MenuBtn({ icon, text, onPress }: any) {
   return (

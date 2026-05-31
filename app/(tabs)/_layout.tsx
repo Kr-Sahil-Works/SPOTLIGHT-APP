@@ -8,11 +8,20 @@ import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { Redirect } from "expo-router";
 import React, { memo, useRef, useState } from "react";
-import { Animated, Dimensions, TouchableOpacity, View } from "react-native";
+import { Animated, Dimensions, Platform, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+
+import { api } from "@/convex/_generated/api";
+import { useQuery } from "convex/react";
+import { BlurView } from "expo-blur";
+
 
 const Tab = createMaterialTopTabNavigator();
 const screenWidth = Dimensions.get("window").width;
+const isTablet =
+  screenWidth >= 768;
+
 
 const iconMap: Record<
   string,
@@ -268,10 +277,6 @@ if (name === "profile") {
   );
 });
 
-import { api } from "@/convex/_generated/api";
-import { useQuery } from "convex/react";
-import { BlurView } from "expo-blur";
-import { Platform } from "react-native";
 
 function CustomTabBar({ state, navigation }: any) {
 
@@ -284,13 +289,19 @@ function CustomTabBar({ state, navigation }: any) {
 
   return (
     <View
-     style={{
+style={{
   position: "absolute",
   bottom: 0,
   left: 0,
   right: 0,
+
+  ...(isTablet && {
+    maxWidth: 700,
+    alignSelf: "center",
+  }),
+
   zIndex: 999,
-  elevation: 999, // Android
+  elevation: 999,
 }}
     >
       {/* 🔥 BLUR BACKGROUND */}
@@ -299,12 +310,22 @@ function CustomTabBar({ state, navigation }: any) {
         tint="dark"
         style={{
           flexDirection: "row",
-          height: 60 + insets.bottom,
+          height:
+  isTablet
+    ? 70 + Math.max(insets.bottom, 10)
+    : 60 + insets.bottom,
           paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
           paddingTop: 6,
           borderTopWidth: 0.5,
           borderTopColor: "rgba(255,255,255,0.08)",
           backgroundColor: "rgba(0,0,0,0.15)",
+
+          ...(isTablet && {
+  marginHorizontal: 12,
+  marginBottom: 8,
+  borderRadius: 24,
+  overflow: "hidden",
+}),
         }}
       >
         {state.routes.map((route: any, index: number) => {
