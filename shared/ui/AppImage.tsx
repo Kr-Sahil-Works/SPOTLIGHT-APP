@@ -20,12 +20,13 @@ function AppImageComponent({
 
   return (
     <Image
-     source={source || (uri ? { uri } : undefined)}
+      source={source || (uri ? { uri } : undefined)}
       style={style}
       contentFit={contentFit}
       cachePolicy="memory-disk"
       transition={transition}
       allowDownscaling
+      recyclingKey={uri || String(source)}
       {...props}
     />
   );

@@ -9,7 +9,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
   RefreshControl,
@@ -40,11 +46,33 @@ const posts = useQuery(
   // ✅ CACHE (PREVENT BLANK UI)
   const [cachedPosts, setCachedPosts] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (posts && posts.length > 0) {
-      setCachedPosts(posts);
-    }
-  }, [posts]);
+  const [feedPosts, setFeedPosts] =
+  useState<any[]>([]);
+
+useEffect(() => {
+  if (!posts?.length) {
+    return;
+  }
+
+  setCachedPosts(posts);
+
+  const topFive = [...posts]
+    .slice(0, 5);
+
+  const rest =
+    posts.slice(5);
+
+  const shuffledTop =
+    [...topFive].sort(
+      () => Math.random() - 0.5
+    );
+
+  setFeedPosts([
+    ...shuffledTop,
+    ...rest,
+  ]);
+}, [posts]);
+
 
   const unreadCount =
     useQuery(api.notifications.getUnreadCount, isSignedIn ? {} : "skip") ?? 0;
@@ -52,20 +80,74 @@ const posts = useQuery(
 const [refreshing, setRefreshing] = useState(false);
 const [storiesRefreshKey, setStoriesRefreshKey] = useState(0);
 const [showRefreshSkeleton, setShowRefreshSkeleton] = useState(false);
-
+const lastRefreshRef = useRef(0);
+const renderPost = useCallback(
+  ({ item }: any) => (
+    <Post post={item} />
+  ),
+  []
+);
 
 const onRefresh = async () => {
+  const now = Date.now();
+
+  if (
+    now -
+      lastRefreshRef.current <
+    3400
+  ) {
+    return;
+  }
+
+  lastRefreshRef.current =
+    now;
+
   setRefreshing(true);
 
-  setShowRefreshSkeleton(true);
-
-  setStoriesRefreshKey((p) => p + 1);
-
-  await new Promise((r) =>
-    setTimeout(r, 900)
+  setShowRefreshSkeleton(
+    true
   );
 
-  setShowRefreshSkeleton(false);
+  setStoriesRefreshKey(
+    (p) => p + 1
+  );
+
+  if (
+    finalPosts.length > 5
+  ) {
+    const topFive =
+      [...finalPosts].slice(
+        0,
+        5
+      );
+
+    const rest =
+      finalPosts.slice(5);
+
+    const shuffledTop =
+      [...topFive].sort(
+        () =>
+          Math.random() -
+          0.5
+      );
+
+    setFeedPosts([
+      ...shuffledTop,
+      ...rest,
+    ]);
+  }
+
+  await new Promise(
+    (r) =>
+      setTimeout(
+        r,
+        900
+      )
+  );
+
+  setShowRefreshSkeleton(
+    false
+  );
 
   setRefreshing(false);
 };
@@ -77,7 +159,22 @@ const onRefresh = async () => {
   }
 
   // ✅ FINAL DATA (NO BLANK STATE)
-  const finalPosts = posts ?? cachedPosts;
+  const finalPosts =
+  feedPosts.length > 0
+    ? feedPosts
+    : posts ??
+      cachedPosts;
+
+
+  const storiesHeader = useMemo(
+  () => (
+    <StoriesSection
+      refreshKey={storiesRefreshKey}
+      setSwipeEnabled={setSwipeEnabled}
+    />
+  ),
+  [storiesRefreshKey]
+);
 
   return (
     <View style={styles.container}>
@@ -146,18 +243,11 @@ const onRefresh = async () => {
           data={finalPosts}
           drawDistance={600}
           removeClippedSubviews
-          renderItem={({ item }) => (
-  <Post post={item} />
-)}
+          renderItem={renderPost}
           keyExtractor={(item) => item._id.toString()}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 80 }}
-          ListHeaderComponent={
-       <StoriesSection
-  refreshKey={storiesRefreshKey}
-  setSwipeEnabled={setSwipeEnabled}
-/>
-          }
+     ListHeaderComponent={storiesHeader}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

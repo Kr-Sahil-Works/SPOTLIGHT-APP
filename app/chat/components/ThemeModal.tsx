@@ -1,14 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import {
   FlatList,
-  ImageBackground,
   Modal,
   Pressable,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import { CHAT_THEMES } from "@/constants/chatThemes";
@@ -78,7 +78,7 @@ const [expanded, setExpanded] =
     >
       {/* GLASS BG */}
     <BlurView
-        intensity={70}
+        intensity={45}
         tint="systemChromeMaterialDark"
         style={{
           flex: 1,
@@ -162,9 +162,9 @@ const [expanded, setExpanded] =
   columnWrapperStyle={{
     justifyContent: "space-between",
   }}
-  initialNumToRender={8}
-  maxToRenderPerBatch={8}
-  windowSize={5}
+  initialNumToRender={4}
+  maxToRenderPerBatch={4}
+  windowSize={3}
   removeClippedSubviews
   renderItem={({ item: theme, index: i }) => {
    const originalIndex =
@@ -199,48 +199,56 @@ const selected =
           backgroundColor: "#111",
         }}
       >
-        {theme.wallpaper ? (
+  {theme.wallpaper ? (
+  <View
+    style={{
+      flex: 1,
+      overflow: "hidden",
+    }}
+  >
+    <Image
+      source={theme.wallpaper}
+      style={{
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+      }}
+      contentFit="cover"
+      cachePolicy="memory-disk"
+      allowDownscaling
+      transition={0}
+    />
 
-          <ImageBackground
-            source={theme.wallpaper}
-            resizeMode="cover"
-            fadeDuration={0}
-            style={{
-              flex: 1,
-            }}
-          >
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "#00000025",
-                padding: 14,
-                justifyContent: "flex-end",
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor:
-                    theme.bubbleMe,
-                  height: 18,
-                  borderRadius: 10,
-                  marginBottom: 8,
-                  width: "82%",
-                  alignSelf: "flex-end",
-                }}
-              />
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#00000025",
+        padding: 14,
+        justifyContent: "flex-end",
+      }}
+    >
+      <View
+        style={{
+          backgroundColor: theme.bubbleMe,
+          height: 18,
+          borderRadius: 10,
+          marginBottom: 8,
+          width: "82%",
+          alignSelf: "flex-end",
+        }}
+      />
 
-              <View
-                style={{
-                  backgroundColor:
-                    theme.bubbleOther,
-                  height: 18,
-                  width: "68%",
-                  borderRadius: 10,
-                }}
-              />
-            </View>
-          </ImageBackground>
-        ) : theme.gradient ? (
+      <View
+        style={{
+          backgroundColor: theme.bubbleOther,
+          height: 18,
+          width: "68%",
+          borderRadius: 10,
+        }}
+      />
+    </View>
+  </View>
+) : theme.gradient ? (
           <LinearGradient
             colors={theme.gradient}
             style={{

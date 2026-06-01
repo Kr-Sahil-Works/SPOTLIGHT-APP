@@ -2,13 +2,12 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
+import { Image } from "expo-image";
 import {
   useLocalSearchParams,
   useRouter,
 } from "expo-router";
-
 import {
-  Image,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -213,22 +212,22 @@ export default function UserInspectPage() {
               alignItems: "center",
             }}
           >
-            <Image
-              source={{
-                uri: user.image,
-              }}
-              style={{
-                width: 92,
-                height: 92,
-
-                borderRadius: 999,
-
-                borderWidth: 3,
-
-                borderColor:
-                  "#00ff88",
-              }}
-            />
+      <Image
+  source={
+    user.image?.trim()
+      ? { uri: user.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  cachePolicy="memory-disk"
+  transition={120}
+  style={{
+    width: 92,
+    height: 92,
+    borderRadius: 999,
+    borderWidth: 3,
+    borderColor: "#00ff88",
+  }}
+/>
 
             <View
               style={{

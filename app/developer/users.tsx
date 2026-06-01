@@ -5,11 +5,11 @@ import {
   useQuery,
 } from "convex/react";
 
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 
 import {
-  Image,
   Modal,
   ScrollView,
   Text,
@@ -277,19 +277,20 @@ const filteredUsers =
   }}
 >
             {/* IMAGE */}
-            <Image
-              source={{
-                uri:
-  item.image ||
-  "https://placehold.co/200",
-              }}
-              style={{
-                width: 58,
-                height: 58,
-
-                borderRadius: 29,
-              }}
-            />
+      <Image
+  source={
+    item.image?.trim()
+      ? { uri: item.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  cachePolicy="memory-disk"
+  transition={120}
+  style={{
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+  }}
+/>
 
             {/* INFO */}
             <View

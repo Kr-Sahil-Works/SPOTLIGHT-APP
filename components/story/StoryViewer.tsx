@@ -4,8 +4,15 @@ import {
   Dimensions,
   Modal,
   PanResponder,
-  Pressable, Image as RNImage, View
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+
+import { Ionicons } from "@expo/vector-icons";
+
+import { Image } from "expo-image";
 
 const { height } = Dimensions.get("window");
 
@@ -35,7 +42,7 @@ export default function StoryViewer({
 
     animation.current = Animated.timing(progress, {
       toValue: 1,
-      duration: 3000,
+      duration: 4000,
       useNativeDriver: false,
     });
 
@@ -101,7 +108,12 @@ export default function StoryViewer({
   if (!story) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal
+  visible={visible}
+  transparent={false}
+  animationType="fade"
+  statusBarTranslucent
+>
       <Animated.View
         {...panResponder.panHandlers}
         style={{
@@ -110,8 +122,73 @@ export default function StoryViewer({
           transform: [{ translateY }],
         }}
       >
+        <View
+  style={{
+    position: "absolute",
+    top: 50,
+    left: 12,
+    right: 12,
+    zIndex: 100,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  }}
+>
+  <View
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+    }}
+  >
+    <Image
+      source={
+        typeof story.avatar === "number"
+          ? story.avatar
+          : { uri: story.avatar }
+      }
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+      }}
+      contentFit="cover"
+      cachePolicy="memory-disk"
+      allowDownscaling
+    />
+
+    <Text
+      style={{
+        color: "#fff",
+        fontSize: 15,
+        fontWeight: "600",
+        marginLeft: 10,
+      }}
+    >
+      {story.username}
+    </Text>
+  </View>
+
+  <TouchableOpacity
+    onPress={onClose}
+    activeOpacity={0.8}
+    style={{
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: "rgba(0,0,0,0.45)",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <Ionicons
+      name="close"
+      size={18}
+      color="#fff"
+    />
+  </TouchableOpacity>
+</View>
         {/* 🔥 PROGRESS */}
-        <View style={{ flexDirection: "row", marginTop: 50, padding: 8 }}>
+        <View style={{ flexDirection: "row", marginTop: 95, padding: 8 }}>
           {stories.map((_: any, i: number) => (
             <View
               key={i}
@@ -142,15 +219,22 @@ export default function StoryViewer({
           ))}
         </View>
 
-        {/* 🔥 STORY IMAGE */}
- <RNImage
+<Image
   source={
     typeof story.story === "number"
-      ? story.story   // local require()
-      : { uri: story.story } // remote URL
+      ? story.story
+      : story.story?.trim()
+      ? { uri: story.story }
+      : require("@/assets/images/icons/iconbg.webp")
   }
-  style={{ width: "100%", height: height * 0.85 }}
-  resizeMode="cover"
+  style={{
+    width: "100%",
+    height: height * 0.85,
+  }}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
 />
 
         {/* 🔥 TAP ZONES (FIXED + HOLD SUPPORT) */}

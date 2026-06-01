@@ -2,11 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import React from "react";
 import {
-    Animated,
-    Modal,
-    Image as RNImage,
-    TouchableOpacity
+  Animated,
+  Modal,
+  TouchableOpacity
 } from "react-native";
+
+import { Image } from "expo-image";
 
 export default function ImagePreviewModal({
   selectedPost,
@@ -18,7 +19,7 @@ export default function ImagePreviewModal({
   return (
     <Modal visible={!!selectedPost} transparent animationType="fade">
       <BlurView
-        intensity={80}
+        intensity={25}
         tint="dark"
         style={{
           flex: 1,
@@ -47,8 +48,9 @@ export default function ImagePreviewModal({
         </TouchableOpacity>
 
         {selectedPost && (
-          <Animated.View
-            {...panResponder.panHandlers}
+   <Animated.View
+  renderToHardwareTextureAndroid={false}
+  {...panResponder.panHandlers}
             style={{
               width: "100%",
               borderRadius: 20,
@@ -72,11 +74,14 @@ export default function ImagePreviewModal({
                 }).start();
               }}
             >
-              <RNImage
-                source={{ uri: selectedPost.imageUrl }}
-                style={{ width: "100%", aspectRatio: 1 }}
-                resizeMode="cover"
-              />
+      <Image
+  source={{ uri: selectedPost.imageUrl }}
+  style={{ width: "100%", aspectRatio: 1 }}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
+/>
             </TouchableOpacity>
           </Animated.View>
         )}

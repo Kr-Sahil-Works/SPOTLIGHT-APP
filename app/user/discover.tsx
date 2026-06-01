@@ -5,17 +5,17 @@ import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, {
-    useMemo,
-    useState,
+  useMemo,
+  useState,
 } from "react";
 
 import {
-    FlatList,
-    SafeAreaView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function DiscoverPage() {
@@ -244,18 +244,21 @@ borderColor: "#ffffff18",
               paddingVertical: 12,
             }}
           >
-            <Image
-              source={{
-                uri: item?.image,
-              }}
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: 999,
-                backgroundColor:
-                  "#111",
-              }}
-            />
+        <Image
+  source={
+    item?.image?.trim()
+      ? { uri: item.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  cachePolicy="memory-disk"
+  transition={120}
+  style={{
+    width: 56,
+    height: 56,
+    borderRadius: 999,
+    backgroundColor: "#111",
+  }}
+/>
 
             <View
               style={{

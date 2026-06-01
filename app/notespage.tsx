@@ -190,7 +190,7 @@ const openSheet = (note?: any) => {
 </View>
 
       {/* SEARCH (GLASS) */}
-      <BlurView intensity={50} tint="dark" style={{
+      <BlurView intensity={25} tint="dark" style={{
         marginTop: 12,
         borderRadius: 30,
         marginBottom:20,
@@ -453,7 +453,7 @@ const openSheet = (note?: any) => {
     }}
   >
     <BlurView
-      intensity={80}
+      intensity={25}
       tint="dark"
       style={{
         width: "80%",

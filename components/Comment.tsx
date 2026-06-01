@@ -23,10 +23,15 @@ export default function Comment({ comment }: { comment: Comment }) {
       {/* 🔥 AVATAR */}
       {hasImage ? (
 <Image
-  source={{ uri: comment.user.image! }}
+  source={
+    comment.user.image?.trim()
+      ? { uri: comment.user.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
   style={styles.commentAvatar}
   contentFit="cover"
   cachePolicy="memory-disk"
+  transition={100}
 />
       ) : (
         <View

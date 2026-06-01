@@ -238,7 +238,7 @@ return (
   }}
 >
   <BlurView
-    intensity={38}
+    intensity={25}
     tint="dark"
     style={{
       position: "absolute",
@@ -253,13 +253,14 @@ return (
         flex: 1,
 
         backgroundColor:
-          "#00000057",
+          "#00000080",
       }}
     />
   </BlurView>
 </Pressable>
 
     <Animated.View
+      renderToHardwareTextureAndroid={false}
       pointerEvents="box-none"
       style={{
         position: "absolute",

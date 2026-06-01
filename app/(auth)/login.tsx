@@ -5,6 +5,7 @@ import { useSSO } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import * as AuthSession from "expo-auth-session";
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -165,19 +166,15 @@ setLoading(false);
       <View style={styles.illustrationContainer}>
 <View style={styles.illustrationContainer}>
 
-  <Animated.Image
-    key={currentImage}
-    source={images[currentImage]}
-    style={[
-      styles.illustration,
-      {
-        opacity: 1,
-        transform: [{ scale: 1 }],
-      },
-    ]}
-    resizeMode="contain"
-    fadeDuration={600}
-  />
+<Image
+  key={currentImage}
+  source={images[currentImage]}
+  style={styles.illustration}
+  contentFit="contain"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={500}
+/>
 
 </View>
       </View>

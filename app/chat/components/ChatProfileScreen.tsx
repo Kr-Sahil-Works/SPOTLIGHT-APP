@@ -1,8 +1,8 @@
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import {
-  Image,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -51,15 +51,14 @@ export default function ChatProfileScreen({
             alignItems: "center",
           }}
         >
-       <Image
+ <Image
   source={
-    user?.image
-      ? {
-          uri:
-            user.image,
-        }
-      : require("@/assets/images/icons/iconbg.png")
+    user?.image?.trim()
+      ? { uri: user.image }
+      : require("@/assets/images/icons/iconbg.webp")
   }
+  cachePolicy="memory-disk"
+  transition={120}
   style={{
     width: 86,
     height: 86,

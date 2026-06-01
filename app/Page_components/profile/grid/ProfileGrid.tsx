@@ -31,7 +31,7 @@ export default function ProfileGrid({
   source={
     item?.imageUrl?.trim()
       ? undefined
-      : require("@/assets/images/icons/iconbg.png")
+      : require("@/assets/images/icons/iconbg.webp")
   }
   style={styles.gridImage}
   contentFit="cover"

@@ -5,6 +5,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { styles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
@@ -12,7 +13,6 @@ import {
   FlatList,
   Modal,
   Pressable,
-  Image as RNImage,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -70,10 +70,18 @@ const profile = useQuery(
       setShowAvatarModal(true)
     }
   >
-    <RNImage
-      source={{ uri: profile.image }}
-      style={styles.avatar}
-    />
+  <Image
+  source={
+    profile?.image?.trim()
+      ? { uri: profile.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  style={styles.avatar}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
+/>
   </TouchableOpacity>
 )}
 
@@ -144,9 +152,17 @@ style={[
               scrollEnabled={false}
               renderItem={({ item }) => (
                <TouchableOpacity style={styles.gridItem}>
-<RNImage
-  source={{ uri: item.imageUrl }}
+<Image
+  source={
+    item.imageUrl?.trim()
+      ? { uri: item.imageUrl }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
   style={styles.gridImage}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
 />
 </TouchableOpacity>
               )}
@@ -205,16 +221,21 @@ style={[
         backgroundColor: "#111",
       }}
     >
-      <RNImage
-        source={{
-          uri: profile.image,
-        }}
-        resizeMode="cover"
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      />
+   <Image
+  source={
+    profile?.image?.trim()
+      ? { uri: profile.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  style={{
+    width: "100%",
+    height: "100%",
+  }}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
+/>
     </View>
 
     {/* NAME */}

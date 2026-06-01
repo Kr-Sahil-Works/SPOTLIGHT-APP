@@ -1,15 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Modal,
-    Platform,
-    Image as RNImage,
-    ToastAndroid,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Modal,
+  Platform,
+  ToastAndroid,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 import * as FileSystem from "expo-file-system/legacy";
@@ -156,16 +156,21 @@ export default function ImageViewerModal({
               transform: [{ scale }],
             }}
           >
-            <RNImage
-              source={{
-                uri: imageUrl,
-              }}
-              style={{
-                width: "100%",
-                height: "100%",
-              }}
-              resizeMode="contain"
-            />
+       <Image
+  source={
+    imageUrl?.trim()
+      ? { uri: imageUrl }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  style={{
+    width: "100%",
+    height: "100%",
+  }}
+  contentFit="contain"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
+/>
           </Animated.View>
         )}
 

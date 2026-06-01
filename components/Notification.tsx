@@ -18,11 +18,16 @@ export default function Notification({ notification }: any) {
   asChild
 >
           <TouchableOpacity style={styles.avatarContainer} activeOpacity={0.8}>
-         <Image
-  source={{ uri: notification.sender.image }}
+<Image
+  source={
+    notification.sender.image?.trim()
+      ? { uri: notification.sender.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
   style={styles.avatar}
   contentFit="cover"
   cachePolicy="memory-disk"
+  transition={100}
 />
             <View style={styles.iconBadge}>
               {notification.type === "like" ? (
@@ -85,12 +90,17 @@ export default function Notification({ notification }: any) {
     <Ionicons name="people" size={24} color="#8b5cf6" />
   </View>
 ) : notification.post ? (
-  <Image
-    source={{ uri: notification.post.imageUrl }}
-    style={styles.postImage}
-    contentFit="cover"
-    cachePolicy="memory-disk"
-  />
+<Image
+  source={
+    notification.post.imageUrl?.trim()
+      ? { uri: notification.post.imageUrl }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  style={styles.postImage}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  transition={120}
+/>
 ) : null}
     </View>
   );

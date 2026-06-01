@@ -204,7 +204,7 @@ const canUnpin =
   onPress={closeOverlay}
 >
   <BlurView
-    intensity={38}
+    intensity={25}
     tint="dark"
     style={
       StyleSheet.absoluteFill
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
 
     backgroundColor:
-  "#00000080",
+  "#00000060",
   },
 
   menu: {

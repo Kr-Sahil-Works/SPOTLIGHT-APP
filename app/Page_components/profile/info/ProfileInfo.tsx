@@ -1,19 +1,17 @@
 import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React, { useState } from "react";
 import {
   Animated,
   Dimensions,
   Modal,
   Pressable,
-  Image as RNImage,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-
-import IconBg from "@/assets/images/icons/iconbg.png";
 
 export default function ProfileInfo({
   user,
@@ -46,16 +44,17 @@ const screenWidth = Dimensions.get("window").width;
   activeOpacity={0.9}
   onLongPress={() => setShowAvatarModal(true)}
 >
-<RNImage
+<Image
   source={
-    user?.image
-      ? {
-          uri:
-            user.image,
-        }
-      : IconBg
+    user?.image?.trim()
+      ? { uri: user.image }
+      : require("@/assets/images/icons/iconbg.webp")
   }
   style={styles.avatar}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
 />
 </TouchableOpacity>
         </Animated.View>
@@ -229,16 +228,21 @@ const screenWidth = Dimensions.get("window").width;
         shadowRadius: 24,
       }}
     >
-      <RNImage
-        source={{
-          uri: user?.image || "",
-        }}
-        resizeMode="cover"
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      />
+   <Image
+  source={
+    user?.image?.trim()
+      ? { uri: user.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
+  style={{
+    width: "100%",
+    height: "100%",
+  }}
+/>
     </Animated.View>
 
     {/* NAME */}

@@ -104,7 +104,7 @@ const stats = useQuery(
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* PROFILE */}
-        <BlurView intensity={70} tint="dark" style={styles.glassCard}>
+        <BlurView intensity={25} tint="dark" style={styles.glassCard}>
           <View style={styles.avatarWrapper}>
             <Animated.View
               style={[
@@ -125,11 +125,11 @@ const stats = useQuery(
                 },
               ]}
             />
-      <Image
+<Image
   source={
-    dbUser?.image && dbUser.image.trim() !== ""
+    dbUser?.image?.trim()
       ? { uri: dbUser.image }
-      : require("@/assets/images/icons/iconbg.png")
+      : require("@/assets/images/icons/iconbg.webp")
   }
   style={styles.avatar}
   resizeMode="cover"
@@ -148,7 +148,7 @@ const stats = useQuery(
         </BlurView>
 
         {/* MEMBER */}
-        <BlurView intensity={60} tint="dark" style={styles.memberCard}>
+        <BlurView intensity={25} tint="dark" style={styles.memberCard}>
           <Text style={styles.memberTitle}>Member since</Text>
           <Text style={styles.memberDate}>
             {new Date(dbUser._creationTime).toDateString()}
@@ -156,7 +156,7 @@ const stats = useQuery(
         </BlurView>
 
         {/* ACTIVITY */}
-        <BlurView intensity={70} tint="dark" style={styles.glassCard}>
+        <BlurView intensity={25} tint="dark" style={styles.glassCard}>
           <Text style={styles.cardTitle}>Activity</Text>
 
           <View style={styles.modularGrid}>
@@ -221,7 +221,7 @@ const stats = useQuery(
           },
         ]}
       >
-        <BlurView intensity={80} tint="dark" style={styles.toastInner}>
+        <BlurView intensity={25} tint="dark" style={styles.toastInner}>
           <Text style={{ color: "#ffb4b4", fontSize: 13 }}>{toast}</Text>
         </BlurView>
       </Animated.View>

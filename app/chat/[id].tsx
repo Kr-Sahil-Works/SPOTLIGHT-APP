@@ -1,7 +1,7 @@
+import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 
 import {
-  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -434,7 +434,7 @@ if (
   }
   keyboardVerticalOffset={
     Platform.OS === "android"
-      ? 60
+      ? 40
       : 0
   }
 >
@@ -869,59 +869,65 @@ paddingBottom:
     : 0,
   }}
 >
-        {theme.wallpaper ? (
-          <ImageBackground
-            source={
-              theme.wallpaper
-            }
-            resizeMode="cover"
-            style={{
-              flex: 1,
-            }}
-          >
-            <Animated.View
-              style={{
-                flex: 1,
+{theme.wallpaper ? (
+  <View
+    style={{
+      flex: 1,
+    }}
+  >
+    <Image
+      source={theme.wallpaper}
+      contentFit="cover"
+      cachePolicy="memory-disk"
+      allowDownscaling
+      transition={0}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      }}
+    />
 
-                backgroundColor:
-                  "#00000055",
-              }}
-            >
-         {renderContent()}
-            </Animated.View>
-          </ImageBackground>
-        ) : theme.gradient ? (
-          <LinearGradient
-            colors={
-              theme.gradient
-            }
-            style={{
-              flex: 1,
-            }}
-          >
-            <Animated.View
-              style={{
-                flex: 1,
-
-                backgroundColor:
-                  "#00000055",
-              }}
-            >
-            {renderContent()}
-            </Animated.View>
-          </LinearGradient>
-        ) : (
-          <Animated.View
-            style={{
-              flex: 1,
-
-              backgroundColor:
-                theme.background,
-            }}
-          >
-          {renderContent()}
-          </Animated.View>
-        )}
+    <Animated.View
+      renderToHardwareTextureAndroid={false}
+      style={{
+        flex: 1,
+        backgroundColor: "#00000055",
+      }}
+    >
+      {renderContent()}
+    </Animated.View>
+  </View>
+) : theme.gradient ? (
+  <LinearGradient
+    colors={theme.gradient}
+    style={{
+      flex: 1,
+    }}
+  >
+    <Animated.View
+      renderToHardwareTextureAndroid={false}
+      style={{
+        flex: 1,
+        backgroundColor: "#00000055",
+      }}
+    >
+      {renderContent()}
+    </Animated.View>
+  </LinearGradient>
+) : (
+  <Animated.View
+    renderToHardwareTextureAndroid={false}
+    style={{
+      flex: 1,
+      backgroundColor: theme.background,
+    }}
+  >
+    {renderContent()}
+  </Animated.View>
+)}
       </View>
     </ChatOverlayProvider>
   );

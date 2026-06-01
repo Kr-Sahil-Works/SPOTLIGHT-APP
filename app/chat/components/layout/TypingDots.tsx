@@ -1,8 +1,9 @@
+import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef } from "react";
 import {
   Animated,
-  Easing, Image, View
+  Easing, View
 } from "react-native";
 
 export default function TypingDots({
@@ -87,19 +88,21 @@ export default function TypingDots({
   }}
 >
       {/* AVATAR */}
-  <Image
+<Image
   source={
-    avatar
+    avatar?.trim()
       ? { uri: avatar }
-      : require("@/assets/images/icons/iconbg.png")
+      : require("@/assets/images/icons/iconbg.webp")
   }
+  cachePolicy="memory-disk"
+  transition={100}
   style={{
     width: 28,
     height: 28,
     borderRadius: 14,
     marginRight: 6,
   }}
-  resizeMode="cover"
+  contentFit="cover"
 />
 
       {/* BUBBLE */}

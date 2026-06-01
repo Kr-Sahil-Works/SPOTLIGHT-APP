@@ -21,14 +21,14 @@ export default function ChatHeader() {
      onPress={() => router.push("/notespage")}
             style={{ backgroundColor: "rgba(255,255,255,0.05)", padding: 6, borderRadius: 10 }}
           >
-            <Image source={require("@/assets/images/icons/notes.png")} style={{ width: 20, height: 20 }} />
+            <Image source={require("@/assets/images/icons/notes.webp")} style={{ width: 20, height: 20 }} />
           </TouchableOpacity>
 
           <TouchableOpacity
       onPress={() => router.push("/calculator")}
             style={{ backgroundColor: "rgba(255,255,255,0.05)", padding: 6, borderRadius: 10 }}
           >
-            <Image source={require("@/assets/images/icons/calc.png")} style={{ width: 20, height: 20}} />
+            <Image source={require("@/assets/images/icons/calc.webp")} style={{ width: 20, height: 20}} />
           </TouchableOpacity>
         </View>
       </View>

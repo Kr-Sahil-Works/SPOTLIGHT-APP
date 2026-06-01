@@ -2,21 +2,21 @@ import ImageViewerModal from "@/components/modals/ImageViewerModal";
 import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
 import {
-    useMutation,
-    useQuery,
+  useMutation,
+  useQuery,
 } from "convex/react";
 import { Image } from "expo-image";
 import {
-    useLocalSearchParams,
-    useRouter,
+  useLocalSearchParams,
+  useRouter,
 } from "expo-router";
 import { useState } from "react";
 
 import {
-    FlatList,
-    Text,
-    TouchableOpacity,
-    View,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function CollectionPage() {
@@ -272,17 +272,21 @@ const removeFromCollection =
                 >
                   <View>
                     {/* IMAGE */}
-                    <Image
-                      source={{
-                        uri: item.imageUrl,
-                      }}
-                      style={{
-                        width: "100%",
-                        aspectRatio: 1,
-                        borderRadius: 14,
-                      }}
-                      resizeMode="cover"
-                    />
+                <Image
+  source={
+    item.imageUrl?.trim()
+      ? { uri: item.imageUrl }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  cachePolicy="memory-disk"
+  transition={120}
+  style={{
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 14,
+  }}
+  contentFit="cover"
+/>
 
                     {/* REMOVE BTN */}
                     {selectionMode &&

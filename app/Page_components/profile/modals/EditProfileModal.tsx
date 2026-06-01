@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React, { useMemo, useState } from "react";
 
 import {
   ActivityIndicator,
-  Image,
   Modal,
   ScrollView,
   Text,
@@ -135,20 +135,22 @@ setHasLocalChanges,
                     "rgba(34,197,94,0.18)",
                 }}
               >
-                <Image
-                  source={{
-                    uri:
-  profile?.image ||
-  "https://ui-avatars.com/api/?background=111111&color=ffffff&name=U",
-                  }}
-                  resizeMode="cover"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: 999,
-                    backgroundColor: "#111",
-                  }}
-                />
+               <Image
+  source={
+    profile?.image?.trim()
+      ? { uri: profile.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  transition={120}
+  style={{
+    width: "100%",
+    height: "100%",
+    borderRadius: 999,
+    backgroundColor: "#111",
+  }}
+/>
               </View>
 
               <TouchableOpacity

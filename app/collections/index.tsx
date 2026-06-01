@@ -2,12 +2,12 @@ import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   FlatList,
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -677,16 +677,20 @@ onLongPress={() => {
     }}
   >
     {item.coverImage ? (
-      <Image
-        source={{
-          uri: item.coverImage,
-        }}
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-        resizeMode="cover"
-      />
+<Image
+  source={
+    item.coverImage?.trim()
+      ? { uri: item.coverImage }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  cachePolicy="memory-disk"
+  transition={120}
+  style={{
+    width: "100%",
+    height: "100%",
+  }}
+  contentFit="cover"
+/>
     ) : (
       <View
         style={{

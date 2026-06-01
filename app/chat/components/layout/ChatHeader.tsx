@@ -1,10 +1,10 @@
 import { ChatTheme } from "@/constants/chatThemes";
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 
 import {
-  Image,
   Linking,
   Text,
   TouchableOpacity,
@@ -167,20 +167,19 @@ return (
             alignItems: "center",
           }}
         >
-        <Image
+<Image
   source={
-    user?.image
-      ? {
-          uri:
-            user.image,
-        }
-      : require("@/assets/images/icons/iconbg.png")
+    user?.image?.trim()
+      ? { uri: user.image }
+      : require("@/assets/images/icons/iconbg.webp")
   }
+  cachePolicy="memory-disk"
+  transition={120}
+  allowDownscaling
   style={{
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginLeft: 14,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
   }}
 />
 
@@ -233,7 +232,7 @@ return (
         onPress={onOpenTheme}
       >
      <Image
-  source={require("@/assets/images/icons/theme.png")}
+  source={require("@/assets/images/icons/theme.webp")}
   style={{
     width: 24,
     height: 24,

@@ -386,9 +386,11 @@ const addToExistingCollection = async (
                 >
                   {/* IMAGE */}
                   <Image
-                    source={{
-                      uri: item.imageUrl,
-                    }}
+                  source={
+  item.imageUrl?.trim()
+    ? { uri: item.imageUrl }
+    : require("@/assets/images/icons/iconbg.webp")
+}
                     style={{
                       width: "100%",
                       aspectRatio: 1,

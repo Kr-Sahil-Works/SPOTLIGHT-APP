@@ -18,8 +18,8 @@ import {
   View
 } from "react-native";
 
+import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import { Image as RNImage } from "react-native";
 
 import { api } from "@/convex/_generated/api";
 import { useMutation } from "convex/react";
@@ -477,11 +477,18 @@ if (!selectedImage) {
             
             {/* IMAGE */}
             <View style={styles.imageSection}>
-              <RNImage
-                source={{ uri: selectedImage }}
-                style={styles.previewImage}
-                resizeMode="cover"
-              />
+        <Image
+  source={
+    selectedImage?.trim()
+      ? { uri: selectedImage }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  style={styles.previewImage}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
+/>
 
               <TouchableOpacity
                 style={styles.changeImageButton}
@@ -500,11 +507,18 @@ if (!selectedImage) {
             {/* CAPTION */}
             <View style={styles.inputSection}>
               <View style={styles.captionContainer}>
-                <RNImage
-                  source={{ uri: user?.imageUrl || "" }}
-                  style={styles.userAvatar}
-                  resizeMode="cover"
-                />
+               <Image
+  source={
+    user?.imageUrl?.trim()
+      ? { uri: user.imageUrl }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  style={styles.userAvatar}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  allowDownscaling
+  transition={120}
+/>
 
                 <TextInput
                   style={styles.captionInput}

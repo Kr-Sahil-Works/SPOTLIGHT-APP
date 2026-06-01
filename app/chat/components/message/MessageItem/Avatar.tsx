@@ -31,7 +31,7 @@ return (
     source={
       avatar?.trim()
         ? undefined
-        : require("@/assets/images/icons/iconbg.png")
+        : require("@/assets/images/icons/iconbg.webp")
     }
     style={{
       width: 28,

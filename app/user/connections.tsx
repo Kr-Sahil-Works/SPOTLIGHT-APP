@@ -154,17 +154,21 @@ const filterUsers = (
           paddingVertical: 12,
         }}
       >
-        <Image
-          source={{
-            uri: item?.image,
-          }}
-          style={{
-            width: 54,
-            height: 54,
-            borderRadius: 999,
-            backgroundColor: "#111",
-          }}
-        />
+       <Image
+  source={
+    item?.image?.trim()
+      ? { uri: item.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  cachePolicy="memory-disk"
+  transition={120}
+  style={{
+    width: 54,
+    height: 54,
+    borderRadius: 999,
+    backgroundColor: "#111",
+  }}
+/>
 
         <View
           style={{

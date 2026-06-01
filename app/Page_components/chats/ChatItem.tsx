@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 function getLastSeen(lastSeen?: number) {
   if (!lastSeen) return "";
@@ -117,14 +118,20 @@ export default function ChatItem({ item }: any) {
       : "rgba(255,255,255,0.08)",
   }}
 >
-  <Image
-    source={{ uri: item.image }}
-    style={{
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-    }}
-  />
+<Image
+  source={
+    item.image?.trim()
+      ? { uri: item.image }
+      : require("@/assets/images/icons/iconbg.webp")
+  }
+  cachePolicy="memory-disk"
+  transition={120}
+  style={{
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  }}
+/>
 </View>
 
       <View
