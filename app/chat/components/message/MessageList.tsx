@@ -157,14 +157,14 @@ const [
     scrollOffsetRef,
   } = useChatScroll();
 
-  useKeyboardScroll(
-    listRef
-  );
+ useKeyboardScroll(
+  flatListRef
+);
 
-  useAutoScroll(
-    messages,
-    listRef
-  );
+useAutoScroll(
+  messages,
+  flatListRef
+);
 
   useThemeScrollSync(
     listRef,

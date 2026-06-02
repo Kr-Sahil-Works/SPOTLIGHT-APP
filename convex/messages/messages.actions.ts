@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation } from "../_generated/server";
+import { action, mutation } from "../_generated/server";
 import { getAuthenticatedUser } from "../users";
 
 export const editMessage = mutation({
@@ -70,6 +70,68 @@ await ctx.db.patch(
     lastMessageSenderId:
       latest?.senderId,
   }
+);
+  },
+});
+
+export const sendPushNotification = action({
+  args: {
+    token: v.string(),
+    title: v.string(),
+    body: v.string(),
+    data: v.optional(v.any()),
+  },
+
+  handler: async (_, args) => {
+    console.log(
+  "PUSH TITLE",
+  args.title
+);
+  const response = await fetch(
+  "https://exp.host/--/api/v2/push/send",
+  {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+   body: JSON.stringify({
+  to: args.token,
+
+  sound: "default",
+
+title: args.title,
+body:
+  args.body
+    .replace(/\n/g, " ")
+    .trim()
+    .slice(0, 140),
+
+subtitle:
+  "Spotlight",
+
+  data: args.data,
+
+  channelId: "default",
+
+  priority: "high",
+
+  threadId:
+    args.data?.userId?.toString(),
+    collapseId:
+  args.data?.userId?.toString(),
+
+  categoryId: "message",
+})
+  }
+);
+
+const result =
+  await response.json();
+
+console.log(
+  "PUSH RESULT",
+  JSON.stringify(result)
 );
   },
 });

@@ -20,6 +20,12 @@ export default function PushHandler() {
         .savePushToken
     );
 
+    const markSeen =
+  useMutation(
+    api.messages.index
+      .markAsSeen
+  );
+
   const {
     isLoaded,
     isSignedIn,
@@ -49,6 +55,19 @@ export default function PushHandler() {
           await import(
             "expo-notifications"
           );
+          await Notifications.setNotificationCategoryAsync(
+  "message",
+[
+  {
+    identifier: "reply",
+    buttonTitle: "Reply",
+  },
+  {
+    identifier: "open",
+    buttonTitle: "Open Chat",
+  },
+]
+);
 
         Notifications
           .setNotificationHandler(
@@ -102,6 +121,10 @@ export default function PushHandler() {
 
         const token =
           await registerForPushNotificationsAsync();
+          console.log(
+  "SAVING TOKEN",
+  token
+);
 
         if (token) {
           await saveToken({
@@ -117,16 +140,45 @@ export default function PushHandler() {
             (
               response: any
             ) => {
+              const actionId =
+  response.actionIdentifier;
+
               const data =
                 response
                   .notification
                   .request
                   .content.data;
 
-              if (
-                data?.userId
-              ) {
-                router.push({
+                  if (
+  actionId === "reply" &&
+  data?.userId
+) {
+  router.push({
+    pathname:
+      "/chat/[id]",
+
+    params: {
+      id:
+        data.userId.toString(),
+
+      focusInput:
+        "true",
+    },
+  });
+
+  return;
+}
+                  
+
+if (
+  data?.userId
+) {
+  markSeen({
+    userId:
+      data.userId,
+  }).catch(() => {});
+
+  router.push({
                   pathname:
                     "/chat/[id]",
 

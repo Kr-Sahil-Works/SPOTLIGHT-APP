@@ -1,9 +1,9 @@
 import {
-    Keyboard,
+  Keyboard,
 } from "react-native";
 
 import {
-    useEffect,
+  useEffect,
 } from "react";
 
 export default function useKeyboardScroll(
@@ -14,15 +14,13 @@ export default function useKeyboardScroll(
       Keyboard.addListener(
         "keyboardDidShow",
         () => {
-          requestAnimationFrame(
-            () => {
-              listRef.current?.scrollToEnd(
-                {
-                  animated: false,
-                }
-              );
-            }
-          );
+          setTimeout(() => {
+            listRef.current?.scrollToEnd(
+              {
+                animated: true,
+              }
+            );
+          }, 150);
         }
       );
 

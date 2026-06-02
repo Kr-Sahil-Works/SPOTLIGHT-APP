@@ -1,4 +1,4 @@
-import { GenericId, v } from "convex/values";
+import { v } from "convex/values";
 import { api } from "../_generated/api";
 import { mutation, query } from "../_generated/server";
 import { getConversationInternal } from "../conversations/conversations.core";
@@ -42,6 +42,7 @@ export const sendMessage = mutation({
         ctx
       );
 
+
     const conversationId =
       await ctx.runMutation(
         api.conversations
@@ -52,6 +53,46 @@ export const sendMessage = mutation({
             args.receiverId,
         }
       );
+
+      if (args.replyTo) {
+  const messages =
+    await ctx.db
+      .query("messages")
+      .withIndex(
+        "by_conversation",
+        (q) =>
+          q.eq(
+            "conversationId",
+            conversationId
+          )
+      )
+      .collect();
+
+  await Promise.all(
+    messages.map((msg) => {
+      if (
+        msg.receiverId ===
+          current._id &&
+        msg.senderId ===
+          args.receiverId &&
+        !msg.seen
+      ) {
+        return ctx.db.patch(
+          msg._id,
+          {
+            seen: true,
+            seenAt:
+              Date.now(),
+            status:
+              "seen",
+          }
+        );
+      }
+
+      return null;
+    })
+  );
+}
 
     await ctx.db.insert(
       "messages",
@@ -110,23 +151,35 @@ export const sendMessage = mutation({
     if (
       receiver?.pushToken
     ) {
-      await sendPushNotification(
-        {
-          token:
-            receiver.pushToken,
+      console.log(
+  "PUSH TOKEN",
+  receiver.pushToken
+);
+  await ctx.scheduler.runAfter(
+  0,
+  api.messages.index.sendPushNotification,
+  {
+    token:
+      receiver.pushToken,
 
-          title:
-            current.username,
+   title:
+  current.fullname,
 
-          body:
-            args.text,
+    body:
+      args.text,
 
-          data: {
-            userId:
-              current._id,
-          },
-        }
-      );
+    data: {
+  userId:
+    current._id,
+
+  senderName:
+    current.fullname,
+
+  senderImage:
+    current.image,
+},
+  }
+);
     }
   },
 });
@@ -160,7 +213,7 @@ export const markAsDelivered = mutation({
           )
       )
       .order("desc")
-      .take(50);
+      .take(200);
 
     await Promise.all(
       messages.map((msg) => {
@@ -200,7 +253,7 @@ api.conversations.index.createConversation,
         q.eq("conversationId", conversationId)
       )
       .order("desc")
-      .take(50);
+      .take(200);
 
     await Promise.all(
  messages.map((msg) => {
@@ -325,6 +378,3 @@ export const getMessages = query({
   },
 });
 
-function sendPushNotification(arg0: { token: string; title: string; body: string; data: { userId: GenericId<"users">; }; }) {
-  throw new Error("Function not implemented.");
-}

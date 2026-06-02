@@ -46,6 +46,12 @@ export default function ChatInput({
     new Animated.Value(42)
   ).current;
 
+  const inputRef =
+  useRef<TextInput>(
+    null
+  );
+
+
   const hasSentOnce =
     useRef(false);
 
@@ -202,6 +208,7 @@ const handleTyping = (value: string) => {
             }}
           >
             <TextInput
+  ref={inputRef}
               value={text}
               onFocus={() =>
                 setFocused(true)
@@ -211,6 +218,7 @@ const handleTyping = (value: string) => {
               }
               onChangeText={handleTyping}
               placeholder="Message..."
+              autoFocus
               placeholderTextColor="#aaa"
               style={{
                 color:

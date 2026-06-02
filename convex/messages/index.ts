@@ -1,6 +1,6 @@
 // actions
 export {
-    deleteMessage, editMessage
+    deleteMessage, editMessage, sendPushNotification
 } from "./messages.actions";
 
 // chat list

@@ -32,6 +32,11 @@ export default function useSend(
   const [text, setText] =
     useState<string>("");
 
+    const [sending,
+  setSending] =
+  useState(false);
+
+
   const sendMessage =
     useMutation(
       api.messages.index
@@ -45,7 +50,12 @@ export default function useSend(
     );
 
   const handleSend =
+  
     async () => {
+      if (sending)
+  return;
+
+setSending(true);
       if (!text.trim())
         return;
 
@@ -92,10 +102,16 @@ export default function useSend(
             replyMsg?.text,
         });
       } catch (e) {
-        console.log(e);
-      }
+          setSending(false);
+  console.log(e);
+
+  alert(
+    "Message failed. Check connection and try again."
+  );
+}
 
       setReplyMsg(null);
+      setSending(false);
     };
 
   return {

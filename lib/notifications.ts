@@ -18,13 +18,38 @@ export async function registerForPushNotificationsAsync() {
 
   if (finalStatus !== "granted") return null;
 
-  const token = (await Notifications.getExpoPushTokenAsync()).data;
+const token = (
+  await Notifications.getExpoPushTokenAsync({
+    projectId:
+      "59f5a6cf-10ee-4edf-bc4c-346d00c2ef9c",
+  })
+).data;
 
+console.log(
+  "EXPO PUSH TOKEN",
+  token
+);
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
-      name: "default",
-      importance: Notifications.AndroidImportance.MAX,
-    });
+  name: "Messages",
+
+  importance:
+    Notifications.AndroidImportance.MAX,
+
+  vibrationPattern: [
+    0,
+    250,
+    250,
+    250,
+  ],
+
+  lockscreenVisibility:
+    Notifications.AndroidNotificationVisibility.PUBLIC,
+
+  enableVibrate: true,
+
+  showBadge: true,
+});
   }
 
   return token;

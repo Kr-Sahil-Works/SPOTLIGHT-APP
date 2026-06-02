@@ -4,6 +4,10 @@ import Post from "@/components/Post";
 import StoriesSection from "@/components/story/Stories";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
+import {
+  getFeedCache,
+  saveFeedCache,
+} from "@/lib/cache/feedCache";
 import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
@@ -46,6 +50,21 @@ const posts = useQuery(
   // ✅ CACHE (PREVENT BLANK UI)
   const [cachedPosts, setCachedPosts] = useState<any[]>([]);
 
+
+  useEffect(() => {
+  const cached =
+    getFeedCache();
+
+  if (
+    Array.isArray(cached) &&
+    cached.length > 0
+  ) {
+    setCachedPosts(
+      cached
+    );
+  }
+}, []);
+
   const [feedPosts, setFeedPosts] =
   useState<any[]>([]);
 
@@ -55,6 +74,9 @@ useEffect(() => {
   }
 
   setCachedPosts(posts);
+
+  saveFeedCache(posts);
+  
 
   const topFive = [...posts]
     .slice(0, 5);

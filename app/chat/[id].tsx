@@ -47,7 +47,7 @@ import {
   Animated,
 } from "react-native";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { storage } from "@/lib/mmkv";
 
 import {
   api,
@@ -148,17 +148,18 @@ const [
   const { applyTheme } =
     useTheme();
 
-  useEffect(() => {
-    AsyncStorage.getItem(
+useEffect(() => {
+  const value =
+    storage.getString(
       `chat-theme-${userId}`
-    ).then((v) => {
-      if (v !== null) {
-        setCachedThemeIndex(
-          Number(v)
-        );
-      }
-    });
-  }, [userId]);
+    );
+
+  if (value !== undefined) {
+    setCachedThemeIndex(
+      Number(value)
+    );
+  }
+}, [userId]);
 
   const {
     messages,
@@ -403,10 +404,10 @@ if (
               i
             );
 
-            await AsyncStorage.setItem(
-              `chat-theme-${userId}`,
-              String(i)
-            );
+       storage.set(
+  `chat-theme-${userId}`,
+  String(i)
+);
 
             applyTheme(
               userId,

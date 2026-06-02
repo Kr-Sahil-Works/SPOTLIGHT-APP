@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "28205677698",
+    "project_id": "spotlight-6cf5a",
+    "storage_bucket": "spotlight-6cf5a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:28205677698:android:21f893c8d3f9737db1489b",
+        "android_client_info": {
+          "package_name": "com.spotlight.chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZR5g8VZcti3vzVxkJx-JwIoWZbM6yPao"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
