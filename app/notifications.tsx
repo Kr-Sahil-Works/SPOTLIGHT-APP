@@ -2,25 +2,71 @@ import NotificationsSkeleton from "@/components/LoaderSkeletons/NotificationsSke
 import Notification from "@/components/Notification";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
+import {
+  getNotificationCache,
+  saveNotificationCache,
+} from "@/lib/cache/notificationCache";
 import { styles } from "@/styles/notifications.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "expo-router";
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Animated, Easing, FlatList, Text, TouchableOpacity, View } from "react-native";
-
 
 export default function Notifications() {
 const notifications = useQuery(api.notifications.getNotifications);
+const [
+  cachedNotifications,
+  setCachedNotifications,
+] = useState<any[]>(
+  getNotificationCache()
+);
+const finalNotifications =
+  notifications ??
+  cachedNotifications;
+
+useEffect(() => {
+if (
+  notifications &&
+  notifications.length > 0
+) {
+    setCachedNotifications(
+      notifications
+    );
+
+    saveNotificationCache(
+      notifications
+    );
+  }
+}, [notifications]);
+
   const markAllAsRead = useMutation(api.notifications.markAllAsRead);
 
   useEffect(() => {
-  markAllAsRead();
+  markAllAsRead().catch(
+    () => {}
+  );
 }, []);
 
-  if (notifications === undefined) return <NotificationsSkeleton />;
-  if (notifications.length === 0) return <NoNotificationsFound />;
-
+  if (
+  notifications ===
+    undefined &&
+  cachedNotifications
+    .length === 0
+)
+  return (
+    <NotificationsSkeleton />
+  );
+ if (
+  finalNotifications.length === 0
+)
+  return (
+    <NoNotificationsFound />
+  );
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -29,7 +75,7 @@ const notifications = useQuery(api.notifications.getNotifications);
       </View>
 
 <FlatList
-  data={notifications}
+ data={finalNotifications}
     renderItem={({ item }) => (
   <Notification notification={item} />
 )}

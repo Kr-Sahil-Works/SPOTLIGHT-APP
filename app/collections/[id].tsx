@@ -1,5 +1,12 @@
 import ImageViewerModal from "@/components/modals/ImageViewerModal";
 import { api } from "@/convex/_generated/api";
+import {
+  getBookmarksCache,
+} from "@/lib/cache/bookmarksCache";
+import {
+  getCollectionPostsCache,
+  saveCollectionPostsCache,
+} from "@/lib/cache/collectionPostsCache";
 import { Ionicons } from "@expo/vector-icons";
 import {
   useMutation,
@@ -10,8 +17,7 @@ import {
   useLocalSearchParams,
   useRouter,
 } from "expo-router";
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import {
   FlatList,
   Text,
@@ -41,13 +47,72 @@ export default function CollectionPage() {
     useState<any>(null);
 
   /* ========================= */
-  const posts =
-    useQuery(
-      api.collections.getCollectionPosts,
-      {
-        collectionId: id as any,
-      }
-    ) ?? [];
+const livePosts =
+  useQuery(
+    api.collections.getCollectionPosts,
+    {
+      collectionId:
+        id as any,
+    }
+  );
+
+const [
+  cachedPosts,
+  setCachedPosts,
+] = useState<any[]>([]);
+
+const posts =
+  livePosts ??
+  cachedPosts;
+
+useEffect(() => {
+  if (
+    livePosts &&
+    livePosts.length > 0
+  ) {
+    setCachedPosts(
+      livePosts
+    );
+
+  saveCollectionPostsCache(
+  String(id),
+  livePosts
+    .filter(
+      (p): p is any =>
+        p != null
+    )
+    .map(
+      (p) =>
+        String(p._id)
+    )
+);
+  }
+}, [livePosts, id]);
+
+useEffect(() => {
+  if (livePosts) return;
+
+  const savedIds =
+    getCollectionPostsCache(
+      String(id)
+    );
+
+  const bookmarks =
+    getBookmarksCache();
+
+const offlinePosts =
+  bookmarks.filter(
+    (post: any) =>
+      post &&
+      savedIds.includes(
+        String(post._id)
+      )
+  );
+
+  setCachedPosts(
+    offlinePosts
+  );
+}, [id]);
 
   const collections =
     useQuery(

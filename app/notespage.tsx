@@ -1,12 +1,22 @@
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import useNetwork from "@/hooks/useNetwork";
+import {
+  getNotesCache,
+  saveNotesCache,
+} from "@/lib/cache/notesCache";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
-import { useRef, useState } from "react";
+import { BlurView } from "expo-blur";
+import * as Clipboard from "expo-clipboard";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
   Dimensions,
   FlatList,
+  KeyboardAvoidingView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -14,18 +24,44 @@ import {
   ViewStyle
 } from "react-native";
 
-import { Id } from "@/convex/_generated/dataModel";
-import { BlurView } from "expo-blur";
-import * as Clipboard from "expo-clipboard";
-import { useRouter } from "expo-router";
-import { KeyboardAvoidingView } from "react-native";
-
 const { height } = Dimensions.get("window");
 
 export default function Notes() {
+  const isOnline =
+  useNetwork();
   const router = useRouter();
 
-  const notes: any = useQuery(api.notes.index.getNotes) || [];
+  const liveNotes =
+  useQuery(
+    api.notes.index.getNotes
+  );
+
+const [
+  cachedNotes,
+  setCachedNotes,
+] = useState<any[]>(
+  getNotesCache()
+);
+
+const notes =
+  liveNotes ??
+  cachedNotes;
+
+  useEffect(() => {
+  if (
+    liveNotes &&
+    liveNotes.length > 0
+  ) {
+    setCachedNotes(
+      liveNotes
+    );
+
+    saveNotesCache(
+      liveNotes
+    );
+  }
+}, [liveNotes]);
+
   const saveNote = useMutation(api.notes.index.saveNote);
   const deleteNote = useMutation(api.notes.index.deleteNote);
   const updateNote = useMutation(api.notes.index.updateNote);
@@ -58,10 +94,14 @@ const [pinned, setPinned] = useState<Id<"notes">[]>([]);
     ]).start();
   };
 
-const confirmDelete = (id: Id<"notes">) => {
+const confirmDelete = (
+  id: Id<"notes">
+) => {
+  if (!isOnline)
+    return;
+
   setDeleteId(id);
 };
-
 
 const showSuccessTick = () => {
   setShowTick(true);
@@ -268,7 +308,17 @@ const openSheet = (note?: any) => {
         );
         showToast(isPinned ? "Unpinned" : "Pinned");
       }}
-      style={actionBtn("#facc15")}
+      
+     disabled={!isOnline}
+style={[
+  actionBtn("#facc15"),
+  {
+    opacity:
+      isOnline
+        ? 1
+        : 0.35,
+  },
+]}
     >
       <Ionicons
         name={isPinned ? "bookmark" : "bookmark-outline"}
@@ -277,10 +327,19 @@ const openSheet = (note?: any) => {
       />
     </TouchableOpacity>
 
-    <TouchableOpacity
+ <TouchableOpacity
+      disabled={!isOnline}
       onPress={() => openSheet(item)}
-      style={actionBtn("#60a5fa")}
-    >
+      style={[
+        actionBtn("#60a5fa"),
+        {
+          opacity:
+            isOnline
+              ? 1
+              : 0.35,
+        },
+      ]}
+>
       <Ionicons name="create-outline" size={20} color="#60a5fa" />
     </TouchableOpacity>
   </View>
@@ -291,7 +350,17 @@ const openSheet = (note?: any) => {
 
       {/* ADD BUTTON */}
       <TouchableOpacity
-        onPress={() => openSheet()}
+        onPress={() => {
+if (!isOnline) {
+showToast(
+  "Internet connection required"
+);
+
+  return;
+}
+
+  openSheet();
+}}
         style={{
           position: "absolute",
           bottom: 30,
@@ -359,7 +428,10 @@ const openSheet = (note?: any) => {
 
       {/* SAVE */}
 <TouchableOpacity
-  disabled={saving}
+  disabled={
+  saving ||
+  !isOnline
+}
   style={{
     marginTop: 12,
     backgroundColor: saving ? "#166534" : "#22c55e", // darker when disabled
@@ -370,6 +442,13 @@ const openSheet = (note?: any) => {
   }}
      onPress={async () => {
   if (saving) return; // 🔥 block double tap
+  if (!isOnline) {
+  alert(
+    "Internet connection required to save notes."
+  );
+
+  return;
+}
   if (!text.trim()) return;
 
   setSaving(true);
@@ -399,7 +478,11 @@ const openSheet = (note?: any) => {
   <ActivityIndicator color="#000" size="small" />
 ) : (
   <Text style={{ color: "#000", fontWeight: "600" }}>
-    {editing ? "Update" : "Save"}
+    {!isOnline
+  ? "Offline"
+  : editing
+  ? "Update"
+  : "Save"}
   </Text>
 )}
       </TouchableOpacity>

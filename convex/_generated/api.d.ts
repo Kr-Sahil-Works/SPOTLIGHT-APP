@@ -20,6 +20,7 @@ import type * as notes_index from "../notes/index.js";
 import type * as notes_notes from "../notes/notes.js";
 import type * as notifications from "../notifications.js";
 import type * as posts_index from "../posts/index.js";
+import type * as social_index from "../social/index.js";
 import type * as users_index from "../users/index.js";
 import type * as users_webhook from "../users/webhook.js";
 
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   "notes/notes": typeof notes_notes;
   notifications: typeof notifications;
   "posts/index": typeof posts_index;
+  "social/index": typeof social_index;
   "users/index": typeof users_index;
   "users/webhook": typeof users_webhook;
 }>;

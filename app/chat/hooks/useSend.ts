@@ -2,8 +2,10 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Message } from "@/types/chat";
 
+import {
+  getNetworkState,
+} from "@/lib/network";
 import { useMutation } from "convex/react";
-
 import { useState } from "react";
 
 type UseSendReturn = {
@@ -56,6 +58,19 @@ export default function useSend(
   return;
 
 setSending(true);
+
+const online =
+  await getNetworkState();
+
+if (!online) {
+  setSending(false);
+
+  alert(
+    "Reconnect to send messages"
+  );
+
+  return;
+}
       if (!text.trim())
         return;
 

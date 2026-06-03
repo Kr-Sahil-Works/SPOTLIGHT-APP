@@ -107,10 +107,11 @@ posts: defineTable({
   /* =========================
      ❤️ LIKES
   ========================= */
-  likes: defineTable({
-    userId: v.id("users"),
-    postId: v.id("posts"),
-  })
+likes: defineTable({
+  userId: v.id("users"),
+  postId: v.id("posts"),
+  createdAt: v.number(),
+})
     .index("by_post", ["postId"])
     .index("by_user_and_post", ["userId", "postId"]),
 

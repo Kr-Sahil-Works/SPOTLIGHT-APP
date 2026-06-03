@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { api } from "../_generated/api";
 import { mutation, query } from "../_generated/server";
 import {
   getAuthenticatedUser,
@@ -87,6 +88,28 @@ export const toggleFollow = mutation({
   isRead: false,
   createdAt: Date.now(),
 });
+if (target.pushToken) {
+  await ctx.scheduler.runAfter(
+    0,
+    api.social.index.sendSocialPush,
+    {
+      token:
+        target.pushToken,
+
+      title:
+        "New Follower 👤",
+
+      body:
+        `${currentUser.fullname} started following you`,
+
+      data: {
+        type: "follow",
+        userId:
+          currentUser._id,
+      },
+    }
+  );
+}
 
     await ctx.db.patch(currentUser._id, {
       following: currentUser.following + 1,
@@ -136,7 +159,28 @@ export const acceptFollowRequest = mutation({
   isRead: false,
   createdAt: Date.now(),
 });
+if (user.pushToken) {
+  await ctx.scheduler.runAfter(
+    0,
+    api.social.index.sendSocialPush,
+    {
+      token:
+        user.pushToken,
 
+      title:
+        "New Follower 👤",
+
+      body:
+        `${sender.fullname} started following you`,
+
+      data: {
+        type: "follow",
+        userId:
+          sender._id,
+      },
+    }
+  );
+}
       await ctx.db.patch(req.senderId, {
         following: sender.following + 1,
       });

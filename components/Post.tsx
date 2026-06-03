@@ -1,6 +1,7 @@
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import useNetwork from "@/hooks/useNetwork";
 import { AppImage } from "@/shared/ui/AppImage";
 import { styles } from "@/styles/feed.styles";
 import { useUser } from "@clerk/clerk-expo";
@@ -19,6 +20,8 @@ import {
   View
 } from "react-native";
 import CommentsModal from "./modals/CommentsModal";
+import LikesModal from "./modals/LikesModal";
+
 
 type PostProps = {
   onDelete?: (id: Id<"posts">) => void;
@@ -40,6 +43,8 @@ type PostProps = {
 };
 
 function Post({ post, onDelete }: PostProps) {
+  const isOnline =
+  useNetwork();
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked);
   const [likesCount, setLikesCount] = useState(post.likes);
@@ -48,6 +53,11 @@ function Post({ post, onDelete }: PostProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
+  const [
+  showLikes,
+  setShowLikes,
+] = useState(false);
 
   useEffect(() => {
   setLoaded(false);
@@ -88,22 +98,60 @@ useEffect(() => {
     outputRange: [-300, 300],
   });
 
-  const handleLike = async () => {
-    const newIsLiked = await toggleLike({ postId: post._id });
-    setIsLiked(newIsLiked);
-    setLikesCount((prev) => (newIsLiked ? prev + 1 : prev - 1));
-  };
+ const handleLike = async () => {
+  if (!isOnline) return;
 
-  const handleBookmark = async () => {
-    const newIsBookmarked = await toggleBookmark({ postId: post._id });
-    setIsBookmarked(newIsBookmarked);
-  };
+  const newIsLiked =
+    await toggleLike({
+      postId: post._id,
+    });
 
-const handleDelete = async () => {
-  await deletePost({ postId: post._id });
-  setShowDeleteModal(false);
-  onDelete?.(post._id);
+  setIsLiked(
+    newIsLiked
+  );
+
+  setLikesCount(
+    (prev) =>
+      newIsLiked
+        ? prev + 1
+        : prev - 1
+  );
 };
+
+const handleBookmark =
+  async () => {
+    if (!isOnline)
+      return;
+
+    const newIsBookmarked =
+      await toggleBookmark({
+        postId:
+          post._id,
+      });
+
+    setIsBookmarked(
+      newIsBookmarked
+    );
+  };
+
+const handleDelete =
+  async () => {
+    if (!isOnline)
+      return;
+
+    await deletePost({
+      postId:
+        post._id,
+    });
+
+    setShowDeleteModal(
+      false
+    );
+
+    onDelete?.(
+      post._id
+    );
+  };
 
   return (
     <View
@@ -130,26 +178,42 @@ const handleDelete = async () => {
           </TouchableOpacity>
         </Link>
 
-        <TouchableOpacity
-          disabled={showDeleteModal}
-          onPress={() => {
-            if (confirmDelete) {
-              setShowDeleteModal(true);
-              setConfirmDelete(false);
-            } else {
-              setShowMenu((p) => !p);
-            }
-          }}
-        >
+       <TouchableOpacity
+  disabled={
+    showDeleteModal ||
+    !isOnline
+  }
+  style={{
+    opacity:
+      isOnline
+        ? 1
+        : 0.35,
+  }}
+  onPress={() => {
+    if (confirmDelete) {
+      setShowDeleteModal(true);
+      setConfirmDelete(false);
+    } else {
+      setShowMenu((p) => !p);
+    }
+  }}
+>
           <Ionicons
             name={confirmDelete ? "trash-outline" : "ellipsis-horizontal"}
             size={20}
-            color={confirmDelete ? COLORS.primary : COLORS.white}
+     color={
+  !isOnline
+    ? "#666"
+    : confirmDelete
+    ? COLORS.primary
+    : COLORS.white
+}
           />
         </TouchableOpacity>
       </View>
 
-      {showMenu && (
+      {isOnline &&
+  showMenu && (
         <Pressable
           style={{
             position: "absolute",
@@ -257,20 +321,52 @@ style={styles.postImage}
       {/* ACTIONS */}
       <View style={styles.postActions}>
         <View style={styles.postActionsLeft}>
-          <TouchableOpacity onPress={handleLike}>
+         <TouchableOpacity
+  disabled={!isOnline}
+  onPress={handleLike}
+  style={{
+    opacity:
+      isOnline
+        ? 1
+        : 0.45,
+  }}
+>
             <Ionicons
               name={isLiked ? "heart" : "heart-outline"}
               size={24}
               color={isLiked ? COLORS.primary : COLORS.white}
             />
           </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => setShowComments(true)}>
+<TouchableOpacity
+  disabled={!isOnline}
+  onPress={() =>
+    setShowComments(
+      true
+    )
+  }
+  style={{
+    opacity:
+      isOnline
+        ? 1
+        : 0.45,
+  }}
+>
             <Ionicons name="chatbubble-outline" size={22} color={COLORS.white} />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={handleBookmark}>
+      <TouchableOpacity
+  disabled={!isOnline}
+  onPress={
+    handleBookmark
+  }
+  style={{
+    opacity:
+      isOnline
+        ? 1
+        : 0.45,
+  }}
+>
           <Ionicons
             name={isBookmarked ? "bookmark" : "bookmark-outline"}
             size={22}
@@ -281,11 +377,23 @@ style={styles.postImage}
 
       {/* INFO */}
       <View style={styles.postInfo}>
-        <Text style={styles.likesText}>
-          {likesCount > 0
-            ? `${likesCount.toLocaleString()} likes`
-            : "Be the first to like"}
-        </Text>
+     <TouchableOpacity
+  onPress={() =>
+    setShowLikes(
+      true
+    )
+  }
+>
+  <Text
+    style={
+      styles.likesText
+    }
+  >
+    {likesCount > 0
+      ? `${likesCount.toLocaleString()} likes`
+      : "Be the first to like"}
+  </Text>
+</TouchableOpacity>
 
         {post.caption && (
           <Text style={styles.captionText}>{String(post.caption)}</Text>
@@ -385,6 +493,19 @@ style={styles.postImage}
           </View>
         </View>
       </Modal>
+
+      <LikesModal
+  visible={
+    showLikes
+  }
+  onClose={() =>
+    setShowLikes(
+      false
+    )
+  }
+  postId={post._id}
+/>
+
 
       <CommentsModal
         postId={post._id}

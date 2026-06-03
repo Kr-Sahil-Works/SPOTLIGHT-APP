@@ -17,6 +17,7 @@ export default function ProfileInfo({
   user,
   glow,
   onEdit,
+  isOnline,
   onShare,
   onFollowersPress,
   onFollowingPress,
@@ -161,14 +162,23 @@ const screenWidth = Dimensions.get("window").width;
 
       {/* ACTION BUTTONS */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={onEdit}
-        >
-          <Text style={styles.editButtonText}>
-            Edit Profile
-          </Text>
-        </TouchableOpacity>
+    <TouchableOpacity
+  style={[
+    styles.editButton,
+    {
+      opacity:
+        isOnline
+          ? 1
+          : 0.45,
+    },
+  ]}
+  disabled={!isOnline}
+  onPress={onEdit}
+>
+  <Text style={styles.editButtonText}>
+    Edit Profile
+  </Text>
+</TouchableOpacity>
 
         <TouchableOpacity
           style={styles.shareButton}

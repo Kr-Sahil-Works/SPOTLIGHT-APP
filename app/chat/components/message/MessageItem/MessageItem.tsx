@@ -33,6 +33,7 @@ import SwipeReply from "./SwipeReply";
 
 import useDoubleTap from "../gestures/useDoubleTap";
 
+import useNetwork from "@/hooks/useNetwork";
 import useMessageGestures from "../gestures/useMessageGestures";
 
 type Props = {
@@ -132,6 +133,9 @@ isDeleting,
   const msgRef =
     useRef<any>(null);
 
+    const isOnline =
+  useNetwork();
+
   const {
     panX,
 
@@ -188,15 +192,18 @@ useEffect(() => {
 
   const handleTap =
     useDoubleTap({
-      onDoubleTap: async () => {
-        await Haptics.impactAsync(
-          Haptics
-            .ImpactFeedbackStyle
-            .Light
-        );
+onDoubleTap: async () => {
+  if (!isOnline)
+    return;
 
-        onReact(item);
-      },
+  await Haptics.impactAsync(
+    Haptics
+      .ImpactFeedbackStyle
+      .Light
+  );
+
+  onReact(item);
+},
     });
 
   if (item.type === "system") {
@@ -259,7 +266,10 @@ style={{
         ref={msgRef}
         delayLongPress={220}
 onPress={handleTap}
-     onLongPress={(e) => {
+  onLongPress={(e) => {
+  if (!isOnline)
+    return;
+
   Haptics.impactAsync(
     Haptics
       .ImpactFeedbackStyle

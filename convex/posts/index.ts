@@ -4,5 +4,9 @@ export { getPostsByUser } from "./posts.user";
 
 export { createPost, deletePost, generateUploadUrl } from "./posts.core";
 
-export { toggleLike } from "./posts.likes";
+export { getPostLikes, toggleLike } from "./posts.likes";
+
+export {
+    getPostById
+} from "./posts.single";
 

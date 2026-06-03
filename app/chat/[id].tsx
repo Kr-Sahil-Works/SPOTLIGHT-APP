@@ -1,6 +1,6 @@
+import useNetwork from "@/hooks/useNetwork";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
-
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -36,6 +36,11 @@ import * as Haptics from "expo-haptics";
 import {
   LinearGradient,
 } from "expo-linear-gradient";
+
+import {
+  useAuth,
+} from "@clerk/clerk-expo";
+
 
 import React, {
   useEffect,
@@ -78,8 +83,14 @@ import { Ionicons } from "@expo/vector-icons";
 import useTheme from "./hooks/useTheme";
 
 export default function ChatScreen() {
+  const {
+  isLoaded,
+  isSignedIn,
+} = useAuth();
   const insets =
   useSafeAreaInsets();
+  const isOnline =
+  useNetwork();
 
   const params =
     useLocalSearchParams<{
@@ -177,10 +188,14 @@ useEffect(() => {
     loadingMore,
   } = useMessages(userId);
 
-  const typing = useQuery(
+const typing =
+  useQuery(
     api.messages.index
       .getTyping,
-    conversationId
+
+    conversationId &&
+    conversationId !==
+      ("undefined" as any)
       ? {
           conversationId,
         }
@@ -188,13 +203,15 @@ useEffect(() => {
   );
 
 
-  const conversation =
+const conversation =
   useQuery(
     api.conversations
       .index
       .getConversation,
 
-    conversationId
+    conversationId &&
+    conversationId !==
+      ("undefined" as any)
       ? {
           conversationId,
         }
@@ -236,20 +253,38 @@ const deleteMessage =
     api.messages.index
       .deleteMessage
   );
-  useEffect(() => {
-    if (!userId) {
-      return;
-    }
 
-    markAsDelivered({
-      userId,
-    }).catch(() => {});
+useEffect(() => {
+  if (
+    !userId ||
+    !isLoaded ||
+    !isSignedIn ||
+    !isOnline
+  ) {
+    return;
+  }
 
-    markAsSeen({
-      userId,
-    }).catch(() => {});
-  }, [messages.length]);
+  const run =
+    async () => {
+      try {
+        await markAsDelivered({
+          userId,
+        });
 
+        await markAsSeen({
+          userId,
+        });
+      } catch {}
+    };
+
+  run();
+}, [
+  messages.length,
+  isLoaded,
+  isSignedIn,
+  isOnline,
+  userId,
+]);
   const resolvedThemeIndex =
     previewThemeIndex !==
     null
@@ -607,6 +642,8 @@ onScrollTo={(
                   
 
 onPin={async (msg) => {
+  if (!isOnline)
+  return;
   if (!conversationId)
     return;
 
@@ -640,17 +677,23 @@ onPin={async (msg) => {
 onReply={
                     setReplyMsg
                   }
-      onEdit={(msg) => {
+onEdit={(msg) => {
+  if (!isOnline)
+    return;
+
   setEditingMessage(
     msg
   );
 
   setText(msg.text);
 }}
-                onReact={async ({
+onReact={async ({
   messageId,
   reaction,
 }) => {
+  if (!isOnline)
+    return;
+
   try {
     await Haptics.impactAsync(
       Haptics
@@ -672,6 +715,8 @@ onReply={
                 onDelete={async (
   msg
 ) => {
+  if (!isOnline)
+  return;
   try {
     const target =
       messages.find(

@@ -1,3 +1,4 @@
+import useNetwork from "@/hooks/useNetwork";
 import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -17,6 +18,7 @@ import {
 /* ================= TYPES ================= */
 
 type ItemProps = {
+  isOnline: boolean;
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   onPress?: () => void;
@@ -34,26 +36,43 @@ const Item = ({
   toggle,
   value,
   onToggle,
+  isOnline,
 }: ItemProps) => {
-  const isAllowed =
-    title === "About Developer" ||
-    title === "Backup chats" ||
-    title === "Export data" ||
-    title === "Account settings" ||
-    title === "Login to another account" ||
-    title === "Logout";
+const isAllowed =
+  title ===
+    "About Developer" ||
+  title ===
+    "Logout" ||
+  title ===
+    "Backup chats" ||
+  title ===
+    "Export data" ||
+  title ===
+    "Account settings";
 
-  const handlePress = () => {
-    if (!isAllowed) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onPress && onPress();
-  };
+const canUse =
+  isOnline &&
+  isAllowed;
+
+const handlePress = () => {
+  if (!canUse) return;
+
+  Haptics.impactAsync(
+    Haptics
+      .ImpactFeedbackStyle
+      .Light
+  );
+
+  onPress?.();
+};
 
   return (
     <TouchableOpacity
-      activeOpacity={isAllowed ? 0.7 : 1}
+      activeOpacity={
+  canUse ? 0.7 : 1
+}
       onPress={handlePress}
-      disabled={!isAllowed}
+      disabled={!canUse}
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -68,7 +87,10 @@ borderColor: isAllowed
   ? "rgba(34,197,94,0.15)"
   : "rgba(255,255,255,0.05)",
         marginBottom: 10,
-        opacity: isAllowed ? 1 : 0.5,
+        opacity:
+  canUse
+    ? 1
+    : 0.35,
       }}
     >
       <Ionicons name={icon} size={20} color="#9be7c4" />
@@ -77,7 +99,7 @@ borderColor: isAllowed
         {title}
       </Text>
 
-      {!isAllowed && (
+      {!canUse && (
         <Ionicons name="lock-closed" size={16} color="#6b7280" />
       )}
 
@@ -91,7 +113,7 @@ borderColor: isAllowed
           }}
           trackColor={{ false: "#333", true: "#22c55e" }}
           thumbColor="#fff"
-          disabled={!isAllowed}
+          disabled={!canUse}
         />
       )}
     </TouchableOpacity>
@@ -135,6 +157,9 @@ const Section = ({ title, children }: any) => {
 export default function Settings() {
   const { signOut } = useAuth();
   const router = useRouter();
+
+  const isOnline =
+  useNetwork();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -243,6 +268,7 @@ router.push("/developer");
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <Section title="Support">
           <Item
+  isOnline={isOnline}
   icon="heart-outline"
   title="About Developer"
 onPress={() =>
@@ -302,9 +328,11 @@ onPress={() =>
 )}
 
         <Section title="Upcoming features">
-          <Item icon="options-outline" title="Enable / Disable Fields" />
+          <Item
+  isOnline={isOnline} icon="options-outline" title="Enable / Disable Fields" />
 
           <Item
+  isOnline={isOnline}
             icon="camera-outline"
             title="Integrated camera filters on post"
             toggle
@@ -313,6 +341,7 @@ onPress={() =>
           />
 
           <Item
+  isOnline={isOnline}
             icon="albums-sharp"
             title="Allow Tagging on your posts"
             toggle
@@ -320,23 +349,29 @@ onPress={() =>
             onToggle={setMoveScreen}
           />
 
-          <Item icon="image-outline" title="Images" />
-          <Item icon="phone-portrait-outline" title="Display" />
+          <Item
+  isOnline={isOnline} icon="image-outline" title="Images" />
+          <Item
+  isOnline={isOnline} icon="phone-portrait-outline" title="Display" />
         </Section>
 
         <Section title="Data">
-          <Item icon="cloud-upload-outline" title="Backup chats" onPress={() => {}} />
-          <Item icon="document-outline" title="Export data" onPress={() => {}} />
+          <Item
+  isOnline={isOnline} icon="cloud-upload-outline" title="Backup chats" onPress={() => {}} />
+          <Item
+  isOnline={isOnline} icon="document-outline" title="Export data" onPress={() => {}} />
         </Section>
 
         <Section title="Account">
           <Item
+  isOnline={isOnline}
   icon="person-outline"
   title="Account settings"
   onPress={() => router.push("/(app)/account")}
 />
 
           <Item
+  isOnline={isOnline}
             icon="log-out-outline"
             title="Logout"
             onPress={() => setShowLogoutModal(true)}

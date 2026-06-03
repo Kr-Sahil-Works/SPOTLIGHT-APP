@@ -4,6 +4,12 @@ import { SplashScreen, Stack } from "expo-router";
 import { useCallback, useEffect } from "react";
 
 import PushHandler from "@/components/PushHandler";
+import {
+  AppToastProvider,
+} from "@/components/common/AppToast";
+import OfflineBanner from "@/components/common/OfflineBanner";
+import useNetwork from "@/hooks/useNetwork";
+
 import { api } from "@/convex/_generated/api";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useMutation, useQuery } from "convex/react";
@@ -51,10 +57,17 @@ const handleState =
         return;
       }
 
-      await setOnline({
-        isOnline:
-          state === "active",
-      });
+   if (
+  !isLoaded ||
+  !isSignedIn
+) {
+  return;
+}
+
+await setOnline({
+  isOnline:
+    state === "active",
+});
     } catch {}
   };
 
@@ -67,8 +80,15 @@ const handleState =
     handleState(
       AppState.currentState
     );
-    const interval =
+const interval =
   setInterval(() => {
+    if (
+      !isLoaded ||
+      !isSignedIn
+    ) {
+      return;
+    }
+
     setOnline({
       isOnline: true,
     }).catch(() => {});
@@ -106,6 +126,8 @@ const handleState =
    ✅ APP CONTENT
 ========================= */
 function AppContent({ onLayoutRootView }: any) {
+  const isOnline =
+  useNetwork();
   const { user } = useUser();
   const {
   isLoaded,
@@ -148,6 +170,10 @@ useEffect(() => {
         >
           {isSignedIn && <PushHandler />}
 
+{!isOnline && (
+  <OfflineBanner />
+)}
+
           <Stack
            screenOptions={{
   headerShown: false,
@@ -189,9 +215,15 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ClerkAndConvexProvider>
-        <AppContent onLayoutRootView={onLayoutRootView} />
-      </ClerkAndConvexProvider>
+    <ClerkAndConvexProvider>
+  <AppToastProvider>
+    <AppContent
+      onLayoutRootView={
+        onLayoutRootView
+      }
+    />
+  </AppToastProvider>
+</ClerkAndConvexProvider>
     </GestureHandlerRootView>
   );
 }

@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import useUser from "@/app/chat/hooks/useUser";
+import useNetwork from "@/hooks/useNetwork";
 import { useState } from "react";
 import CallOptionsModal from "../modals/CallOptionsModal";
 
@@ -37,7 +38,8 @@ pinnedMessages = [],
 onPinPress,
 }: Props) {
   const router = useRouter();
-
+const isOnline =
+  useNetwork();
   const { user } = useUser(userId);
 
   const [showCallModal, setShowCallModal] = useState(false);
@@ -215,32 +217,50 @@ return (
       </View>
 
       {/* CALL BTN */}
-      <TouchableOpacity
-        style={{ marginRight: 14 }}
-        onPress={() => setShowCallModal(true)}
-      >
- <Ionicons
-  name="call-sharp"
-  size={22}
-  color={theme.headerText}
-/>
-      </TouchableOpacity>
+ <TouchableOpacity
+  disabled={!isOnline}
+  style={{
+    marginRight: 14,
+    opacity: isOnline ? 1 : 0.35,
+  }}
+  onPress={() =>
+    setShowCallModal(true)
+  }
+>
+  <Ionicons
+    name="call-sharp"
+    size={22}
+    color={
+      isOnline
+        ? theme.headerText
+        : "#666"
+    }
+  />
+</TouchableOpacity>
 
       {/* THEME BTN */}
-      <TouchableOpacity
-        style={{ marginRight: 5 }}
-        onPress={onOpenTheme}
-      >
-     <Image
-  source={require("@/assets/images/icons/theme.webp")}
+     <TouchableOpacity
+  disabled={!isOnline}
   style={{
-    width: 24,
-    height: 24,
-    opacity: 0.92
+    marginRight: 5,
+    opacity:
+      isOnline ? 1 : 0.35,
   }}
-  resizeMode="contain"
-/>
-      </TouchableOpacity>
+  onPress={onOpenTheme}
+>
+  <Image
+    source={require("@/assets/images/icons/theme.webp")}
+    style={{
+      width: 24,
+      height: 24,
+      opacity:
+        isOnline
+          ? 0.92
+          : 0.35,
+    }}
+    resizeMode="contain"
+  />
+</TouchableOpacity>
     </View>
 {pinnedMessages.length >
   0 && (

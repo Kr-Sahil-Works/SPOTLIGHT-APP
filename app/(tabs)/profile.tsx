@@ -2,6 +2,10 @@ import { Loader } from "@/components/LoaderSkeletons/Loader";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/profile.styles";
 
+import {
+  useAppToast,
+} from "@/components/common/AppToast";
+import useNetwork from "@/hooks/useNetwork";
 import { useAuth } from "@clerk/clerk-expo";
 import { useMutation, useQuery } from "convex/react";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -15,6 +19,7 @@ import {
   Share,
   View
 } from "react-native";
+
 
 import ProfileGrid from "@/app/Page_components/profile/grid/ProfileGrid";
 import ProfileHeader from "@/app/Page_components/profile/header/ProfileHeader";
@@ -34,9 +39,12 @@ import { Id } from "@/convex/_generated/dataModel";
 import useProfileTabs from "@/hooks/useProfileTabs";
 
 export default function Profile() {
+  const isOnline =
+  useNetwork();
   const router = useRouter();
   const { signOut } = useAuth();
-
+const { showToast } =
+  useAppToast();
   /* 🔥 DATA */
   const currentUser = useQuery(api.users.index.getCurrentUser);
   const posts = useQuery(api.posts.index.getPostsByUser, {});
@@ -225,6 +233,16 @@ setEditedProfile((p: any) => ({
 };
 
 const handleSaveProfile = async () => {
+  if (!isOnline) {
+showToast({
+  type: "error",
+  message:
+    "Internet connection required",
+});
+
+
+  return;
+}
   try {
     setSaving(true);
 
@@ -336,8 +354,20 @@ setImageVersion(Date.now());
         {/* PROFILE INFO */}
    <ProfileInfo
   user={currentUser}
+  isOnline={isOnline}
   glow={glow}
-  onEdit={() => setIsEditModalVisible(true)}
+  onEdit={() => {
+  if (!isOnline) {
+   showToast({
+  type: "error",
+  message:
+    "Internet connection required",
+});
+    return;
+  }
+
+  setIsEditModalVisible(true);
+}}
   onShare={handleShare}
   onFollowersPress={() =>
     router.push({

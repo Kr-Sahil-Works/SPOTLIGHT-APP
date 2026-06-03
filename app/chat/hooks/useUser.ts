@@ -1,12 +1,43 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+
 import { useQuery } from "convex/react";
 
-export default function useUser(userId: Id<"users">) {
-  const user = useQuery(api.users.index.getUser, { userId });
+import {
+  getProfileCache,
+  saveProfileCache,
+} from "@/lib/cache/profileCache";
+
+export default function useUser(
+  userId: Id<"users">
+) {
+  const liveUser =
+    useQuery(
+      api.users.index.getUser,
+      { userId }
+    );
+
+  const cachedUser =
+    getProfileCache(
+      String(userId)
+    );
+
+  if (liveUser) {
+    saveProfileCache(
+      String(userId),
+      liveUser
+    );
+  }
 
   return {
-    user: user ?? null,
-    isLoading: user === undefined,
+    user:
+      liveUser ??
+      cachedUser ??
+      null,
+
+    isLoading:
+      liveUser ===
+        undefined &&
+      !cachedUser,
   };
 }

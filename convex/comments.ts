@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { api } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import { getAuthenticatedUser } from "./users/users.core";
 
@@ -31,17 +32,66 @@ if (!content) throw new ConvexError("Empty comment");
     });
 
     // 🔔 notification (not self)
-    if (post.userId !== user._id) {
-      await ctx.db.insert("notifications", {
-        receiverId: post.userId,
-        senderId: user._id,
-        type: "comment",
-        isRead: false,
-        postId: args.postId,
-        commentId,
-        createdAt: Date.now(), // 🔥 added
-      });
+   if (post.userId !== user._id) {
+  await ctx.db.insert(
+    "notifications",
+    {
+      receiverId:
+        post.userId,
+
+      senderId:
+        user._id,
+
+      type: "comment",
+
+      isRead: false,
+
+      postId:
+        args.postId,
+
+      commentId,
+
+      createdAt:
+        Date.now(),
     }
+  );
+
+  const receiver =
+    await ctx.db.get(
+      post.userId
+    );
+
+  if (
+    receiver?.pushToken
+  ) {
+    await ctx.scheduler.runAfter(
+      0,
+      api.social.index
+        .sendSocialPush,
+      {
+        token:
+          receiver.pushToken,
+
+        title:
+          "New Comment 💬",
+
+        body:
+          `${user.fullname} commented on your post`,
+
+        data: {
+          type:
+            "comment",
+
+          postId:
+            args.postId,
+
+          userId:
+            user._id,
+        },
+      }
+    );
+  }
+}
 
     return commentId;
   },

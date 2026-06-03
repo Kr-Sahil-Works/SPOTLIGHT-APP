@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 
+import useNetwork from "@/hooks/useNetwork";
 import {
   Animated,
   TextInput,
@@ -54,8 +55,12 @@ export default function ChatInput({
 
   const hasSentOnce =
     useRef(false);
+    const isOnline =
+  useNetwork();
 
-  const disabled = !text.trim();
+  const disabled =
+  !text.trim() ||
+  !isOnline;
 
   const [focused, setFocused] =
     useState(false);
@@ -115,6 +120,10 @@ const typingTimeout = useRef<any>(null);
 const isTypingRef = useRef(false);
 
 const handleTyping = (value: string) => {
+  if (!isOnline) {
+  setText(value);
+  return;
+}
   setText(value);
 
   // already typing
@@ -149,6 +158,11 @@ const handleTyping = (value: string) => {
     <View
       style={{
         padding: 10,
+
+        paddingBottom:
+          isOnline
+            ? 10
+            : 35,
 
       backgroundColor:
   theme.wallpaper
@@ -217,7 +231,11 @@ const handleTyping = (value: string) => {
                 setFocused(false)
               }
               onChangeText={handleTyping}
-              placeholder="Message..."
+              placeholder={
+  isOnline
+    ? "Message..."
+    : "Reconnect to send"
+}
               autoFocus
               placeholderTextColor="#aaa"
               style={{

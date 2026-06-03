@@ -9,7 +9,23 @@ import * as FileSystem from "expo-file-system/legacy";
 import { Image } from "expo-image";
 import * as MediaLibrary from "expo-media-library";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  getBookmarksCache,
+  saveBookmarksCache,
+} from "@/lib/cache/bookmarksCache";
+
+import {
+  getCollectionsCache,
+  saveCollectionsCache,
+} from "@/lib/cache/collectionsCache";
+
+import useNetwork from "@/hooks/useNetwork";
 import {
   ActivityIndicator,
   Alert,
@@ -27,13 +43,74 @@ import {
 export default function Bookmarks() {
   const router = useRouter();
 
-  const bookmarkedPosts =
-    useQuery(api.bookmarks.getBookmarkedPosts, {
-      limit: 30,
-    }) ?? [];
+  const isOnline =
+  useNetwork();
 
-  const collections =
-    useQuery(api.collections.getCollections) ?? [];
+const liveBookmarks =
+  useQuery(
+    api.bookmarks.getBookmarkedPosts,
+    {
+      limit: 30,
+    }
+  );
+
+const [
+  cachedBookmarks,
+  setCachedBookmarks,
+] = useState<any[]>(
+  getBookmarksCache()
+);
+
+const bookmarkedPosts =
+  liveBookmarks ??
+  cachedBookmarks;
+
+ const liveCollections =
+  useQuery(
+    api.collections.getCollections
+  );
+
+const [
+  cachedCollections,
+  setCachedCollections,
+] = useState<any[]>(
+  getCollectionsCache()
+);
+
+const collections =
+  liveCollections ??
+  cachedCollections;
+
+  useEffect(() => {
+  if (
+    liveBookmarks &&
+    liveBookmarks.length > 0
+  ) {
+    setCachedBookmarks(
+      liveBookmarks
+    );
+
+    saveBookmarksCache(
+      liveBookmarks
+    );
+  }
+}, [liveBookmarks]);
+
+useEffect(() => {
+  if (
+    liveCollections &&
+    liveCollections.length > 0
+  ) {
+    setCachedCollections(
+      liveCollections
+    );
+
+    saveCollectionsCache(
+      liveCollections
+    );
+  }
+}, [liveCollections]);
+
 
   const createCollection = useMutation(
     api.collections.createCollection
@@ -559,18 +636,25 @@ const addToExistingCollection = async (
                 }}
               />
 
-              <TouchableOpacity
-                onPress={
-                  createNewCollection
-                }
-                style={{
-                  backgroundColor:
-                    "#00ff88",
-                  paddingHorizontal: 18,
-                  borderRadius: 16,
-                  justifyContent: "center",
-                }}
-              >
+      <TouchableOpacity
+  disabled={
+    !isOnline
+  }
+  onPress={
+    createNewCollection
+  }
+  style={{
+    backgroundColor:
+      "#00ff88",
+    paddingHorizontal: 18,
+    borderRadius: 16,
+    justifyContent: "center",
+    opacity:
+      isOnline
+        ? 1
+        : 0.4,
+  }}
+>
                 <Ionicons
                   name="add"
                   size={24}
@@ -586,9 +670,12 @@ const addToExistingCollection = async (
                 item._id
               }
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() =>
-                    addToExistingCollection(
+               <TouchableOpacity
+  disabled={
+    !isOnline
+  }
+  onPress={() =>
+    addToExistingCollection(
                       item._id
                     )
                   }
@@ -599,6 +686,11 @@ const addToExistingCollection = async (
                     borderBottomWidth: 1,
                     borderBottomColor:
                       "rgba(255,255,255,0.05)",
+
+                      opacity:
+  isOnline
+    ? 1
+    : 0.4,
                   }}
                 >
                   <Ionicons

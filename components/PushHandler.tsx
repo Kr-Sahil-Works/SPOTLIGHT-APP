@@ -150,6 +150,60 @@ export default function PushHandler() {
                   .content.data;
 
                   if (
+  data?.type === "follow" &&
+  data?.userId
+) {
+  router.push({
+    pathname:
+      "/user/[id]",
+
+    params: {
+      id:
+        data.userId.toString(),
+    },
+  });
+
+  return;
+}
+
+if (
+  data?.type === "comment" &&
+  data?.postId
+) {
+  router.push({
+    pathname:
+      "/post/[id]",
+
+    params: {
+      id:
+        data.postId.toString(),
+
+      openComments:
+        "true",
+    },
+  });
+
+  return;
+}
+
+if (
+  data?.type === "like" &&
+  data?.postId
+) {
+  router.push({
+    pathname:
+      "/post/[id]",
+
+    params: {
+      id:
+        data.postId.toString(),
+    },
+  });
+
+  return;
+}
+
+                  if (
   actionId === "reply" &&
   data?.userId
 ) {
@@ -171,6 +225,8 @@ export default function PushHandler() {
                   
 
 if (
+  isLoaded &&
+  isSignedIn &&
   data?.userId
 ) {
   markSeen({

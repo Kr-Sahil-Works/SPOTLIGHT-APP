@@ -18,13 +18,19 @@ import {
   View
 } from "react-native";
 
+import {
+  useAppToast,
+} from "@/components/common/AppToast";
+import { api } from "@/convex/_generated/api";
+import useNetwork from "@/hooks/useNetwork";
+import { useMutation } from "convex/react";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 
-import { api } from "@/convex/_generated/api";
-import { useMutation } from "convex/react";
 
 export default function CreateScreen() {
+  const isOnline =
+  useNetwork();
   const router = useRouter();
   const { user } = useUser();
 
@@ -36,7 +42,8 @@ const [blockingUI, setBlockingUI] = useState(false);
 const [showToast, setShowToast] = useState(false);
 const toastAnim = useRef(new Animated.Value(0)).current;
 
-
+const { showToast: appToast } =
+  useAppToast();
   const shimmer = useRef(new Animated.Value(0)).current;
 const breathe = useRef(new Animated.Value(0.6)).current;
 
@@ -80,21 +87,43 @@ useEffect(() => {
   const createPost = useMutation(api.posts.index.createPost);
   
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+const pickImage = async () => {
+  if (!isOnline) {
+    appToast({
+      type: "error",
+      message:
+        "Connect to the internet to upload a post",
+    });
+
+    return;
+  }
+
+  const result =
+    await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
 
-    if (!result.canceled) {
-      setSelectedImage(result.assets[0].uri);
-    }
-  };
+  if (!result.canceled) {
+    setSelectedImage(
+      result.assets[0].uri
+    );
+  }
+};
 
   const handleShare = async () => {
     if (isSharing) return;
+    if (!isOnline) {
+appToast({
+  type: "error",
+  message:
+    "Internet connection required",
+});
+
+  return;
+}
     if (!selectedImage) return;
 setIsSharing(true);
 setBlockingUI(true);
@@ -269,18 +298,19 @@ if (!selectedImage) {
           padding: 20,
         }}
       >
-        <TouchableOpacity
-          onPress={pickImage}
-          activeOpacity={0.9}
-          style={{
-            width: "100%",
-            borderRadius: 20,
-            backgroundColor: "#0a0a0a",
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.06)",
-            overflow: "hidden",
-          }}
-        >
+   <TouchableOpacity
+  onPress={pickImage}
+  activeOpacity={
+    isOnline
+      ? 0.9
+      : 1
+  }
+  style={{
+    opacity:
+      isOnline
+        ? 1
+        : 0.55,
+  }}>
           
           {/* HEADER FAKE */}
           <View
@@ -456,13 +486,21 @@ if (!selectedImage) {
               styles.shareButton,
               isSharing && styles.shareButtonDisabled,
             ]}
-            disabled={isSharing || !selectedImage}
+            disabled={
+  isSharing ||
+  !selectedImage ||
+  !isOnline
+}
             onPress={handleShare}
           >
             {isSharing ? (
               <ActivityIndicator size="small" color={COLORS.primary} />
             ) : (
-              <Text style={styles.shareText}>Share</Text>
+              <Text style={styles.shareText}>
+  {isOnline
+    ? "Share"
+    : "Offline"}
+</Text>
             )}
           </TouchableOpacity>
         </View>
