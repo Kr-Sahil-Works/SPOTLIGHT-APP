@@ -1,4 +1,4 @@
-import GreenLoader from "@/components/LoaderSkeletons/GreenLoader";
+import GreenLoader from "@/components/loaders/GreenLoader";
 import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/auth.styles";
 import { useSSO } from "@clerk/clerk-expo";
@@ -13,7 +13,6 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, Text, View } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
-const redirectUrl = AuthSession.makeRedirectUri();
 
 export default function Login() {
 
@@ -106,29 +105,43 @@ const handleGoogleSignIn = async () => {
   setLoading(true);
 
   try {
-    const { createdSessionId, setActive, signIn } =
-      await startSSOFlow({
-        strategy: "oauth_google",
-      });
+    console.log("Starting OAuth");
 
-    // 🔥 IMPORTANT: trigger external auth if needed
-    if (signIn?.firstFactorVerification?.externalVerificationRedirectURL) {
-      await WebBrowser.openAuthSessionAsync(
-        signIn.firstFactorVerification.externalVerificationRedirectURL.toString(),
-        "spotlightapp://"
-      );
-    }
+const {
+  createdSessionId,
+  setActive,
+} = await startSSOFlow({
+  strategy: "oauth_google",
+  redirectUrl: AuthSession.makeRedirectUri({
+    scheme: "spotlightapp",
+    path: "sso-callback",
+  }),
+});
+
+console.log("Returned From OAuth");
+
+console.log(
+  "OAuth Result",
+  {
+    createdSessionId,
+    hasSetActive: !!setActive,
+  }
+);
+
 if (setActive && createdSessionId) {
   await setActive({ session: createdSessionId });
 resetMorph();
 setLoading(false);
   // small delay avoids race condition
   setTimeout(() => {
-    router.replace("/");
+    router.replace("/(tabs)");
   }, 100);
 
   return;
 }
+console.log(
+  "OAuth Finished"
+);
   } catch (error: any) {
     console.error("OAuth error:", error);
     resetMorph();

@@ -1,7 +1,8 @@
-import { Loader } from "@/components/LoaderSkeletons/Loader";
+import { Loader } from "@/components/loaders/Loader";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import ProfileTabs from "@/features/profile/tabs/ProfileTabs";
 import { styles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
@@ -9,6 +10,7 @@ import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
+  Animated,
   Dimensions,
   FlatList,
   Modal,
@@ -18,7 +20,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-
 
 export default function UserProfileScreen() {
 
@@ -31,6 +32,42 @@ const screenWidth =
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
+  const [activeTab, setActiveTab] =
+  React.useState("grid");
+
+const tabIndex =
+  React.useRef(
+    new Animated.Value(0)
+  ).current;
+
+  const [selectedPost,
+  setSelectedPost] =
+  React.useState<any>(
+    null
+  );
+
+const [tabLayouts,
+  setTabLayouts] =
+  React.useState<any[]>([]);
+
+  const switchTab = (
+  index: number
+) => {
+  Animated.spring(
+    tabIndex,
+    {
+      toValue: index,
+      useNativeDriver: false,
+    }
+  ).start();
+
+  setActiveTab(
+    ["grid",
+     "reels",
+     "tags"][index]
+  );
+};
+
 const profile = useQuery(
   api.users.index.getUser,
   {
@@ -39,8 +76,29 @@ const profile = useQuery(
 );
   const posts = useQuery(api.posts.index.getPostsByUser, { userId: id as Id<"users"> });
   const isFollowing = useQuery(api.users.index.isFollowing, { followingId: id as Id<"users"> });
-
+const createConversation =
+  useMutation(
+    api.conversations.index
+      .createConversation
+  );
   const toggleFollow = useMutation(api.users.index.toggleFollow);
+
+const handleMessage =
+  async () => {
+    try {
+      await createConversation({
+        userId:
+          id as Id<"users">,
+      });
+
+      router.push(
+        `/chat/${id}`
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
 
   const handleBack = () => {
     if (router.canGoBack()) router.back();
@@ -51,13 +109,54 @@ const profile = useQuery(
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.white} />
-        </TouchableOpacity>
-        <Text style={styles.username}>{profile.username}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+<View style={styles.header}>
+  <TouchableOpacity onPress={handleBack}>
+    <Ionicons
+      name="arrow-back"
+      size={28}
+      color="#ffffff"
+    />
+  </TouchableOpacity>
+
+<Text
+  numberOfLines={1}
+  style={[
+    styles.username,
+    {
+      flex: 1,
+      marginLeft: 14,
+      color: "#fff",
+      fontWeight: "700",
+    },
+  ]}
+>
+    {profile.username}
+  </Text>
+
+  <View
+  style={{
+    flexDirection: "row",
+    gap: 18,
+    opacity: 0.75,
+  }}
+>
+    <TouchableOpacity disabled>
+      <Ionicons
+        name="notifications-outline"
+        size={24}
+      color="rgba(255,255,255,0.65)"
+      />
+    </TouchableOpacity>
+
+    <TouchableOpacity disabled>
+      <Ionicons
+        name="ellipsis-vertical"
+        size={22}
+        color="rgba(255,255,255,0.65)"
+      />
+    </TouchableOpacity>
+  </View>
+</View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.profileInfo}>
@@ -105,7 +204,7 @@ const profile = useQuery(
           <Text style={styles.name}>{profile.fullname}</Text>
           {profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
 
-         <Pressable
+         {/* <Pressable
   android_ripple={{
     color: "rgba(255,255,255,0.06)",
   }}
@@ -136,9 +235,87 @@ style={[
 >
   {isFollowing ? "Following" : "Follow"}
 </Text>
-          </Pressable>
-        </View>
+          </Pressable> */}
 
+
+          <View
+  style={{
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 18,
+  }}
+>
+  <Pressable
+    android_ripple={{
+      color: "rgba(255,255,255,0.06)",
+    }}
+    style={{
+      flex: 1,
+      height: 50,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: isFollowing
+        ? "#0f0f0f"
+        : "#01953a",
+      borderWidth: 1,
+      borderColor: isFollowing
+        ? "rgba(255,255,255,0.06)"
+        : "rgba(34,197,94,0.25)",
+    }}
+    onPress={() =>
+      toggleFollow({
+        followingId: id as Id<"users">,
+      })
+    }
+  >
+    <Text
+      style={{
+        color: "#fff",
+        fontWeight: "600",
+        fontSize: 14,
+      }}
+    >
+      {isFollowing
+        ? "Following"
+        : "Follow"}
+    </Text>
+  </Pressable>
+
+  <TouchableOpacity
+    activeOpacity={0.85}
+    onPress={handleMessage}
+    style={{
+      flex: 1,
+      height: 50,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "#222",
+      borderWidth: 1,
+      borderColor:
+        "rgba(255,255,255,0.06)",
+    }}
+  >
+    <Text
+      style={{
+        color: "#fff",
+        fontWeight: "600",
+        fontSize: 14,
+      }}
+    >
+      Message
+    </Text>
+  </TouchableOpacity>
+</View>
+        </View>
+<ProfileTabs
+  activeTab={activeTab}
+  switchTab={switchTab}
+  tabLayouts={tabLayouts}
+  setTabLayouts={setTabLayouts}
+  tabIndex={tabIndex}
+/>
         <View style={{ paddingTop: 10 }}>
           {posts.length === 0 ? (
             <View style={styles.noPostsContainer}>
@@ -151,7 +328,12 @@ style={[
               numColumns={3}
               scrollEnabled={false}
               renderItem={({ item }) => (
-               <TouchableOpacity style={styles.gridItem}>
+               <TouchableOpacity
+  style={styles.gridItem}
+  onPress={() =>
+    setSelectedPost(item)
+  }
+>
 <Image
   source={
     item.imageUrl?.trim()

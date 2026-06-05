@@ -1,4 +1,4 @@
-import { Loader } from "@/components/LoaderSkeletons/Loader";
+import { Loader } from "@/components/loaders/Loader";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/profile.styles";
 
@@ -21,18 +21,18 @@ import {
 } from "react-native";
 
 
-import ProfileGrid from "@/app/Page_components/profile/grid/ProfileGrid";
-import ProfileHeader from "@/app/Page_components/profile/header/ProfileHeader";
-import SecureOverlay from "@/app/Page_components/profile/header/SecureOverlay";
-import ProfileInfo from "@/app/Page_components/profile/info/ProfileInfo";
-import ProfileTabs from "@/app/Page_components/profile/tabs/ProfileTabs";
+import ProfileGrid from "@/features/profile/grid/ProfileGrid";
+import ProfileHeader from "@/features/profile/header/ProfileHeader";
+import SecureOverlay from "@/features/profile/header/SecureOverlay";
+import ProfileInfo from "@/features/profile/info/ProfileInfo";
+import ProfileTabs from "@/features/profile/tabs/ProfileTabs";
 import * as Clipboard from "expo-clipboard";
 import * as ImagePicker from "expo-image-picker";
 
 
 /* ✅ MODALS */
-import EditProfileModal from "@/app/Page_components/profile/modals/EditProfileModal";
-import ImagePreviewModal from "@/app/Page_components/profile/modals/ImagePreviewModal";
+import EditProfileModal from "@/features/profile/modals/EditProfileModal";
+import ImagePreviewModal from "@/features/profile/modals/ImagePreviewModal";
 
 /* ✅ HOOKS */
 import { Id } from "@/convex/_generated/dataModel";

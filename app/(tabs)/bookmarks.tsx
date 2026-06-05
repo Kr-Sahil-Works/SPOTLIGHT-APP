@@ -1,5 +1,5 @@
-import EmptyCenter from "@/components/EmptyCenter";
-import { Loader } from "@/components/LoaderSkeletons/Loader";
+import EmptyCenter from "@/components/common/EmptyCenter";
+import { Loader } from "@/components/loaders/Loader";
 import ImageViewerModal from "@/components/modals/ImageViewerModal";
 import { api } from "@/convex/_generated/api";
 import { styles } from "@/styles/feed.styles";
@@ -10,34 +10,34 @@ import { Image } from "expo-image";
 import * as MediaLibrary from "expo-media-library";
 import { useRouter } from "expo-router";
 import {
-  useEffect,
-  useRef,
-  useState,
+    useEffect,
+    useRef,
+    useState,
 } from "react";
 
 import {
-  getBookmarksCache,
-  saveBookmarksCache,
+    getBookmarksCache,
+    saveBookmarksCache,
 } from "@/lib/cache/bookmarksCache";
 
 import {
-  getCollectionsCache,
-  saveCollectionsCache,
+    getCollectionsCache,
+    saveCollectionsCache,
 } from "@/lib/cache/collectionsCache";
 
 import useNetwork from "@/hooks/useNetwork";
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  FlatList,
-  Modal,
-  Platform,
-  Text,
-  TextInput,
-  ToastAndroid,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Animated,
+    FlatList,
+    Modal,
+    Platform,
+    Text,
+    TextInput,
+    ToastAndroid,
+    TouchableOpacity,
+    View
 } from "react-native";
 
 export default function Bookmarks() {

@@ -1,29 +1,29 @@
-import { Loader } from "@/components/LoaderSkeletons/Loader";
+import { Loader } from "@/components/loaders/Loader";
 import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import {
-  useLocalSearchParams,
-  useRouter,
+    useLocalSearchParams,
+    useRouter,
 } from "expo-router";
 import React, {
-  useMemo,
-  useRef,
-  useState,
+    useMemo,
+    useRef,
+    useState,
 } from "react";
 
 import {
-  FlatList,
-  SafeAreaView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    FlatList,
+    SafeAreaView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import {
-  Platform,
+    Platform,
 } from "react-native";
 
 let PagerView: any;

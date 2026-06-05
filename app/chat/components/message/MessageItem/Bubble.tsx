@@ -280,9 +280,23 @@ if (
   theme.bubbleGradient
 ) {
   return (
-    <LinearGradient
+   <LinearGradient
       colors={
         theme.bubbleGradient
+      }
+      start={
+        theme.gradientDirection
+          ?.start ?? {
+            x: 0,
+            y: 0,
+          }
+      }
+      end={
+        theme.gradientDirection
+          ?.end ?? {
+            x: 1,
+            y: 1,
+          }
       }
       style={{
         backgroundColor:

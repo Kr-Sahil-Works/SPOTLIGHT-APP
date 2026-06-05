@@ -1,11 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
 import {
-  FlatList,
   Modal,
   Pressable,
+  SectionList,
   Text,
   TouchableOpacity,
   View
@@ -37,17 +35,109 @@ export default function ThemeModal({
 
   const insets = useSafeAreaInsets();
 
-const reorderedThemes = [
-  ...CHAT_THEMES.slice(0, 2),
+const sections = [
+  {
+    title: "Featured",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Featured"
+    ),
+  },
 
-  ...CHAT_THEMES.filter(
-    (t) => t.wallpaper
-  ),
+  {
+    title: "Chat Patterns",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "ChatPatterns"
+    ),
+  },
 
-  ...CHAT_THEMES.slice(2, 12),
+  {
+    title: "Dark",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Dark"
+    ),
+  },
+
+  {
+    title: "Dreamscape",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Dreamscape"
+    ),
+  },
+
+  {
+    title: "Hearts",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Hearts"
+    ),
+  },
+
+  {
+    title: "Landscapes",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Landscapes"
+    ),
+  },
+
+  {
+    title: "Lunar",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Lunar"
+    ),
+  },
+
+  {
+    title: "Nature",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Nature"
+    ),
+  },
+
+  {
+    title: "Pixel Art",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "PixelArt"
+    ),
+  },
+
+  {
+    title: "Together",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Together"
+    ),
+  },
+
+  {
+    title: "Solid",
+    data: CHAT_THEMES.filter(
+      (t) => t.category === "Solid"
+    ),
+  },
 ];
+
+
 const [expanded, setExpanded] =
   useState(false);
+
+  const [
+  collapsedCategories,
+  setCollapsedCategories,
+] = useState<
+  Record<string, boolean>
+>({});
+
+const toggleCategory = (
+  category: string
+) => {
+  setCollapsedCategories(
+    (prev) => ({
+      ...prev,
+      [category]:
+        !prev[category],
+    })
+  );
+};
+
+
   return (
 <Modal
   transparent
@@ -151,215 +241,108 @@ const [expanded, setExpanded] =
   </TouchableOpacity>
 </View>
 
-    <FlatList
-  data={reorderedThemes}
-  keyExtractor={(_, i) => i.toString()}
-  numColumns={2}
+<SectionList
+  sections={sections}
+  keyExtractor={(item) =>
+    item.name
+  }
   showsVerticalScrollIndicator={false}
   contentContainerStyle={{
     paddingBottom: 120,
   }}
-  columnWrapperStyle={{
-    justifyContent: "space-between",
-  }}
-  initialNumToRender={4}
-  maxToRenderPerBatch={4}
-  windowSize={3}
-  removeClippedSubviews
-  renderItem={({ item: theme, index: i }) => {
-   const originalIndex =
-  CHAT_THEMES.findIndex(
-    (t) => t.name === theme.name
-  );
+  stickySectionHeadersEnabled={false}
+  renderSectionHeader={({
+    section,
+  }) => (
+    <TouchableOpacity
+      onPress={() =>
+        toggleCategory(
+          section.title
+        )
+      }
+      style={{
+        flexDirection: "row",
+        justifyContent:
+          "space-between",
+        alignItems: "center",
+        marginTop: 14,
+        marginBottom: 12,
+      }}
+    >
+      <Text
+        style={{
+          color: "#fff",
+          fontSize: 18,
+          fontWeight: "700",
+        }}
+      >
+        {section.title}
+      </Text>
 
-const selected =
-  selectedIndex === originalIndex;
+      <Ionicons
+        name={
+          collapsedCategories[
+            section.title
+          ]
+            ? "chevron-down"
+            : "chevron-up"
+        }
+        size={18}
+        color="#fff"
+      />
+    </TouchableOpacity>
+  )}
+  renderItem={({
+    item: theme,
+    section,
+  }) => {
+    if (
+      collapsedCategories[
+        section.title
+      ]
+    ) {
+      return null;
+    }
+
+    const originalIndex =
+      CHAT_THEMES.findIndex(
+        (t) =>
+          t.name ===
+          theme.name
+      );
+
+    const selected =
+      selectedIndex ===
+      originalIndex;
 
     return (
       <TouchableOpacity
-        onPress={() => {
-  const originalIndex =
-    CHAT_THEMES.findIndex(
-      (t) => t.name === theme.name
-    );
-
-  onPreview(originalIndex);
-}}
+        onPress={() =>
+          onPreview(
+            originalIndex
+          )
+        }
         activeOpacity={0.9}
         style={{
-          width: "48%",
-          aspectRatio: 0.72,
           marginBottom: 16,
           borderRadius: 24,
           overflow: "hidden",
-          borderWidth: selected ? 2 : 1,
-          borderColor: selected
-            ? "#22c55e"
-            : "#ffffff10",
-          backgroundColor: "#111",
+          borderWidth:
+            selected
+              ? 2
+              : 1,
+          borderColor:
+            selected
+              ? "#22c55e"
+              : "#ffffff10",
+          backgroundColor:
+            "#111",
         }}
       >
-  {theme.wallpaper ? (
-  <View
-    style={{
-      flex: 1,
-      overflow: "hidden",
-    }}
-  >
-    <Image
-      source={theme.wallpaper}
-      style={{
-        position: "absolute",
-        width: "100%",
-        height: "100%",
-      }}
-      contentFit="cover"
-      cachePolicy="memory-disk"
-      allowDownscaling
-      transition={0}
-    />
+        {/* KEEP YOUR EXISTING
+            THEME CARD CONTENT
+            HERE */}
 
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#00000025",
-        padding: 14,
-        justifyContent: "flex-end",
-      }}
-    >
-      <View
-        style={{
-          backgroundColor: theme.bubbleMe,
-          height: 18,
-          borderRadius: 10,
-          marginBottom: 8,
-          width: "82%",
-          alignSelf: "flex-end",
-        }}
-      />
-
-      <View
-        style={{
-          backgroundColor: theme.bubbleOther,
-          height: 18,
-          width: "68%",
-          borderRadius: 10,
-        }}
-      />
-    </View>
-  </View>
-) : theme.gradient ? (
-          <LinearGradient
-            colors={theme.gradient}
-            style={{
-              flex: 1,
-              padding: 14,
-              justifyContent: "flex-end",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor:
-                  theme.bubbleMe,
-                height: 18,
-                borderRadius: 10,
-                marginBottom: 8,
-                width: "82%",
-                alignSelf: "flex-end",
-              }}
-            />
-
-            <View
-              style={{
-                backgroundColor:
-                  theme.bubbleOther,
-                height: 18,
-                width: "68%",
-                borderRadius: 10,
-              }}
-            />
-          </LinearGradient>
-        ) : (
-          <View
-            style={{
-              flex: 1,
-              backgroundColor:
-                theme.background,
-              padding: 14,
-              justifyContent: "flex-end",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor:
-                  theme.bubbleMe,
-                height: 18,
-                borderRadius: 10,
-                marginBottom: 8,
-                width: "82%",
-                alignSelf: "flex-end",
-              }}
-            />
-
-            <View
-              style={{
-                backgroundColor:
-                  theme.bubbleOther,
-                height: 18,
-                width: "68%",
-                borderRadius: 10,
-              }}
-            />
-          </View>
-        )}
-
-<View
-  style={{
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: "#0000003c",
-    borderTopWidth: 1,
-    borderTopColor: "#ffffff10",
-    overflow: "hidden",
-  }}
->
-  <Text
-    numberOfLines={1}
-    style={{
-      color: "#fff",
-      fontSize: 14,
-      fontWeight: "700",
-      textAlign: "center",
-      letterSpacing: 0.3,
-    }}
-  >
-    {theme.name}
-  </Text>
-</View>
-
-
-
-{selected && (
-          <View
-            style={{
-              position: "absolute",
-              top: 10,
-              right: 10,
-              width: 28,
-              height: 28,
-              borderRadius: 999,
-              backgroundColor: "#22c55e",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons
-              name="checkmark"
-              size={18}
-              color="#000"
-            />
-          </View>
-        )}
       </TouchableOpacity>
     );
   }}

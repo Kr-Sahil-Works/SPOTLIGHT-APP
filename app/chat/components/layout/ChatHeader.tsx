@@ -154,16 +154,13 @@ return (
           flex: 1,
         }}
       >
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() =>
-            router.push({
-              pathname: "/chat-profile",
-              params: {
-                userId,
-              },
-            })
-          }
+       <TouchableOpacity
+  activeOpacity={0.8}
+  onPress={() =>
+    router.push(
+      `/chat/profile/${userId}`
+    )
+  }
           style={{
             flexDirection: "row",
             alignItems: "center",

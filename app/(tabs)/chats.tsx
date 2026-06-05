@@ -15,10 +15,10 @@ import {
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import ChatHeader from "../Page_components/chats/ChatHeader";
-import ChatList from "../Page_components/chats/ChatList";
-import ChatSearch from "../Page_components/chats/ChatSearch";
-import SuggestionTray from "../Page_components/chats/SuggestionTray";
+import ChatHeader from "../../features/chats/ChatHeader";
+import ChatList from "../../features/chats/ChatList";
+import ChatSearch from "../../features/chats/ChatSearch";
+import SuggestionTray from "../../features/chats/SuggestionTray";
 
 export default function Chats() {
   const isOnline =

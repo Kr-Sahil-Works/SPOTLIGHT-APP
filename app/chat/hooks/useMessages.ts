@@ -13,7 +13,7 @@ import { Message } from "@/types/chat";
 import {
   getChatCache,
   saveChatCache,
-} from "@/lib/cache/chatChahe";
+} from "@/lib/cache/chatCache";
 
 type UseMessagesResult = {
   messages: Message[];
