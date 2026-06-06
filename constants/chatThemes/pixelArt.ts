@@ -1,4 +1,5 @@
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const PIXEL_ART_THEMES: ChatTheme[] = [
@@ -7,6 +8,7 @@ export const PIXEL_ART_THEMES: ChatTheme[] = [
     category: "PixelArt",
 
     wallpaper: WALLPAPERS.Camp,
+    preview: WALLPAPER_PREVIEWS.Camp,
 
     bubbleMe: "#f97316",
     bubbleOther: "#2f1a0f",
@@ -29,6 +31,7 @@ export const PIXEL_ART_THEMES: ChatTheme[] = [
     category: "PixelArt",
 
     wallpaper: WALLPAPERS.Game,
+    preview: WALLPAPER_PREVIEWS.Game,
 
     bubbleMe: "#22c55e",
     bubbleOther: "#16261b",
@@ -51,6 +54,7 @@ export const PIXEL_ART_THEMES: ChatTheme[] = [
     category: "PixelArt",
 
     wallpaper: WALLPAPERS.PixelLateNights,
+    preview: WALLPAPER_PREVIEWS.PixelLateNights,
 
     bubbleMe: "#6366f1",
     bubbleOther: "#17192f",
@@ -73,6 +77,7 @@ export const PIXEL_ART_THEMES: ChatTheme[] = [
     category: "PixelArt",
 
     wallpaper: WALLPAPERS.Orange,
+    preview: WALLPAPER_PREVIEWS.Orange,
 
     bubbleMe: "#fb923c",
     bubbleOther: "#31200f",
@@ -95,6 +100,7 @@ export const PIXEL_ART_THEMES: ChatTheme[] = [
     category: "PixelArt",
 
     wallpaper: WALLPAPERS.Towers,
+    preview: WALLPAPER_PREVIEWS.Towers,
 
     bubbleMe: "#38bdf8",
     bubbleOther: "#112534",
@@ -117,6 +123,7 @@ export const PIXEL_ART_THEMES: ChatTheme[] = [
     category: "PixelArt",
 
     wallpaper: WALLPAPERS.We,
+    preview: WALLPAPER_PREVIEWS.We,
 
     bubbleMe: "#ec4899",
     bubbleOther: "#2c1224",

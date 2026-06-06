@@ -1,4 +1,5 @@
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const TOGETHER_THEMES: ChatTheme[] = [
@@ -7,6 +8,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
     category: "Together",
 
     wallpaper: WALLPAPERS.Bench,
+    preview: WALLPAPER_PREVIEWS.Bench,
 
     bubbleMe: "#f59e0b",
     bubbleOther: "#2a1d0b",
@@ -29,6 +31,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
     category: "Together",
 
     wallpaper: WALLPAPERS.Cute,
+    preview: WALLPAPER_PREVIEWS.Cute,
 
     bubbleMe: "#fb7185",
     bubbleOther: "#32161f",
@@ -51,6 +54,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
     category: "Together",
 
     wallpaper: WALLPAPERS.Eternal,
+    preview: WALLPAPER_PREVIEWS.Eternal,
 
     bubbleMe: "#8b5cf6",
     bubbleOther: "#24173b",
@@ -73,6 +77,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
     category: "Together",
 
     wallpaper: WALLPAPERS.Hold,
+    preview: WALLPAPER_PREVIEWS.Hold,
 
     bubbleMe: "#ec4899",
     bubbleOther: "#2c1224",
@@ -95,6 +100,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
     category: "Together",
 
     wallpaper: WALLPAPERS.TogetherLateNights,
+    preview: WALLPAPER_PREVIEWS.TogetherLateNights,
 
     bubbleMe: "#6366f1",
     bubbleOther: "#17192f",
@@ -117,6 +123,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
     category: "Together",
 
     wallpaper: WALLPAPERS.OnRoof,
+    preview: WALLPAPER_PREVIEWS.OnRoof,
 
     bubbleMe: "#3b82f6",
     bubbleOther: "#162338",
@@ -139,6 +146,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
     category: "Together",
 
     wallpaper: WALLPAPERS.Vintage,
+    preview: WALLPAPER_PREVIEWS.Vintage,
 
     bubbleMe: "#d97706",
     bubbleOther: "#31200f",
@@ -161,6 +169,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
     category: "Together",
 
     wallpaper: WALLPAPERS.Where,
+    preview: WALLPAPER_PREVIEWS.Where,
 
     bubbleMe: "#14b8a6",
     bubbleOther: "#12302b",

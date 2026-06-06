@@ -138,12 +138,12 @@ export const WALLPAPERS = {
   // PIXEL ART
   // ======================
 
-  Camp: require("@/assets/images/ThemeWalls/Pixels Art/camp.webp"),
-  Game: require("@/assets/images/ThemeWalls/Pixels Art/Game.webp"),
-  PixelLateNights: require("@/assets/images/ThemeWalls/Pixels Art/LateNights.webp"),
-  Orange: require("@/assets/images/ThemeWalls/Pixels Art/Orange.webp"),
-  Towers: require("@/assets/images/ThemeWalls/Pixels Art/Towers.webp"),
-  We: require("@/assets/images/ThemeWalls/Pixels Art/We.webp"),
+  Camp: require("@/assets/images/ThemeWalls/PixelsArt/camp.webp"),
+  Game: require("@/assets/images/ThemeWalls/PixelsArt/Game.webp"),
+  PixelLateNights: require("@/assets/images/ThemeWalls/PixelsArt/LateNights.webp"),
+  Orange: require("@/assets/images/ThemeWalls/PixelsArt/Orange.webp"),
+  Towers: require("@/assets/images/ThemeWalls/PixelsArt/Towers.webp"),
+  We: require("@/assets/images/ThemeWalls/PixelsArt/We.webp"),
 
   // ======================
   // TOGETHER
@@ -158,3 +158,7 @@ export const WALLPAPERS = {
   Vintage: require("@/assets/images/ThemeWalls/Together/Vintage.webp"),
   Where: require("@/assets/images/ThemeWalls/Together/Where.webp"),
 } as const;
+
+
+
+export type WallpaperId = keyof typeof WALLPAPERS;

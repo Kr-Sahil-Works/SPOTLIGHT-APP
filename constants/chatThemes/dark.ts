@@ -1,6 +1,7 @@
 // constants/chatThemes/dark.ts
 
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const DARK_THEMES: ChatTheme[] = [
@@ -9,6 +10,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.DarkHeart,
+    preview: WALLPAPER_PREVIEWS.DarkHeart,
 
     bubbleMe: "#ff4d6d",
     bubbleOther: "#18181b",
@@ -31,6 +33,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.DarkPattern,
+    preview: WALLPAPER_PREVIEWS.DarkPattern,
 
     bubbleMe: "#64748b",
     bubbleOther: "#18181b",
@@ -53,6 +56,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.DarkSky,
+    preview: WALLPAPER_PREVIEWS.DarkSky,
 
     bubbleMe: "#2563eb",
     bubbleOther: "#111827",
@@ -75,6 +79,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.FlowerMix,
+    preview: WALLPAPER_PREVIEWS.FlowerMix,
 
     bubbleMe: "#ec4899",
     bubbleOther: "#2a1020",
@@ -97,6 +102,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.IHeartYou,
+    preview: WALLPAPER_PREVIEWS.IHeartYou,
 
     bubbleMe: "#f43f5e",
     bubbleOther: "#2a1218",
@@ -119,6 +125,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.Leaf,
+    preview: WALLPAPER_PREVIEWS.Leaf,
 
     bubbleMe: "#22c55e",
     bubbleOther: "#102015",
@@ -141,6 +148,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.Letter,
+    preview: WALLPAPER_PREVIEWS.Letter,
 
     bubbleMe: "#dc2626",
     bubbleOther: "#261111",
@@ -163,6 +171,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.LittleHearts,
+    preview: WALLPAPER_PREVIEWS.LittleHearts,
 
     bubbleMe: "#fb7185",
     bubbleOther: "#28151b",
@@ -185,6 +194,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.NightFlower,
+    preview: WALLPAPER_PREVIEWS.NightFlower,
 
     bubbleMe: "#a855f7",
     bubbleOther: "#1f1530",
@@ -207,6 +217,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.Petals,
+    preview: WALLPAPER_PREVIEWS.Petals,
 
     bubbleMe: "#94a3b8",
     bubbleOther: "#1e293b",
@@ -229,6 +240,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.Rose,
+    preview: WALLPAPER_PREVIEWS.Rose,
 
     bubbleMe: "#e11d48",
     bubbleOther: "#2a1018",
@@ -251,6 +263,7 @@ export const DARK_THEMES: ChatTheme[] = [
     category: "Dark",
 
     wallpaper: WALLPAPERS.MidnightBloom,
+    preview: WALLPAPER_PREVIEWS.MidnightBloom,
 
     bubbleMe: "#2563eb",
     bubbleOther: "#111827",

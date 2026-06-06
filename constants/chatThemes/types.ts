@@ -51,4 +51,6 @@ export type ChatTheme = {
 };
 
   wallpaper?: any;
+
+preview?: any;
 };

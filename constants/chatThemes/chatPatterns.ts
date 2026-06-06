@@ -1,13 +1,15 @@
 // constants/chatThemes/chatPatterns.ts
 
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const CHAT_PATTERN_THEMES: ChatTheme[] = [
   {
     name: "Blue Twinkle",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.BlueTwinkle,
+    preview: WALLPAPER_PREVIEWS.BlueTwinkle,
 
     bubbleMe: "#2563eb",
     bubbleOther: "#172033",
@@ -27,8 +29,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Chats",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.Chats,
+    preview: WALLPAPER_PREVIEWS.Chats,
 
     bubbleMe: "#22c55e",
     bubbleOther: "#16221a",
@@ -48,8 +51,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Cherry",
-  category: "ChatsPatterns",
+  category: "ChatPatterns",
     wallpaper: WALLPAPERS.Cherry,
+    preview: WALLPAPER_PREVIEWS.Cherry,
 
     bubbleMe: "#dc2626",
     bubbleOther: "#2a1111",
@@ -69,8 +73,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Flower",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.Flower,
+    preview: WALLPAPER_PREVIEWS.Flower,
 
     bubbleMe: "#ec4899",
     bubbleOther: "#2a1024",
@@ -90,8 +95,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Flowers",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.Flowers,
+    preview: WALLPAPER_PREVIEWS.Flowers,
 
     bubbleMe: "#f59e0b",
     bubbleOther: "#2a1d0b",
@@ -111,8 +117,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Ghost",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.Ghost,
+    preview: WALLPAPER_PREVIEWS.Ghost,
 
     bubbleMe: "#94a3b8",
     bubbleOther: "#1e293b",
@@ -132,8 +139,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Heart Outline",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.HeartOutline,
+    preview: WALLPAPER_PREVIEWS.HeartOutline,
 
     bubbleMe: "#f43f5e",
     bubbleOther: "#2b1217",
@@ -153,8 +161,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Icons",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.Icons,
+    preview: WALLPAPER_PREVIEWS.Icons,
 
     bubbleMe: "#eab308",
     bubbleOther: "#2a240f",
@@ -174,8 +183,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Little Space",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.LittleSpace,
+    preview: WALLPAPER_PREVIEWS.LittleSpace,
 
     bubbleMe: "#3b82f6",
     bubbleOther: "#131f35",
@@ -195,8 +205,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Social",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.Social,
+    preview: WALLPAPER_PREVIEWS.Social,
 
     bubbleMe: "#64748b",
     bubbleOther: "#1a2230",
@@ -216,8 +227,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Space",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.Space,
+    preview: WALLPAPER_PREVIEWS.Space,
 
     bubbleMe: "#6366f1",
     bubbleOther: "#13162a",
@@ -237,8 +249,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "Stars",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.Stars,
+    preview: WALLPAPER_PREVIEWS.Stars,
 
     bubbleMe: "#facc15",
     bubbleOther: "#2a220b",
@@ -258,8 +271,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "What's That",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.WhatsThat,
+    preview: WALLPAPER_PREVIEWS.WhatsThat,
 
     bubbleMe: "#22c55e",
     bubbleOther: "#102615",
@@ -279,8 +293,9 @@ export const CHAT_PATTERN_THEMES: ChatTheme[] = [
 
   {
     name: "White Petals",
-      category: "ChatsPatterns",
+      category: "ChatPatterns",
     wallpaper: WALLPAPERS.WhitePetals,
+    preview: WALLPAPER_PREVIEWS.WhitePetals,
 
     bubbleMe: "#e5e7eb",
     bubbleOther: "#1f2937",

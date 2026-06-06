@@ -8,6 +8,7 @@ import {
   saveProfileCache,
 } from "@/lib/cache/profileCache";
 import { useQuery } from "convex/react";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   useEffect,
   useState,
@@ -15,8 +16,10 @@ import {
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import useChatListTheme from "@/hooks/useChatListTheme";
 import ChatHeader from "../../features/chats/ChatHeader";
 import ChatList from "../../features/chats/ChatList";
+import ChatListThemeModal from "../../features/chats/ChatListThemeModal";
 import ChatSearch from "../../features/chats/ChatSearch";
 import SuggestionTray from "../../features/chats/SuggestionTray";
 
@@ -27,6 +30,12 @@ export default function Chats() {
 const insets = useSafeAreaInsets();
 const TAB_BAR_HEIGHT = 60 + insets.bottom;
 const [openSuggestions, setOpenSuggestions] = useState(false);
+const theme =
+  useChatListTheme();
+  const [
+  chatListThemeOpen,
+  setChatListThemeOpen,
+] = useState(false);
 
   /* =========================
      🔥 DATA
@@ -103,43 +112,168 @@ const data =
   /* =========================
      🎯 UI
   ========================= */
-  return (
-    <View style={{ flex: 1, backgroundColor: "#030405" }}>
+//   return (
+//     <View
+//   style={{
+//     flex: 1,
+//     backgroundColor:
+//       theme.background,
+//   }}
+// >
+//       {/* HEADER */}
+//       <ChatHeader
+//       onOpenChatListTheme={() =>
+//   setChatListThemeOpen(
+//     true
+//   )
+// } />
+
+// <ChatListThemeModal
+//   visible={
+//     chatListThemeOpen
+//   }
+//   onClose={() =>
+//     setChatListThemeOpen(
+//       false
+//     )
+//   }
+// />
+
+//       {/* SEARCH */}
+//       <ChatSearch value={search} onChange={setSearch} />
+
+//       {/* LIST */}
+//    <ChatList
+//   data={data}
+//   search={search}
+//   isSearching={isSearching}
+//   onOpenSuggestions={() => setOpenSuggestions(true)}
+// />
+
+//       {/* 🔥 FIXED TRAY POSITION */}
+// {isOnline &&
+//   (showFullSuggestions ||
+//     showPeekTray ||
+//     openSuggestions) && (
+//   <View
+//     style={{
+//       position: "absolute",
+//       bottom: TAB_BAR_HEIGHT , 
+//       left: 0,
+//       right: 0,
+//  zIndex: 9999,
+// elevation: 999,
+//     }}
+//   >
+// <SuggestionTray
+//   users={allUsers || []}
+//   forceOpen={openSuggestions}
+// />
+//   </View>
+// )}
+//     </View>
+//   );
+
+
+
+return (
+  <>
+    <LinearGradient
+      pointerEvents="none"
+      colors={[
+        `${theme.glow ?? "#44d800"}40`,
+        `${theme.glow ?? "#44d800"}15`,
+        "transparent",
+      ]}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 260,
+        zIndex: 0,
+      }}
+    />
+
+    <View
+      style={{
+        flex: 1,
+        backgroundColor:
+          theme.background,
+      }}
+    >
       {/* HEADER */}
-      <ChatHeader />
+      <ChatHeader
+        onOpenChatListTheme={() =>
+          setChatListThemeOpen(
+            true
+          )
+        }
+      />
+
+      <ChatListThemeModal
+        visible={
+          chatListThemeOpen
+        }
+        onClose={() =>
+          setChatListThemeOpen(
+            false
+          )
+        }
+      />
 
       {/* SEARCH */}
-      <ChatSearch value={search} onChange={setSearch} />
+      <ChatSearch
+        value={search}
+        onChange={setSearch}
+      />
 
       {/* LIST */}
-   <ChatList
-  data={data}
-  search={search}
-  isSearching={isSearching}
-  onOpenSuggestions={() => setOpenSuggestions(true)}
-/>
+      <ChatList
+        data={data}
+        search={search}
+        isSearching={
+          isSearching
+        }
+        onOpenSuggestions={() =>
+          setOpenSuggestions(
+            true
+          )
+        }
+      />
 
-      {/* 🔥 FIXED TRAY POSITION */}
-{isOnline &&
-  (showFullSuggestions ||
-    showPeekTray ||
-    openSuggestions) && (
-  <View
-    style={{
-      position: "absolute",
-      bottom: TAB_BAR_HEIGHT , 
-      left: 0,
-      right: 0,
- zIndex: 9999,
-elevation: 999,
-    }}
-  >
-<SuggestionTray
-  users={allUsers || []}
-  forceOpen={openSuggestions}
-/>
-  </View>
-)}
+      {/* SUGGESTIONS */}
+      {isOnline &&
+        (showFullSuggestions ||
+          showPeekTray ||
+          openSuggestions) && (
+          <View
+            style={{
+              position:
+                "absolute",
+
+              bottom:
+                TAB_BAR_HEIGHT,
+
+              left: 0,
+              right: 0,
+
+              zIndex: 9999,
+
+              elevation: 999,
+            }}
+          >
+            <SuggestionTray
+              users={
+                allUsers || []
+              }
+              forceOpen={
+                openSuggestions
+              }
+            />
+          </View>
+        )}
     </View>
-  );
+  </>
+);
 }

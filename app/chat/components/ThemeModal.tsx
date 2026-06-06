@@ -1,16 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import { Image } from "expo-image";
 import {
   Modal,
   Pressable,
-  SectionList,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
 
+import {
+  FlashList
+} from "@shopify/flash-list";
+
 import { CHAT_THEMES } from "@/constants/chatThemes";
-import { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
@@ -25,6 +29,160 @@ type Props = {
   onApply: (i: number) => void;
 };
 
+
+const ThemeCard = React.memo(
+  ({
+    theme,
+    selected,
+    expanded,
+    onPress,
+  }: any) => {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.9}
+        style={{
+          width: expanded
+            ? "96%"
+            : "100%",
+          marginBottom: 16,
+          borderRadius: 24,
+          overflow: "hidden",
+          borderWidth:
+            selected
+              ? 2
+              : 1,
+          borderColor:
+            selected
+              ? "#22c55e"
+              : "#ffffff10",
+          backgroundColor:
+            "#111",
+        }}
+      >
+        <View
+          style={{
+            height: 180,
+            position: "relative",
+          }}
+        >
+          {theme.wallpaper && (
+            <Image
+             source={
+  theme.preview ??
+  theme.wallpaper
+}
+              cachePolicy="memory-disk"
+              contentFit="cover"
+              transition={0}
+              recyclingKey={
+                theme.name
+              }
+              style={{
+                position:
+                  "absolute",
+                width: "100%",
+                height: "100%",
+              }}
+            />
+          )}
+
+          <View
+            style={{
+              flex: 1,
+              padding: 12,
+              justifyContent:
+                "space-between",
+            }}
+          >
+            <View>
+              <View
+                style={{
+                  alignSelf:
+                    "flex-start",
+                  backgroundColor:
+                    theme.bubbleOther,
+                  width: 70,
+                  height: 24,
+                  borderRadius: 14,
+                  marginBottom: 6,
+                }}
+              />
+
+              <View
+                style={{
+                  alignSelf:
+                    "flex-start",
+                  backgroundColor:
+                    theme.bubbleOther,
+                  width: 48,
+                  height: 24,
+                  borderRadius: 14,
+                }}
+              />
+            </View>
+
+            <View>
+              <View
+                style={{
+                  alignSelf:
+                    "flex-end",
+                  backgroundColor:
+                    theme.bubbleMe,
+                  width: 82,
+                  height: 24,
+                  borderRadius: 14,
+                  marginBottom: 6,
+                }}
+              />
+
+              <View
+                style={{
+                  alignSelf:
+                    "flex-end",
+                  backgroundColor:
+                    theme.bubbleMe,
+                  width: 58,
+                  height: 24,
+                  borderRadius: 14,
+                }}
+              />
+            </View>
+          </View>
+
+          <View
+            style={{
+              position:
+                "absolute",
+              left: 10,
+              right: 10,
+              bottom: 10,
+              backgroundColor:
+                "rgba(0,0,0,0.45)",
+              paddingVertical: 6,
+              paddingHorizontal: 10,
+              borderRadius: 12,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              style={{
+                color: "#fff",
+                fontWeight:
+                  "700",
+                fontSize: 13,
+              }}
+            >
+              {theme.name}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+);
+
+
 export default function ThemeModal({
   visible,
   selectedIndex,
@@ -32,87 +190,102 @@ export default function ThemeModal({
   onClose,
   onApply,
 }: Props) {
-
+if (!visible) {
+  return null;
+}
   const insets = useSafeAreaInsets();
 
-const sections = [
-  {
-    title: "Featured",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Featured"
-    ),
-  },
+  const themeIndexMap =
+  useMemo(
+    () =>
+      Object.fromEntries(
+        CHAT_THEMES.map(
+          (theme, index) => [
+            theme.name,
+            index,
+          ]
+        )
+      ),
+    []
+  );
 
-  {
-    title: "Chat Patterns",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "ChatPatterns"
-    ),
-  },
-
-  {
-    title: "Dark",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Dark"
-    ),
-  },
-
-  {
-    title: "Dreamscape",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Dreamscape"
-    ),
-  },
-
-  {
-    title: "Hearts",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Hearts"
-    ),
-  },
-
-  {
-    title: "Landscapes",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Landscapes"
-    ),
-  },
-
-  {
-    title: "Lunar",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Lunar"
-    ),
-  },
-
-  {
-    title: "Nature",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Nature"
-    ),
-  },
-
-  {
-    title: "Pixel Art",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "PixelArt"
-    ),
-  },
-
-  {
-    title: "Together",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Together"
-    ),
-  },
-
-  {
-    title: "Solid",
-    data: CHAT_THEMES.filter(
-      (t) => t.category === "Solid"
-    ),
-  },
-];
+const sections = useMemo(
+  () => [
+    {
+      title: "Featured",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Featured"
+      ),
+    },
+    {
+      title: "Chat Patterns",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "ChatPatterns"
+      ),
+    },
+    {
+      title: "Dark",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Dark"
+      ),
+    },
+    {
+      title: "Dreamscape",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Dreamscape"
+      ),
+    },
+    {
+      title: "Hearts",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Hearts"
+      ),
+    },
+    {
+      title: "Landscapes",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Landscapes"
+      ),
+    },
+    {
+      title: "Lunar",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Lunar"
+      ),
+    },
+    {
+      title: "Nature",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Nature"
+      ),
+    },
+    {
+      title: "Pixel Art",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "PixelArt"
+      ),
+    },
+    {
+      title: "Together",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Together"
+      ),
+    },
+    {
+      title: "Solid",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Solid"
+      ),
+    },
+    {
+      title: "Gradient",
+      data: CHAT_THEMES.filter(
+        (t) => t.category === "Gradient"
+      ),
+    },
+  ],
+  []
+);
 
 
 const [expanded, setExpanded] =
@@ -123,20 +296,196 @@ const [expanded, setExpanded] =
   setCollapsedCategories,
 ] = useState<
   Record<string, boolean>
->({});
+>({
+  "Chat Patterns": true,
+  Dark: true,
+  Dreamscape: true,
+  Hearts: true,
+  Landscapes: true,
+  Lunar: true,
+  Nature: true,
+  "Pixel Art": true,
+  Together: true,
+  Solid: true,
+  Gradient: true,
+});
 
-const toggleCategory = (
-  category: string
-) => {
-  setCollapsedCategories(
-    (prev) => ({
-      ...prev,
-      [category]:
-        !prev[category],
-    })
+
+const flatThemes = useMemo(
+  () =>
+    sections.flatMap(
+      (section) => {
+        const items: any[] = [
+          {
+            type: "header" as const,
+            title: section.title,
+          },
+        ];
+
+        if (
+          !collapsedCategories[
+            section.title
+          ]
+        ) {
+          items.push(
+            ...section.data.map(
+              (theme) => ({
+                type:
+                  "theme" as const,
+                sectionTitle:
+                  section.title,
+                theme,
+                originalIndex:
+                  themeIndexMap[
+                    theme.name
+                  ],
+              })
+            )
+          );
+        }
+
+        return items;
+      }
+    ),
+  [
+    sections,
+    collapsedCategories,
+    themeIndexMap,
+  ]
+);
+
+const toggleCategory = useCallback(
+  (category: string) => {
+    setCollapsedCategories(
+      (prev) => ({
+        ...prev,
+        [category]:
+          !prev[category],
+      })
+    );
+  },
+  []
+);
+
+const toggleAllCategories =
+  useCallback(() => {
+    setCollapsedCategories(
+      (prev) => {
+        const allClosed =
+          sections.every(
+            (section) =>
+              prev[
+                section.title
+              ]
+          );
+
+        const next:
+          Record<
+            string,
+            boolean
+          > = {};
+
+        for (const section of sections) {
+          next[
+            section.title
+          ] = !allClosed;
+        }
+
+        return next;
+      }
+    );
+  }, [sections]);
+
+  const allCollapsed =
+  sections.every(
+    (section) =>
+      collapsedCategories[
+        section.title
+      ]
   );
-};
 
+  const renderThemeItem =
+  useCallback(
+    ({ item }: any) => {
+
+      if (
+        item.type ===
+        "header"
+      ) {
+        return (
+          <TouchableOpacity
+            onPress={() =>
+              toggleCategory(
+                item.title
+              )
+            }
+            style={{
+              width: "100%",
+              flexDirection: "row",
+              justifyContent:
+                "space-between",
+              alignItems:
+                "center",
+              marginTop: 14,
+              marginBottom: 10,
+            }}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 18,
+                fontWeight:
+                  "700",
+              }}
+            >
+              {item.title}
+            </Text>
+
+            <Ionicons
+              name={
+                collapsedCategories[
+                  item.title
+                ]
+                  ? "chevron-down"
+                  : "chevron-up"
+              }
+              size={18}
+              color="#fff"
+            />
+          </TouchableOpacity>
+        );
+      }
+
+   const theme =
+  (item as any).theme;
+
+   const originalIndex =
+  (item as any)
+    .originalIndex;
+
+      const selected =
+        selectedIndex ===
+        originalIndex;
+
+return (
+  <ThemeCard
+    theme={theme}
+    expanded={expanded}
+    selected={selected}
+    onPress={() =>
+      onPreview(
+        originalIndex
+      )
+    }
+  />
+);
+    },
+    [
+      collapsedCategories,
+      selectedIndex,
+      expanded,
+    ]
+  );
 
   return (
 <Modal
@@ -159,7 +508,7 @@ const toggleCategory = (
         position: "absolute",
         bottom: 0,
         width: "100%",
-        height: expanded ? "90%" : "72%",
+        height: expanded ? "90%" : "65%",
         overflow: "hidden",
         paddingBottom: insets.bottom,
         borderTopLeftRadius: 34,
@@ -168,13 +517,18 @@ const toggleCategory = (
     >
       {/* GLASS BG */}
     <BlurView
-        intensity={45}
+        intensity={10}
         tint="systemChromeMaterialDark"
         style={{
           flex: 1,
-          paddingTop: 18,
+          paddingTop: 6,
           paddingHorizontal: 16,
-          backgroundColor: "transparent",
+          backgroundColor:
+  allCollapsed
+    ? "#000000cc"
+    : expanded
+    ? "#00000040"
+    : "transparent",
           borderTopLeftRadius: 34,
           borderTopRightRadius: 34,
           borderWidth: 1,
@@ -189,7 +543,8 @@ const toggleCategory = (
             borderRadius: 999,
             backgroundColor: "#ffffff40",
             alignSelf: "center",
-            marginBottom: 18,
+            marginTop: 4,
+            marginBottom: 2,
           }}
         />
 
@@ -199,12 +554,12 @@ const toggleCategory = (
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 0,
   }}
 >
   <Text
     style={{
-      color: "#44d800e5",
+      color: "#a3fa00e7",
       fontSize: 24,
       fontWeight: "700",
       letterSpacing: 0.3,
@@ -212,6 +567,41 @@ const toggleCategory = (
   >
     Chat Themes
   </Text>
+
+<View
+  style={{
+    flexDirection: "row",
+    gap: 10,
+  }}
+>
+  <TouchableOpacity
+onPress={toggleAllCategories}
+
+onLongPress={onClose}
+
+delayLongPress={250}
+    activeOpacity={0.8}
+    style={{
+      width: 42,
+      height: 42,
+      borderRadius: 14,
+      backgroundColor: "#ffffff10",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: "#ffffff10",
+    }}
+  >
+    <Ionicons
+  name={
+  allCollapsed
+    ? "add"
+    : "remove"
+}
+      size={20}
+      color="#fff"
+    />
+  </TouchableOpacity>
 
   <TouchableOpacity
     onPress={() =>
@@ -232,120 +622,54 @@ const toggleCategory = (
     <Ionicons
       name={
         expanded
-          ? "contract"
-          : "expand"
+          ? "grid"
+          : "grid-outline"
       }
       size={18}
       color="#fff"
     />
   </TouchableOpacity>
 </View>
+</View>
 
-<SectionList
-  sections={sections}
-  keyExtractor={(item) =>
-    item.name
+<FlashList
+removeClippedSubviews={
+  true
+}
+drawDistance={400}
+  data={flatThemes}
+  overrideItemLayout={(layout, item) => {
+  if (item.type === "header") {
+    layout.span = 2;
   }
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: 120,
-  }}
-  stickySectionHeadersEnabled={false}
-  renderSectionHeader={({
-    section,
-  }) => (
-    <TouchableOpacity
-      onPress={() =>
-        toggleCategory(
-          section.title
-        )
-      }
-      style={{
-        flexDirection: "row",
-        justifyContent:
-          "space-between",
-        alignItems: "center",
-        marginTop: 14,
-        marginBottom: 12,
-      }}
-    >
-      <Text
-        style={{
-          color: "#fff",
-          fontSize: 18,
-          fontWeight: "700",
-        }}
-      >
-        {section.title}
-      </Text>
+}}
+  keyExtractor={(
+    item,
+    index
+  ) =>
+    item.type ===
+    "header"
+      ? item.title
+      : item.theme.name
+  }
+  numColumns={
+    expanded
+      ? 2
+      : 1
+  }
+  showsVerticalScrollIndicator={
+    false
+  }
+contentContainerStyle={{
+  paddingBottom: 120,
+  paddingHorizontal: 6,
+}}
 
-      <Ionicons
-        name={
-          collapsedCategories[
-            section.title
-          ]
-            ? "chevron-down"
-            : "chevron-up"
-        }
-        size={18}
-        color="#fff"
-      />
-    </TouchableOpacity>
-  )}
-  renderItem={({
-    item: theme,
-    section,
-  }) => {
-    if (
-      collapsedCategories[
-        section.title
-      ]
-    ) {
-      return null;
-    }
 
-    const originalIndex =
-      CHAT_THEMES.findIndex(
-        (t) =>
-          t.name ===
-          theme.name
-      );
+renderItem={
+  renderThemeItem
+}
 
-    const selected =
-      selectedIndex ===
-      originalIndex;
-
-    return (
-      <TouchableOpacity
-        onPress={() =>
-          onPreview(
-            originalIndex
-          )
-        }
-        activeOpacity={0.9}
-        style={{
-          marginBottom: 16,
-          borderRadius: 24,
-          overflow: "hidden",
-          borderWidth:
-            selected
-              ? 2
-              : 1,
-          borderColor:
-            selected
-              ? "#22c55e"
-              : "#ffffff10",
-          backgroundColor:
-            "#111",
-        }}
-      >
-        {/* KEEP YOUR EXISTING
-            THEME CARD CONTENT
-            HERE */}
-
-      </TouchableOpacity>
-    );
-  }}
 />
 
         {/* BUTTONS */}

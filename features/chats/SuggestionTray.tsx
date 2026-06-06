@@ -1,6 +1,5 @@
-import { api } from "@/convex/_generated/api";
+import useChatListTheme from "@/hooks/useChatListTheme";
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation } from "convex/react";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -15,7 +14,7 @@ import {
 
 const { height } = Dimensions.get("window");
 
-const TRAY_HEIGHT = height * 0.6;
+const TRAY_HEIGHT = height * 0.52;
 const COLLAPSED_OFFSET = TRAY_HEIGHT - 140;
 
 export default function SuggestionTray({ users = [], forceOpen }: any) {
@@ -24,23 +23,25 @@ const [shuffledUsers, setShuffledUsers] = useState<any[]>([]);
 
   const router = useRouter();
 
-  const createConversation = useMutation(
-    api.conversations.index.createConversation
-  );
+  const theme =
+  useChatListTheme();
 
   const translateY = useRef(
     new Animated.Value(COLLAPSED_OFFSET)
   ).current;
 
-  // 👉 shuffle when open
-  useEffect(() => {
-    if (open) {
-      const shuffled = [...users]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 20); // optimize
-      setShuffledUsers(shuffled);
-    }
-  }, [open, users]);
+  const shuffleUsers = () => {
+  const shuffled = [...users]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 20);
+
+  setShuffledUsers(shuffled);
+};
+
+useEffect(() => {
+  shuffleUsers();
+}, [users]);
+
 
 useEffect(() => {
   if (forceOpen) {
@@ -77,8 +78,13 @@ useEffect(() => {
         right: 0,
         height: TRAY_HEIGHT,
         transform: [{ translateY }],
-        backgroundColor: "#0b0f0c",
+        backgroundColor:
+  theme.cardBg,
         borderTopLeftRadius: 24,
+        borderTopWidth: 1,
+
+borderColor:
+  theme.cardBorder,
         borderTopRightRadius: 24,
         overflow: "hidden",
         paddingTop: 10,
@@ -112,7 +118,9 @@ useEffect(() => {
         <TouchableOpacity onPress={toggle} style={{ flex: 1 }}>
           <Text
             style={{
-              color: "#22c55e",
+              color:
+  theme.headerColor ??
+  "#22c55e",
               fontSize: 16,
               fontWeight: "600",
             }}
@@ -121,13 +129,52 @@ useEffect(() => {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={toggle}>
-          <Ionicons
-            name={open ? "chevron-down" : "chevron-up"}
-            size={22}
-            color="#22c55e"
-          />
-        </TouchableOpacity>
+     <View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  }}
+>
+  <TouchableOpacity
+    disabled={
+      users.length < 20
+    }
+    onPress={shuffleUsers}
+    style={{
+      opacity:
+        users.length < 20
+          ? 0.35
+          : 1,
+    }}
+  >
+    <Ionicons
+      name="refresh"
+      size={18}
+      color={
+        theme.headerColor ??
+        "#22c55e"
+      }
+    />
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    onPress={toggle}
+  >
+    <Ionicons
+      name={
+        open
+          ? "chevron-down"
+          : "chevron-up"
+      }
+      size={22}
+      color={
+        theme.headerColor ??
+        "#22c55e"
+      }
+    />
+  </TouchableOpacity>
+</View>
       </View>
 
       {/* LIST + BLUR OVERLAY */}
@@ -147,7 +194,15 @@ useEffect(() => {
   }}
 />
         <FlatList
-          data={open ? shuffledUsers : users.slice(0, 3)}
+        initialNumToRender={8}
+maxToRenderPerBatch={8}
+windowSize={5}
+removeClippedSubviews
+          data={
+  open
+    ? shuffledUsers
+    : shuffledUsers.slice(0, 3)
+}
           keyExtractor={(i) => i._id}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
@@ -213,7 +268,10 @@ useEffect(() => {
                       width: 10,
                       height: 10,
                       borderRadius: 5,
-                      backgroundColor: "#22c55e",
+                      backgroundColor:
+  theme.glow ??
+  theme.headerColor ??
+  "#22c55e",
                       borderWidth: 2,
                       borderColor: "#0b0f0c",
                     }}
@@ -226,7 +284,7 @@ useEffect(() => {
                 <Text style={{ color: "#fff", fontWeight: "500" }}>
                   {item.fullname}
                 </Text>
-                <Text style={{ color: "#666", fontSize: 12 }}>
+                <Text style={{ color: "#9ca3af", fontSize: 12 }}>
                   @{item.username}
                 </Text>
               </View>

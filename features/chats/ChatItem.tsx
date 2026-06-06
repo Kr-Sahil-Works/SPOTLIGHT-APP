@@ -1,7 +1,10 @@
+import useChatListTheme from "@/hooks/useChatListTheme";
+import { storage } from "@/lib/mmkv";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useMMKVString } from "react-native-mmkv";
 
 function getLastSeen(lastSeen?: number) {
   if (!lastSeen) return "";
@@ -68,6 +71,16 @@ function formatChatTime(timestamp?: number) {
 export default function ChatItem({ item }: any) {
   const router = useRouter();
 
+  const theme = useChatListTheme();
+  const [glowEnabled] =
+  useMMKVString(
+    "chat-list-glow",
+    storage
+  );
+
+  const glowOn =
+  glowEnabled === "on";
+  
   const userId = item.userId ?? item._id;
 
   return (
@@ -87,22 +100,36 @@ export default function ChatItem({ item }: any) {
   padding: 14,
   borderRadius: 24,
 
-  backgroundColor: "rgba(255,255,255,0.04)",
+  backgroundColor: theme.cardBg,
 
   borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.06)",
+  borderColor: theme.cardBorder,
 
   marginBottom: 14,
 
-  shadowColor: "#000",
+shadowColor:
+  !glowOn
+    ? "#000"
+    : theme.glow ??
+      "#000",
   shadowOffset: {
     width: 0,
     height: 8,
   },
-  shadowOpacity: 0.25,
+shadowOpacity:
+ !glowOn
+    ? 0.15
+    : theme.glow
+    ? 0.45
+    : 0.25,
   shadowRadius: 18,
 
-  elevation: 8,
+elevation:
+ !glowOn
+    ? 4
+    : theme.glow
+    ? 12
+    : 8,
 
   overflow: "hidden",
 }}

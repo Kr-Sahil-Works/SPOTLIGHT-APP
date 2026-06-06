@@ -105,7 +105,6 @@ const handleGoogleSignIn = async () => {
   setLoading(true);
 
   try {
-    console.log("Starting OAuth");
 
 const {
   createdSessionId,
@@ -118,16 +117,6 @@ const {
   }),
 });
 
-console.log("Returned From OAuth");
-
-console.log(
-  "OAuth Result",
-  {
-    createdSessionId,
-    hasSetActive: !!setActive,
-  }
-);
-
 if (setActive && createdSessionId) {
   await setActive({ session: createdSessionId });
 resetMorph();
@@ -139,9 +128,6 @@ setLoading(false);
 
   return;
 }
-console.log(
-  "OAuth Finished"
-);
   } catch (error: any) {
     console.error("OAuth error:", error);
     resetMorph();

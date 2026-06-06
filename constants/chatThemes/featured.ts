@@ -1,4 +1,5 @@
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const FEATURED_THEMES: ChatTheme[] = [
@@ -7,6 +8,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.BlueSolar,
+    preview: WALLPAPER_PREVIEWS.BlueSolar,
 
     bubbleMe: "#3b82f6",
     bubbleOther: "#162338",
@@ -29,6 +31,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.Clouds,
+    preview: WALLPAPER_PREVIEWS.Clouds,
 
     bubbleMe: "#60a5fa",
     bubbleOther: "#1b2738",
@@ -51,6 +54,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.DreamSky,
+    preview: WALLPAPER_PREVIEWS.DreamSky,
 
     bubbleMe: "#8b5cf6",
     bubbleOther: "#24173b",
@@ -73,6 +77,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.Dreamy,
+    preview: WALLPAPER_PREVIEWS.Dreamy,
 
     bubbleMe: "#f472b6",
     bubbleOther: "#311728",
@@ -95,6 +100,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.Hands,
+    preview: WALLPAPER_PREVIEWS.Hands,
 
     bubbleMe: "#f59e0b",
     bubbleOther: "#2d1f0c",
@@ -117,6 +123,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.LateDream,
+    preview: WALLPAPER_PREVIEWS.LateDream,
 
     bubbleMe: "#6366f1",
     bubbleOther: "#17192f",
@@ -139,6 +146,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.PickMoon,
+    preview: WALLPAPER_PREVIEWS.PickMoon,
 
     bubbleMe: "#cbd5e1",
     bubbleOther: "#263241",
@@ -161,6 +169,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.PinkTree,
+    preview: WALLPAPER_PREVIEWS.PinkTree,
 
     bubbleMe: "#ec4899",
     bubbleOther: "#2c1224",
@@ -183,6 +192,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.Roses,
+    preview: WALLPAPER_PREVIEWS.Roses,
 
     bubbleMe: "#e11d48",
     bubbleOther: "#2a1018",
@@ -205,6 +215,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.Samurai,
+    preview: WALLPAPER_PREVIEWS.Samurai,
 
     bubbleMe: "#dc2626",
     bubbleOther: "#2d1414",
@@ -227,6 +238,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.She,
+    preview: WALLPAPER_PREVIEWS.She,
 
     bubbleMe: "#fb7185",
     bubbleOther: "#32161f",
@@ -249,6 +261,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     category: "Featured",
 
     wallpaper: WALLPAPERS.PickValley,
+    preview: WALLPAPER_PREVIEWS.PickValley,
 
     bubbleMe: "#10b981",
     bubbleOther: "#123026",

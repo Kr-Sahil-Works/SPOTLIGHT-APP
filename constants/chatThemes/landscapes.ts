@@ -1,4 +1,5 @@
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const LANDSCAPE_THEMES: ChatTheme[] = [
@@ -7,6 +8,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     category: "Landscapes",
 
     wallpaper: WALLPAPERS.ForestHouse,
+    preview: WALLPAPER_PREVIEWS.ForestHouse,
 
     bubbleMe: "#22c55e",
     bubbleOther: "#16261b",
@@ -29,6 +31,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     category: "Landscapes",
 
     wallpaper: WALLPAPERS.Home,
+    preview: WALLPAPER_PREVIEWS.Home,
 
     bubbleMe: "#f59e0b",
     bubbleOther: "#2a1d0b",
@@ -51,6 +54,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     category: "Landscapes",
 
     wallpaper: WALLPAPERS.Japan,
+    preview: WALLPAPER_PREVIEWS.Japan,
 
     bubbleMe: "#ef4444",
     bubbleOther: "#2d1414",
@@ -73,6 +77,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     category: "Landscapes",
 
     wallpaper: WALLPAPERS.MoonLightLandscape,
+    preview: WALLPAPER_PREVIEWS.MoonLightLandscape,
 
     bubbleMe: "#6366f1",
     bubbleOther: "#17192f",
@@ -95,6 +100,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     category: "Landscapes",
 
     wallpaper: WALLPAPERS.NightLandscape,
+    preview: WALLPAPER_PREVIEWS.NightLandscape,
 
     bubbleMe: "#3b82f6",
     bubbleOther: "#132035",
@@ -117,6 +123,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     category: "Landscapes",
 
     wallpaper: WALLPAPERS.PurpleForestLandscape,
+    preview: WALLPAPER_PREVIEWS.PurpleForestLandscape,
 
     bubbleMe: "#a855f7",
     bubbleOther: "#241338",
@@ -139,6 +146,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     category: "Landscapes",
 
     wallpaper: WALLPAPERS.Valley,
+    preview: WALLPAPER_PREVIEWS.Valley,
 
     bubbleMe: "#14b8a6",
     bubbleOther: "#12302b",
@@ -161,6 +169,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     category: "Landscapes",
 
     wallpaper: WALLPAPERS.WaterFall,
+    preview: WALLPAPER_PREVIEWS.WaterFall,
 
     bubbleMe: "#0ea5e9",
     bubbleOther: "#112a38",

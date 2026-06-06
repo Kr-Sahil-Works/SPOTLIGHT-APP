@@ -1,4 +1,5 @@
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const DREAMSCAPE_THEMES: ChatTheme[] = [
@@ -7,6 +8,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.BoyOnBoat,
+    preview: WALLPAPER_PREVIEWS.BoyOnBoat,
 
     bubbleMe: "#7c3aed",
     bubbleOther: "#22173a",
@@ -29,6 +31,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.Bridge,
+    preview: WALLPAPER_PREVIEWS.Bridge,
 
     bubbleMe: "#ec4899",
     bubbleOther: "#2c1224",
@@ -51,6 +54,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.RoadsideDream,
+    preview: WALLPAPER_PREVIEWS.RoadsideDream,
 
     bubbleMe: "#f97316",
     bubbleOther: "#2f1a0f",
@@ -73,6 +77,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.IntoClouds,
+    preview: WALLPAPER_PREVIEWS.IntoClouds,
 
     bubbleMe: "#38bdf8",
     bubbleOther: "#112534",
@@ -95,6 +100,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.LampLight,
+    preview: WALLPAPER_PREVIEWS.LampLight,
 
     bubbleMe: "#f59e0b",
     bubbleOther: "#2e220d",
@@ -117,6 +123,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.PaintedSky,
+    preview: WALLPAPER_PREVIEWS.PaintedSky,
 
     bubbleMe: "#a855f7",
     bubbleOther: "#241338",
@@ -139,6 +146,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.PinkWaves,
+    preview: WALLPAPER_PREVIEWS.PinkWaves,
 
     bubbleMe: "#fb7185",
     bubbleOther: "#30141d",
@@ -161,6 +169,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.DreamWindow,
+    preview: WALLPAPER_PREVIEWS.DreamWindow,
 
     bubbleMe: "#6366f1",
     bubbleOther: "#17192f",

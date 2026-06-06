@@ -1,4 +1,5 @@
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const LUNAR_THEMES: ChatTheme[] = [
@@ -7,6 +8,7 @@ export const LUNAR_THEMES: ChatTheme[] = [
     category: "Lunar",
 
     wallpaper: WALLPAPERS.BigMoon,
+    preview: WALLPAPER_PREVIEWS.BigMoon,
 
     bubbleMe: "#818cf8",
     bubbleOther: "#1c1f3a",
@@ -29,6 +31,7 @@ export const LUNAR_THEMES: ChatTheme[] = [
     category: "Lunar",
 
     wallpaper: WALLPAPERS.Earth,
+    preview: WALLPAPER_PREVIEWS.Earth,
 
     bubbleMe: "#0ea5e9",
     bubbleOther: "#102938",
@@ -51,6 +54,7 @@ export const LUNAR_THEMES: ChatTheme[] = [
     category: "Lunar",
 
     wallpaper: WALLPAPERS.Moon,
+    preview: WALLPAPER_PREVIEWS.Moon,
 
     bubbleMe: "#cbd5e1",
     bubbleOther: "#263241",
@@ -73,6 +77,7 @@ export const LUNAR_THEMES: ChatTheme[] = [
     category: "Lunar",
 
     wallpaper: WALLPAPERS.MoonLight,
+    preview: WALLPAPER_PREVIEWS.MoonLight,
 
     bubbleMe: "#60a5fa",
     bubbleOther: "#162238",
@@ -95,6 +100,7 @@ export const LUNAR_THEMES: ChatTheme[] = [
     category: "Lunar",
 
     wallpaper: WALLPAPERS.PinkSky,
+    preview: WALLPAPER_PREVIEWS.PinkSky,
 
     bubbleMe: "#f472b6",
     bubbleOther: "#321728",
@@ -117,6 +123,7 @@ export const LUNAR_THEMES: ChatTheme[] = [
     category: "Lunar",
 
     wallpaper: WALLPAPERS.PurpleForest,
+    preview: WALLPAPER_PREVIEWS.PurpleForest,
 
     bubbleMe: "#a855f7",
     bubbleOther: "#241338",
@@ -139,6 +146,7 @@ export const LUNAR_THEMES: ChatTheme[] = [
     category: "Lunar",
 
     wallpaper: WALLPAPERS.Rocket,
+    preview: WALLPAPER_PREVIEWS.Rocket,
 
     bubbleMe: "#06b6d4",
     bubbleOther: "#14303a",
@@ -161,6 +169,7 @@ export const LUNAR_THEMES: ChatTheme[] = [
     category: "Lunar",
 
     wallpaper: WALLPAPERS.Trace,
+    preview: WALLPAPER_PREVIEWS.Trace,
 
     bubbleMe: "#7c3aed",
     bubbleOther: "#23173b",

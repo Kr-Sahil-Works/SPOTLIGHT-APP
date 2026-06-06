@@ -2,6 +2,7 @@ import { CHAT_PATTERN_THEMES } from "./chatPatterns";
 import { DARK_THEMES } from "./dark";
 import { DREAMSCAPE_THEMES } from "./dreamscape";
 import { FEATURED_THEMES } from "./featured";
+import { GRADIENT_THEMES } from "./gradientThemes";
 import { HEART_THEMES } from "./hearts";
 import { LANDSCAPE_THEMES } from "./landscapes";
 import { LUNAR_THEMES } from "./lunar";
@@ -35,4 +36,6 @@ export const CHAT_THEMES = [
   ...PIXEL_ART_THEMES,
 
   ...TOGETHER_THEMES,
+
+  ...GRADIENT_THEMES,
 ];

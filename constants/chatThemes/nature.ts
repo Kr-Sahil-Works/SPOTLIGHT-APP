@@ -1,4 +1,5 @@
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const NATURE_THEMES: ChatTheme[] = [
@@ -7,6 +8,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.AboveTrees,
+    preview: WALLPAPER_PREVIEWS.AboveTrees,
 
     bubbleMe: "#22c55e",
     bubbleOther: "#14261a",
@@ -29,6 +31,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.BlueNight,
+    preview: WALLPAPER_PREVIEWS.BlueNight,
 
     bubbleMe: "#3b82f6",
     bubbleOther: "#162338",
@@ -51,6 +54,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.Butterfly,
+    preview: WALLPAPER_PREVIEWS.Butterfly,
 
     bubbleMe: "#ec4899",
     bubbleOther: "#2c1224",
@@ -73,6 +77,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.Evening,
+    preview: WALLPAPER_PREVIEWS.Evening,
 
     bubbleMe: "#f59e0b",
     bubbleOther: "#2a1d0b",
@@ -95,6 +100,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.FarmHouse,
+    preview: WALLPAPER_PREVIEWS.FarmHouse,
 
     bubbleMe: "#84cc16",
     bubbleOther: "#24310f",
@@ -117,6 +123,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.GreenNight,
+    preview: WALLPAPER_PREVIEWS.GreenNight,
 
     bubbleMe: "#16a34a",
     bubbleOther: "#122517",
@@ -139,6 +146,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.InSearch,
+    preview: WALLPAPER_PREVIEWS.InSearch,
 
     bubbleMe: "#14b8a6",
     bubbleOther: "#13302b",
@@ -161,6 +169,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.Lamp,
+    preview: WALLPAPER_PREVIEWS.Lamp,
 
     bubbleMe: "#fbbf24",
     bubbleOther: "#30260f",
@@ -183,6 +192,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.Mount,
+    preview: WALLPAPER_PREVIEWS.Mount,
 
     bubbleMe: "#64748b",
     bubbleOther: "#1a2230",
@@ -205,6 +215,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.Scene,
+    preview: WALLPAPER_PREVIEWS.Scene,
 
     bubbleMe: "#22c55e",
     bubbleOther: "#14261a",
@@ -227,6 +238,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.Train,
+    preview: WALLPAPER_PREVIEWS.Train,
 
     bubbleMe: "#ef4444",
     bubbleOther: "#2d1414",
@@ -249,6 +261,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     category: "Nature",
 
     wallpaper: WALLPAPERS.ValleyView,
+    preview: WALLPAPER_PREVIEWS.ValleyView,
 
     bubbleMe: "#10b981",
     bubbleOther: "#123026",

@@ -189,9 +189,17 @@ export const markAsDelivered = mutation({
     userId: v.id("users"),
   },
 
-  handler: async (ctx, args) => {
-    const user =
-      await getAuthenticatedUser(ctx);
+handler: async (ctx, args) => {
+
+  const identity =
+    await ctx.auth.getUserIdentity();
+
+  if (!identity) {
+    return;
+  }
+
+  const user =
+    await getAuthenticatedUser(ctx);
 
     const conversationId =
       await ctx.runMutation(
@@ -239,8 +247,17 @@ export const markAsDelivered = mutation({
 
 export const markAsSeen = mutation({
   args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
-    const user = await getAuthenticatedUser(ctx);
+handler: async (ctx, args) => {
+
+  const identity =
+    await ctx.auth.getUserIdentity();
+
+  if (!identity) {
+    return;
+  }
+
+  const user =
+    await getAuthenticatedUser(ctx);
 
  const conversationId = await ctx.runMutation(
 api.conversations.index.createConversation,

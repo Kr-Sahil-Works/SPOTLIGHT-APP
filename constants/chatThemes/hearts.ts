@@ -1,4 +1,5 @@
 import { ChatTheme } from "./types";
+import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const HEART_THEMES: ChatTheme[] = [
@@ -7,6 +8,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.ThreeHearts,
+    preview: WALLPAPER_PREVIEWS.ThreeHearts,
 
     bubbleMe: "#ff5d8f",
     bubbleOther: "#341722",
@@ -29,6 +31,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.Heartbeat,
+    preview: WALLPAPER_PREVIEWS.Heartbeat,
 
     bubbleMe: "#ef4444",
     bubbleOther: "#321212",
@@ -51,6 +54,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.HeartGarden,
+    preview: WALLPAPER_PREVIEWS.HeartGarden,
 
     bubbleMe: "#fb7185",
     bubbleOther: "#341822",
@@ -73,6 +77,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.ILoveYou,
+    preview: WALLPAPER_PREVIEWS.ILoveYou,
 
     bubbleMe: "#f43f5e",
     bubbleOther: "#301218",
@@ -95,6 +100,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.Love,
+    preview: WALLPAPER_PREVIEWS.Love,
 
     bubbleMe: "#ff477e",
     bubbleOther: "#31131d",
@@ -117,6 +123,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.LoveNotes,
+    preview: WALLPAPER_PREVIEWS.LoveNotes,
 
     bubbleMe: "#ff7099",
     bubbleOther: "#381a26",
@@ -139,6 +146,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.LoveWaves,
+    preview: WALLPAPER_PREVIEWS.LoveWaves,
 
     bubbleMe: "#ff4d6d",
     bubbleOther: "#301218",
@@ -161,6 +169,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.LoveWaves2,
+    preview: WALLPAPER_PREVIEWS.LoveWaves2,
 
     bubbleMe: "#ff5f7e",
     bubbleOther: "#34141d",
@@ -183,6 +192,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.Promise,
+    preview: WALLPAPER_PREVIEWS.Promise,
 
     bubbleMe: "#f9a8d4",
     bubbleOther: "#472d38",
@@ -205,6 +215,7 @@ export const HEART_THEMES: ChatTheme[] = [
     category: "Hearts",
 
     wallpaper: WALLPAPERS.RedVelvet,
+    preview: WALLPAPER_PREVIEWS.RedVelvet,
 
     bubbleMe: "#dc2626",
     bubbleOther: "#2f1010",

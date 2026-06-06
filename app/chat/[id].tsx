@@ -255,36 +255,52 @@ const deleteMessage =
   );
 
 useEffect(() => {
+if (
+  !userId ||
+  !isLoaded ||
+  !isSignedIn ||
+  !isOnline ||
+  !conversationId
+) {
+  return;
+}
+
+const run = async () => {
   if (
-    !userId ||
     !isLoaded ||
     !isSignedIn ||
-    !isOnline
+    !userId
   ) {
     return;
   }
 
-  const run =
-    async () => {
-      try {
-        await markAsDelivered({
-          userId,
-        });
+  try {
+    await markAsDelivered({
+      userId,
+    });
 
-        await markAsSeen({
-          userId,
-        });
-      } catch {}
-    };
+    await markAsSeen({
+      userId,
+    });
+  } catch (error) {
+    console.log(
+      "Mark status error",
+      error
+    );
+  }
+};
 
-  run();
+run();
 }, [
-  messages.length,
   isLoaded,
   isSignedIn,
   isOnline,
   userId,
+  conversationId,
+  messages.length,
 ]);
+
+
   const resolvedThemeIndex =
     previewThemeIndex !==
     null
