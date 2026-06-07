@@ -10,7 +10,7 @@ import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 
 import Constants from "expo-constants";
-import { View, Text } from "react-native";
+import { Text, View } from "react-native";
 
 /* =========================
    ✅ SAFE ENV (APK + DEV)
@@ -24,12 +24,6 @@ const convexUrl =
 const publishableKey =
   process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ||
   extra?.clerkPublishableKey;
-
-/* =========================
-   🔍 DEBUG (CHECK IN APK)
-========================= */
-console.log("Convex URL:", convexUrl);
-console.log("Clerk Key:", publishableKey);
 
 /* =========================
    ✅ CREATE CLIENT

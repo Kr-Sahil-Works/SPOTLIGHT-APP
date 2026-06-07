@@ -5,8 +5,8 @@ import StoriesSection from "@/components/story/Stories";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import {
-    getFeedCache,
-    saveFeedCache,
+  getFeedCache,
+  saveFeedCache,
 } from "@/lib/cache/feedCache";
 import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,18 +14,18 @@ import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "convex/react";
 import { useRouter } from "expo-router";
 import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 import {
-    Animated,
-    RefreshControl,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { styles } from "../../styles/feed.styles";
 

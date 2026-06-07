@@ -24,11 +24,6 @@ const token = (
       "59f5a6cf-10ee-4edf-bc4c-346d00c2ef9c",
   })
 ).data;
-
-console.log(
-  "EXPO PUSH TOKEN",
-  token
-);
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
   name: "Messages",

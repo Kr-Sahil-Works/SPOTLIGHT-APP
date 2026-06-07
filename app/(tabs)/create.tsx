@@ -23,10 +23,11 @@ import {
 } from "@/components/common/AppToast";
 import { api } from "@/convex/_generated/api";
 import useNetwork from "@/hooks/useNetwork";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 
+import * as ImageManipulator from "expo-image-manipulator";
 
 export default function CreateScreen() {
   const isOnline =
@@ -40,6 +41,8 @@ export default function CreateScreen() {
 const [blockingUI, setBlockingUI] = useState(false);
 
 const [showToast, setShowToast] = useState(false);
+const [showPostLimitInfo, setShowPostLimitInfo] =
+  useState(false);
 const toastAnim = useRef(new Animated.Value(0)).current;
 
 const { showToast: appToast } =
@@ -87,7 +90,24 @@ useEffect(() => {
   const createPost = useMutation(api.posts.index.createPost);
   
 
+  const currentUser =
+  useQuery(
+    api.users.index.getCurrentUser
+  );
+  
+
 const pickImage = async () => {
+
+  if (hasReachedPostLimit) {
+  appToast({
+    type: "error",
+    message:
+      "Delete an older post before uploading a new one",
+  });
+
+  return;
+}
+
   if (!isOnline) {
     appToast({
       type: "error",
@@ -103,15 +123,77 @@ const pickImage = async () => {
       mediaTypes: "images",
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 1,
     });
 
-  if (!result.canceled) {
-    setSelectedImage(
-      result.assets[0].uri
-    );
-  }
+if (!result.canceled) {
+  const asset =
+    result.assets[0];
+
+    const maxSize =
+  8 * 1024 * 1024;
+
+if (
+  (asset.fileSize ?? 0) >
+  maxSize
+) {
+appToast({
+  type: "error",
+  message:
+    "Please select an image smaller than 8 MB",
+});
+
+  return;
+}
+
+let width = 1440;
+let compress = 0.92;
+
+const fileSize =
+  asset.fileSize ?? 0;
+
+if (
+  fileSize >
+  500 * 1024
+) {
+  width = 1080;
+  compress = 0.85;
+}
+
+if (
+  fileSize >
+  1500 * 1024
+) {
+  width = 1080;
+  compress = 0.75;
+}
+
+const optimizedImage =
+  await ImageManipulator.manipulateAsync(
+    asset.uri,
+    [
+      {
+        resize: {
+          width,
+        },
+      },
+    ],
+    {
+      compress,
+      format:
+        ImageManipulator.SaveFormat.WEBP,
+    }
+  );
+
+setSelectedImage(
+  optimizedImage.uri
+);
+}
 };
+
+
+
+
 
   const handleShare = async () => {
     if (isSharing) return;
@@ -168,7 +250,10 @@ Animated.timing(toastAnim, {
 }).start();
 
 setTimeout(() => {
-router.replace("/");
+  setShowToast(false);
+  toastAnim.setValue(0);
+
+  router.replace("/");
 }, 500);
 
 
@@ -180,6 +265,11 @@ router.replace("/");
 
     }
   };
+
+
+  const hasReachedPostLimit =
+  (currentUser?.posts ?? 0) >= 12;
+
 
   const translateX = shimmer.interpolate({
   inputRange: [0, 1],
@@ -275,6 +365,8 @@ if (!selectedImage) {
           <Ionicons name="arrow-back" size={26} color={COLORS.white} />
         </TouchableOpacity>
 
+
+
         <Text
           style={{
             fontSize: 20,
@@ -289,11 +381,140 @@ if (!selectedImage) {
         <View style={{ width: 26 }} />
       </View>
 
+           {hasReachedPostLimit && (
+  <View
+    style={{
+      marginTop: 12,
+marginHorizontal: 12,
+alignSelf: "center",
+width: "92%",
+      borderRadius: 16,
+      backgroundColor:
+        "rgba(174,255,24,0.06)",
+      borderWidth: 1,
+      borderColor:
+        "rgba(174,255,24,0.20)",
+      overflow: "hidden",
+    }}
+  >
+    <TouchableOpacity
+      onPress={() =>
+        setShowPostLimitInfo(
+          (p) => !p
+        )
+      }
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: 14,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <Ionicons
+          name="information-circle-outline"
+          size={18}
+          color="#AEFF18"
+        />
+
+        <Text
+          style={{
+            color: "#AEFF18",
+            fontSize: 14,
+            fontWeight: "600",
+          }}
+        >
+        Keeping Spotlight Free
+        </Text>
+      </View>
+
+      <Ionicons
+        name={
+          showPostLimitInfo
+            ? "chevron-up"
+            : "chevron-down"
+        }
+        size={18}
+        color="#AEFF18"
+      />
+    </TouchableOpacity>
+
+    {showPostLimitInfo && (
+<View
+  style={{
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+    paddingTop: 2,
+  }}
+>
+  <Text
+    style={{
+      color: "#CFCFCF",
+      fontSize: 13,
+      lineHeight: 19,
+    }}
+  >
+    Spotlight is an independent platform
+    designed, built, and maintained by{" "}
+    <Text
+      style={{
+        color: "#AEFF18",
+        fontWeight: "700",
+      }}
+    >
+      Sahil KR
+    </Text>
+    .
+
+    {"\n\n"}
+
+    Instead of showing ads or
+    charging for paid premium features,
+    Spotlight just limits each account
+    to have 12 active posts.
+
+    {"\n\n"}
+
+    This helps keep Spotlight{" "}
+    <Text
+      style={{
+        color: "#AEFF18",
+        fontWeight: "700",
+      }}
+    >
+      completely free
+    </Text>
+        ,  and accessible while managing
+    server storage costs, with all core features remaining{" "}
+    <Text
+      style={{
+        color: "#AEFF18",
+        fontWeight: "700",
+      }}
+    >
+      free for everyone
+    </Text>
+    .
+
+    {"\n\n"}
+
+    Need room for a new post? Delete an older one and you're ready to go.
+  </Text>
+</View>
+    )}
+  </View>
+)}
+
       {/* CENTER POST-LIKE BOX */}
       <View
         style={{
           flex: 1,
-          justifyContent: "center",
           alignItems: "center",
           padding: 20,
         }}
@@ -306,6 +527,7 @@ if (!selectedImage) {
       : 1
   }
   style={{
+    marginTop:20,
     opacity:
       isOnline
         ? 1
@@ -357,10 +579,26 @@ if (!selectedImage) {
   }}
 >
   <Animated.View style={{ opacity: breathe }}>
-    <Ionicons name="image-outline" size={42} color={COLORS.primary} />
-    <Text style={{ color: "#888", marginTop: 6 }}>
-      Tap to select image
-    </Text>
+<Ionicons
+  name="image-outline"
+  size={42}
+  color={
+    hasReachedPostLimit
+      ? "#9f0000"
+      : COLORS.primary
+  }
+/>
+ <Text
+  style={{
+    color: "#888",
+    marginTop: 6,
+    textAlign: "center",
+  }}
+>
+  {hasReachedPostLimit
+    ? "12 / 12 Posts Used"
+    : "Tap to select image"}
+</Text>
   </Animated.View>
 
   <Shimmer />

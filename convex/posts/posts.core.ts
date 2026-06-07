@@ -22,6 +22,13 @@ export const createPost = mutation({
   handler: async (ctx, args) => {
     const user = await getAuthenticatedUser(ctx);
 
+
+    if (user.posts >= 12) {
+  throw new Error(
+    "POST_LIMIT_REACHED"
+  );
+}
+
     const imageUrl = await ctx.storage.getUrl(args.storageId);
     if (!imageUrl) throw new Error("Image not found");
 

@@ -121,11 +121,6 @@ export default function PushHandler() {
 
         const token =
           await registerForPushNotificationsAsync();
-          console.log(
-  "SAVING TOKEN",
-  token
-);
-
         if (token) {
           await saveToken({
             token,

@@ -280,43 +280,55 @@ const handleDelete =
         </Pressable>
       )}
 
-      {/* IMAGE */}
-      <View>
-        {!loaded && (
-          <View
-            style={{
-              width: "100%",
-              aspectRatio: 1,
-              backgroundColor: "#111",
-              overflow: "hidden",
-            }}
-          >
-            <Animated.View
-            renderToHardwareTextureAndroid={false}
-              style={{
-                width: "100%",
-                height: "100%",
-                transform: [{ translateX }],
-              }}
-            >
-              <LinearGradient
-                colors={["#111", "#222", "#111"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={{ flex: 1 }}
-              />
-            </Animated.View>
-          </View>
-        )}
+   
+     <View
+  style={{
+    width: "100%",
+    aspectRatio: 1,
+  }}
+>
+  {!loaded && (
+    <View
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "#111",
+        overflow: "hidden",
+        zIndex: 2,
+      }}
+    >
+      <Animated.View
+        renderToHardwareTextureAndroid={false}
+        style={{
+          width: "100%",
+          height: "100%",
+          transform: [{ translateX }],
+        }}
+      >
+        <LinearGradient
+          colors={["#111", "#222", "#111"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ flex: 1 }}
+        />
+      </Animated.View>
+    </View>
+  )}
 
-<AppImage
-  uri={post.imageUrl}
-style={styles.postImage}
-  contentFit="cover"
-  transition={180}
-  onLoadEnd={() => setLoaded(true)}
-/>
-      </View>
+  <AppImage
+    uri={post.imageUrl}
+    style={{
+      width: "100%",
+      height: "100%",
+    }}
+    contentFit="cover"
+    transition={0}
+    onLoadEnd={() => setLoaded(true)}
+  />
+</View>
 
       {/* ACTIONS */}
       <View style={styles.postActions}>

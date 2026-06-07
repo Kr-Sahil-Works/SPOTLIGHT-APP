@@ -45,8 +45,6 @@ useEffect(() => {
 
 useEffect(() => {
   if (forceOpen) {
-    console.log("FORCE OPEN TRAY");
-
     translateY.setValue(COLLAPSED_OFFSET); // reset first
 
     Animated.spring(translateY, {
