@@ -10,7 +10,7 @@ function AppImageComponent({
   uri,
   style,
   contentFit = "cover",
-  transition = 120,
+  transition = 0,
   source,
   ...props
 }: Props) {

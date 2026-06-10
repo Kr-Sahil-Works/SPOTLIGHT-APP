@@ -4,26 +4,26 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import {
-    useLocalSearchParams,
-    useRouter,
+  useLocalSearchParams,
+  useRouter,
 } from "expo-router";
 import React, {
-    useMemo,
-    useRef,
-    useState,
+  useMemo,
+  useRef,
+  useState,
 } from "react";
 
 import {
-    FlatList,
-    SafeAreaView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  FlatList,
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import {
-    Platform,
+  Platform,
 } from "react-native";
 
 let PagerView: any;
@@ -407,6 +407,7 @@ const filterUsers = (
           <TextInput
             value={search}
             onChangeText={setSearch}
+            underlineColorAndroid="transparent"
             placeholder="Search"
             placeholderTextColor="#777"
             style={{

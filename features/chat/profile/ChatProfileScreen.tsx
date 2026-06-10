@@ -3,13 +3,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
-import useUser from "@/app/chat/hooks/useUser";
+import useUser from "@/features/chat/hooks/useUser";
 
 type Props = {
   userId: Id<"users">;

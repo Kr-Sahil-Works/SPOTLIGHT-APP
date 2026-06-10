@@ -158,7 +158,7 @@ const modalPanResponder = useRef(
 ).current;
 
   /* 🔥 SHARE */
-  const WEBSITE_URL = "https://www.sleekchats.com";
+  const WEBSITE_URL = "https://spotlight-docs.onrender.com";
 
   const handleShare = async () => {
     try {

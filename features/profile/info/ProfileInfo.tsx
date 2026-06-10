@@ -2,6 +2,7 @@ import { COLORS } from "@/constants/theme";
 import { styles } from "@/styles/profile.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Animated,
@@ -24,6 +25,7 @@ export default function ProfileInfo({
 }: any) {
   const [showAvatarModal, setShowAvatarModal] =
   useState(false);
+  const router = useRouter();
 
 const screenWidth = Dimensions.get("window").width;
   return (
@@ -70,23 +72,34 @@ const screenWidth = Dimensions.get("window").width;
           ]}
         >
           {/* POSTS */}
-          <View
-            style={[
-              styles.statItem,
-              {
-                flex: 1,
-                alignItems: "center",
-              },
-            ]}
-          >
-            <Text style={styles.statNumber}>
-              {user?.posts || 0}
-            </Text>
+       <TouchableOpacity
+  activeOpacity={0.7}
+  onPress={() =>
+    router.push({
+      pathname:
+        "/posts/[userId]",
 
-            <Text style={styles.statLabel}>
-              Posts
-            </Text>
-          </View>
+      params: {
+        userId: user._id,
+      },
+    })
+  }
+  style={[
+    styles.statItem,
+    {
+      flex: 1,
+      alignItems: "center",
+    },
+  ]}
+>
+  <Text style={styles.statNumber}>
+    {user?.posts || 0}
+  </Text>
+
+  <Text style={styles.statLabel}>
+    Posts
+  </Text>
+</TouchableOpacity>
 
           {/* FOLLOWERS */}
           <TouchableOpacity
@@ -161,36 +174,96 @@ const screenWidth = Dimensions.get("window").width;
       )}
 
       {/* ACTION BUTTONS */}
-      <View style={styles.actionButtons}>
-    <TouchableOpacity
-  style={[
-    styles.editButton,
-    {
-      opacity:
-        isOnline
-          ? 1
-          : 0.45,
-    },
-  ]}
-  disabled={!isOnline}
-  onPress={onEdit}
+<View
+  style={{
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 18,
+  }}
 >
-  <Text style={styles.editButtonText}>
-    Edit Profile
-  </Text>
-</TouchableOpacity>
+  {/* EDIT PROFILE */}
+  <TouchableOpacity
+    style={[
+      styles.editButton,
+      {
+        flex: 1,
 
-        <TouchableOpacity
-          style={styles.shareButton}
-          onPress={onShare}
-        >
-          <Ionicons
-            name="share-outline"
-            size={20}
-            color={COLORS.white}
-          />
-        </TouchableOpacity>
-      </View>
+        height: 46,
+
+        opacity:
+          isOnline
+            ? 1
+            : 0.45,
+      },
+    ]}
+    disabled={!isOnline}
+    onPress={onEdit}
+  >
+    <Text
+      style={
+        styles.editButtonText
+      }
+    >
+      Edit Profile
+    </Text>
+  </TouchableOpacity>
+
+  {/* SHARE APP */}
+  <TouchableOpacity
+    onPress={onShare}
+    style={{
+      width: 46,
+      height: 46,
+
+      borderRadius: 14,
+
+      backgroundColor:
+        "#0c0c0c",
+
+      justifyContent:
+        "center",
+
+      alignItems:
+        "center",
+    }}
+  >
+    <Ionicons
+      name="share-outline"
+      size={20}
+      color="#fff"
+    />
+  </TouchableOpacity>
+
+  {/* DISCOVER */}
+  <TouchableOpacity
+    onPress={() =>
+      router.push(
+        "/user/discover"
+      )
+    }
+    style={{
+      width: 46,
+      height: 46,
+
+      borderRadius: 14,
+
+      backgroundColor:
+        "#0c0c0c",
+
+      justifyContent:
+        "center",
+
+      alignItems:
+        "center",
+    }}
+  >
+    <Ionicons
+      name="person-add-outline"
+      size={21}
+      color="#fff"
+    />
+  </TouchableOpacity>
+</View>
       <Modal
   visible={showAvatarModal}
   transparent

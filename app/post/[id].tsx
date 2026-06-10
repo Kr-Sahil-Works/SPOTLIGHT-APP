@@ -1,4 +1,5 @@
 import CommentsModal from "@/components/modals/CommentsModal";
+import LikesModal from "@/components/modals/LikesModal";
 import Post from "@/components/Post";
 import { api } from "@/convex/_generated/api";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,8 +9,7 @@ import {
   useRouter,
 } from "expo-router";
 import {
-  useEffect,
-  useState,
+  useState
 } from "react";
 import {
   ActivityIndicator,
@@ -26,10 +26,13 @@ export default function PostPage() {
     openComments,
   } = useLocalSearchParams();
 
-  const [
-    showComments,
-    setShowComments,
-  ] = useState(false);
+  const [commentsPostId,
+  setCommentsPostId] =
+  useState<any>(null);
+
+const [likesPostId,
+  setLikesPostId] =
+  useState<any>(null);
 
   const post = useQuery(
     api.posts.index.getPostById,
@@ -37,17 +40,6 @@ export default function PostPage() {
       postId: id as any,
     }
   );
-
-  useEffect(() => {
-    if (
-      openComments ===
-      "true"
-    ) {
-      setShowComments(
-        true
-      );
-    }
-  }, [openComments]);
 
   if (
     post === undefined
@@ -139,7 +131,17 @@ export default function PostPage() {
     marginTop: 16,
   }}
 >
-  <Post post={post} />
+<Post
+  post={post}
+  currentUser={post.author}
+  isOnline={true}
+  onOpenComments={() =>
+    setCommentsPostId(post._id)
+  }
+  onOpenLikes={() =>
+    setLikesPostId(post._id)
+  }
+/>
 </View>
 
       {/* BOTTOM CTA */}
@@ -224,22 +226,23 @@ export default function PostPage() {
           Go to your profile to see all posts
         </Text>
       </View>
+      <LikesModal
+  visible={!!likesPostId}
+  postId={likesPostId}
+  onClose={() =>
+    setLikesPostId(null)
+  }
+/>
 
-      {/* COMMENTS */}
-      <CommentsModal
-        visible={
-          showComments
-        }
-        postId={
-          post._id
-        }
-        onClose={() =>
-          setShowComments(
-            false
-          )
-        }
-        onCommentAdded={() => {}}
-      />
+<CommentsModal
+  visible={!!commentsPostId}
+  postId={commentsPostId}
+  onClose={() =>
+    setCommentsPostId(null)
+  }
+  onCommentAdded={() => {}}
+/>
     </View>
+    
   );
 }

@@ -31,6 +31,7 @@ export default function ChatSearch({ value, onChange }: any) {
 
       <TextInput
         placeholder="Search chats"
+        underlineColorAndroid="transparent"
         placeholderTextColor="#7a7a7a"
         value={value}
         onChangeText={onChange}

@@ -34,3 +34,8 @@ export {
     createOrUpdateUser
 } from "./users.public";
 
+
+export {
+    getUserRank
+} from "./users.rank";
+

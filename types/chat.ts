@@ -1,7 +1,15 @@
 import { Id } from "@/convex/_generated/dataModel";
 
 export type Reaction = {
+  userId: string;
+
   value: string;
+
+  userName?: string;
+
+  fullName?: string;
+
+  userImage?: string;
 };
 
 export type TapState = {

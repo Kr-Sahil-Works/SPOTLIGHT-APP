@@ -51,7 +51,7 @@ export const STORIES = [
   },
   {
     id: "8",
-    username: "Rita",
+    username: "Disha",
     avatar: require("@/assets/images/story/story8.webp"),
     story: require("@/assets/images/story/storyb8.webp"),
     hasStory: true,

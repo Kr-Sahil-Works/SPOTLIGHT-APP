@@ -18,14 +18,15 @@ import {
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
+import EmojiPicker from "rn-emoji-keyboard";
 import { useOverlay } from "../hooks/useOverlay";
 
+
 const EMOJIS = [
-  "❤️",
+  "🥰",
   "😂",
   "😮",
   "😢",
-  "🙏",
   "🔥",
 ];
 
@@ -71,6 +72,13 @@ setKeyboardHeight] =
     overlay.type ===
       "reaction" &&
     overlay.message;
+
+    const [
+  emojiPickerVisible,
+  setEmojiPickerVisible,
+] = React.useState(
+  false
+);
 
     React.useEffect(() => {
   if (visible) {
@@ -395,6 +403,22 @@ return (
           )
         )}
 
+
+<TouchableOpacity
+  activeOpacity={0.8}
+  onPress={() => {
+    setEmojiPickerVisible(
+      true
+    );
+  }}
+>
+  <Ionicons
+    name="add-circle-outline"
+    size={24}
+    color="#fff"
+  />
+</TouchableOpacity>
+
 <View
   style={{
     width: 1.2,
@@ -429,6 +453,49 @@ return (
 </TouchableOpacity>
       </View>
       </Animated.View>
+   <EmojiPicker
+  open={
+    emojiPickerVisible
+  }
+  theme={{
+    backdrop: "#000000aa",
+
+    knob: "#444",
+
+    container: "#121212",
+
+    header: "#fff",
+
+    skinTonesContainer:
+      "#1a1a1a",
+  }}
+  enableRecentlyUsed
+  onClose={() =>
+    setEmojiPickerVisible(
+      false
+    )
+  }
+  onEmojiSelected={async (
+    emoji
+  ) => {
+    if (!msg?._id)
+      return;
+
+    await toggleReaction({
+      messageId:
+        msg._id,
+
+      reaction:
+        emoji.emoji,
+    });
+
+    setEmojiPickerVisible(
+      false
+    );
+
+    closeOverlay();
+  }}
+/>
     </View>
   );
 }

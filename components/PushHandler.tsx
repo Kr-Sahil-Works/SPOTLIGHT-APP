@@ -91,22 +91,19 @@ export default function PushHandler() {
                     currentChatId ===
                     senderId;
 
-                  return {
-                    shouldShowAlert:
-                      !insideSameChat,
+               return {
+  shouldPlaySound:
+    !insideSameChat,
 
-                    shouldPlaySound:
-                      !insideSameChat,
+  shouldSetBadge:
+    false,
 
-                    shouldSetBadge:
-                      false,
+  shouldShowBanner:
+    !insideSameChat,
 
-                    shouldShowBanner:
-                      !insideSameChat,
-
-                    shouldShowList:
-                      !insideSameChat,
-                  };
+  shouldShowList:
+    !insideSameChat,
+};
                 },
             }
           );

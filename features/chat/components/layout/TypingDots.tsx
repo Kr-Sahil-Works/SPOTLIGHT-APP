@@ -108,7 +108,7 @@ export default function TypingDots({
       {/* BUBBLE */}
       <View
         style={{
-          backgroundColor: "rgba(255,255,255,0.06)",
+          backgroundColor: "rgba(3, 3, 3, 0.53)",
           paddingHorizontal: 12,
           paddingVertical: 10,
           borderRadius: 16,

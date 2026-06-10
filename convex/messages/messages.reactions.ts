@@ -24,9 +24,30 @@ const filtered = reactions.filter(
     );
 
    await ctx.db.patch(args.messageId, {
-  reactions: existing
-    ? filtered
-    : [...filtered, { userId: user._id, value: args.reaction }],
+ reactions: existing
+  ? filtered
+  : [
+      ...filtered,
+      {
+        userId: user._id,
+
+      fullName:
+  user.fullname ||
+
+  "",
+
+userName:
+  user.username ||
+
+  "User",
+
+        userImage:
+          user.image,
+
+        value:
+          args.reaction,
+      },
+    ],
 })
   },
 });

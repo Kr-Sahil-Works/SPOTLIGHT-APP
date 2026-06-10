@@ -32,8 +32,11 @@ const [accessCode,
   setAccessCode] =
   useState("");
 
-const ACCESS_CODE =
-  "SPOTLIGHT007";
+  const [hideTimers] =
+  useState<
+    Record<string, ReturnType<typeof setTimeout>>
+  >({});
+
 
   const [showDeleteModal,
     setShowDeleteModal] =
@@ -47,9 +50,15 @@ const ACCESS_CODE =
     setDeleting] =
     useState(false);
 
-  const users =
+    const [rankTapCounts,
+  setRankTapCounts] =
+  useState<Record<string, number>>(
+    {}
+  );
+
+const users =
   useQuery(
-    api.admin.admin.getAllUsers
+api.admin.getUsersWithRanks.getUsersWithRanks
   ) ?? [];
 
   const deleteUser =
@@ -57,6 +66,12 @@ const ACCESS_CODE =
       api.admin.admin
         .deleteUserByAdmin
     );
+
+    const verifyAdminDeleteCode =
+  useMutation(
+    api.security
+      .verifyAdminDeleteCode
+  );
 
 
   const confirmDelete =
@@ -175,6 +190,7 @@ const filteredUsers =
       >
         <TextInput
           value={search}
+          underlineColorAndroid="transparent"
           onChangeText={setSearch}
           placeholder="Search users..."
           placeholderTextColor="#666"
@@ -325,19 +341,78 @@ const filteredUsers =
 </TouchableOpacity>
 
             {/* DELETE */}
-            <TouchableOpacity
+       <TouchableOpacity
+  activeOpacity={0.8}
 onPress={() => {
-  setSelectedUser(item);
+  const current =
+    rankTapCounts[item._id] || 0;
 
-  setShowDeleteModal(true);
+  const next =
+    current + 1;
+
+  setRankTapCounts(
+    (prev) => ({
+      ...prev,
+      [item._id]: next,
+    })
+  );
+
+  if (next >= 3) {
+    if (hideTimers[item._id]) {
+      clearTimeout(
+        hideTimers[item._id]
+      );
+    }
+
+    hideTimers[item._id] =
+      setTimeout(() => {
+        setRankTapCounts(
+          (prev) => ({
+            ...prev,
+            [item._id]: 0,
+          })
+        );
+      }, 4000);
+  }
 }}
-            >
-              <Ionicons
-                name="trash-outline"
-                size={20}
-                color="#ff4444"
-              />
-            </TouchableOpacity>
+  style={{
+    minWidth: 50,
+    alignItems: "center",
+  }}
+>
+  {(
+    rankTapCounts[
+      item._id
+    ] || 0
+  ) >= 3 ? (
+    <TouchableOpacity
+      onPress={() => {
+        setSelectedUser(
+          item
+        );
+
+        setShowDeleteModal(
+          true
+        );
+      }}
+    >
+      <Ionicons
+        name="trash-outline"
+        size={20}
+        color="#ff4444"
+      />
+    </TouchableOpacity>
+  ) : (
+    <Text
+      style={{
+        color: "#00ff88",
+        fontWeight: "800",
+      }}
+    >
+      #{item.rank}
+    </Text>
+  )}
+</TouchableOpacity>
           </View>
         ))}
       </ScrollView>
@@ -583,6 +658,7 @@ onPress={() => {
 
       <TextInput
         value={accessCode}
+        underlineColorAndroid="transparent"
         onChangeText={
           setAccessCode
         }
@@ -642,12 +718,14 @@ onPress={() => {
 
         <TouchableOpacity
           onPress={async () => {
-            if (
-              accessCode !==
-              ACCESS_CODE
-            ) {
-              return;
-            }
+         const valid =
+  await verifyAdminDeleteCode({
+    code: accessCode,
+  });
+
+if (!valid) {
+  return;
+}
 
             await confirmDelete();
 

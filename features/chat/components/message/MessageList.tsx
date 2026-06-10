@@ -21,6 +21,8 @@ import {
   OverlayRenderer,
 } from "./overlays";
 
+import ReactionsModal from "../modals/ReactionsModal";
+
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
@@ -35,6 +37,8 @@ import {
 
 type Props = {
   messages: any[];
+
+  isOnline: boolean;
 
   currentUserId?: string;
 
@@ -96,6 +100,8 @@ export default function MessageList({
 
   theme,
 
+  isOnline,
+
   highlightId,
   onScrollTo,
 
@@ -134,6 +140,28 @@ const {
   highlightMessage,
   highlightedMessageId,
 } = useOverlay();
+
+
+const [
+  reactionsModalVisible,
+  setReactionsModalVisible,
+] = React.useState(
+  false
+);
+
+const [
+  selectedReactions,
+  setSelectedReactions,
+] = React.useState<any[]>(
+  []
+);
+
+const [
+  selectedMessage,
+  setSelectedMessage,
+] = React.useState<any>(
+  null
+);
 
 const [
   scrollHighlightId,
@@ -234,6 +262,22 @@ const deleteMessage =
     <MessageRenderer
       item={item}
       index={index}
+      isOnline={isOnline}
+   onOpenReactions={(
+  msg
+) => {
+  setSelectedMessage(
+    msg
+  );
+
+  setSelectedReactions(
+    msg.reactions || []
+  );
+
+  setReactionsModalVisible(
+    true
+  );
+}}
       isDeleting={deletingIds.includes(
         item._id
       )}
@@ -325,6 +369,7 @@ const deleteMessage =
       )}
 
       <FlashList
+      extraData={messages}
       keyboardShouldPersistTaps="always"
         ref={flatListRef}
         data={messages}
@@ -462,6 +507,30 @@ pinnedMessageId={
   pinnedMessageId
 }
       />
+
+   <ReactionsModal
+  visible={
+    reactionsModalVisible
+  }
+  reactions={
+    selectedReactions
+  }
+  currentUserId={
+    currentUserId
+  }
+  messageId={
+    selectedMessage?._id
+  }
+  isOnline={isOnline}
+  toggleReaction={
+    toggleReaction
+  }
+  onClose={() =>
+    setReactionsModalVisible(
+      false
+    )
+  }
+/>
     </View>
   );
 }

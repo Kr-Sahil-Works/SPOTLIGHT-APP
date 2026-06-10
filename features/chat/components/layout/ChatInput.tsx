@@ -185,7 +185,7 @@ const handleTyping = (value: string) => {
 
             borderRadius: 30,
             
-            overflow: "hidden",
+            overflow: "visible",
 
             marginRight: 8,
 
@@ -223,6 +223,7 @@ const handleTyping = (value: string) => {
           >
             <TextInput
   ref={inputRef}
+  underlineColorAndroid="transparent"
               value={text}
               onFocus={() =>
                 setFocused(true)

@@ -165,7 +165,7 @@ export default function UserInspectPage() {
               fontSize: 12,
             }}
           >
-            User Inspection
+            Profile Overview
           </Text>
 
           <Text
@@ -193,7 +193,7 @@ export default function UserInspectPage() {
         <View
           style={{
             backgroundColor:
-              "#0d0d0d",
+  "rgba(255,255,255,0.03)",
 
             borderRadius: 28,
 
@@ -201,8 +201,8 @@ export default function UserInspectPage() {
 
             borderWidth: 1,
 
-            borderColor:
-              "rgba(255,255,255,0.05)",
+           borderColor:
+  "rgba(0,255,136,0.12)",
           }}
         >
           {/* TOP */}
@@ -221,11 +221,19 @@ export default function UserInspectPage() {
   cachePolicy="memory-disk"
   transition={120}
   style={{
-    width: 92,
-    height: 92,
+width: 110,
+height: 110,
+
+shadowColor: "#00ff88",
+shadowOpacity: 0.35,
+shadowRadius: 18,
+shadowOffset: {
+  width: 0,
+  height: 0,
+},
     borderRadius: 999,
     borderWidth: 3,
-    borderColor: "#00ff88",
+    borderColor: "#002715",
   }}
 />
 
@@ -258,6 +266,54 @@ export default function UserInspectPage() {
               >
                 @{user.username}
               </Text>
+
+              <View
+  style={{
+    flexDirection: "row",
+    marginTop: 12,
+    gap: 8,
+  }}
+>
+  <View
+    style={{
+      backgroundColor:
+        "rgba(0,255,136,0.12)",
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 999,
+    }}
+  >
+    <Text
+      style={{
+        color: "#00ff88",
+        fontWeight: "700",
+        fontSize: 12,
+      }}
+    >
+      ACTIVE USER
+    </Text>
+  </View>
+
+  <View
+    style={{
+      backgroundColor:
+        "rgba(255,255,255,0.06)",
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 999,
+    }}
+  >
+    <Text
+      style={{
+        color: "#fff",
+        fontWeight: "700",
+        fontSize: 12,
+      }}
+    >
+      ID VERIFIED
+    </Text>
+  </View>
+</View>
 
               <View
                 style={{
@@ -376,62 +432,96 @@ export default function UserInspectPage() {
         </View>
 
         {/* STATS */}
-        <View
-          style={{
-            flexDirection: "row",
+     <View
+  style={{
+    marginTop: 20,
 
-            flexWrap: "wrap",
+    backgroundColor:
+      "rgba(255,255,255,0.03)",
 
-            justifyContent:
-              "space-between",
+    borderRadius: 28,
 
-            marginTop: 20,
-          }}
-        >
-          <StatCard
-            title="Posts"
-            value={stats.posts}
-            icon="images-outline"
-          />
+    padding: 22,
 
-          <StatCard
-            title="Followers"
-            value={
-              stats.followers
-            }
-            icon="people-outline"
-          />
+    borderWidth: 1,
 
-          <StatCard
-            title="Following"
-            value={
-              stats.following
-            }
-            icon="person-add-outline"
-          />
+    borderColor:
+      "rgba(255,255,255,0.05)",
+  }}
+>
+  <Text
+    style={{
+      color: "#00ff88",
+      fontSize: 18,
+      fontWeight: "800",
+      marginBottom: 18,
+    }}
+  >
+    Statistics
+  </Text>
 
-          <StatCard
-            title="Likes"
-            value={stats.likes}
-            icon="heart-outline"
-          />
+  {[
+    {
+      label: "Posts",
+      value: stats.posts,
+    },
+    {
+      label: "Followers",
+      value: stats.followers,
+    },
+    {
+      label: "Following",
+      value: stats.following,
+    },
+    {
+      label: "Likes",
+      value: stats.likes,
+    },
+    {
+      label: "Comments",
+      value: stats.comments,
+    },
+    {
+      label: "Messages",
+      value: stats.messages,
+    },
+  ].map((item) => (
+    <View
+      key={item.label}
+      style={{
+        flexDirection: "row",
+        justifyContent:
+          "space-between",
 
-          <StatCard
-            title="Comments"
-            value={
-              stats.comments
-            }
-            icon="chatbubble-outline"
-          />
+        paddingVertical: 14,
 
-          <StatCard
-            title="Messages"
-            value={
-              stats.messages
-            }
-            icon="mail-outline"
-          />
-        </View>
+        borderBottomWidth: 1,
+
+        borderBottomColor:
+          "rgba(255,255,255,0.04)",
+      }}
+    >
+      <Text
+        style={{
+          color: "#888",
+          fontSize: 15,
+        }}
+      >
+        {item.label}
+      </Text>
+
+      <Text
+        style={{
+          color: "#fff",
+          fontWeight: "800",
+          fontSize: 16,
+        }}
+      >
+        {item.value}
+      </Text>
+    </View>
+  ))}
+</View>
 
         {/* DANGER */}
         <View

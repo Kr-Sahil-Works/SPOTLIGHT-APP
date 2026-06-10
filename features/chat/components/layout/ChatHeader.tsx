@@ -11,7 +11,7 @@ import {
   View
 } from "react-native";
 
-import useUser from "@/app/chat/hooks/useUser";
+import useUser from "@/features/chat/hooks/useUser";
 import useNetwork from "@/hooks/useNetwork";
 import { useState } from "react";
 import CallOptionsModal from "../modals/CallOptionsModal";
@@ -255,7 +255,7 @@ return (
           ? 0.92
           : 0.35,
     }}
-    resizeMode="contain"
+contentFit="contain"
   />
 </TouchableOpacity>
     </View>

@@ -10,34 +10,34 @@ import { Image } from "expo-image";
 import * as MediaLibrary from "expo-media-library";
 import { useRouter } from "expo-router";
 import {
-    useEffect,
-    useRef,
-    useState,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
 
 import {
-    getBookmarksCache,
-    saveBookmarksCache,
+  getBookmarksCache,
+  saveBookmarksCache,
 } from "@/lib/cache/bookmarksCache";
 
 import {
-    getCollectionsCache,
-    saveCollectionsCache,
+  getCollectionsCache,
+  saveCollectionsCache,
 } from "@/lib/cache/collectionsCache";
 
 import useNetwork from "@/hooks/useNetwork";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    FlatList,
-    Modal,
-    Platform,
-    Text,
-    TextInput,
-    ToastAndroid,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Animated,
+  FlatList,
+  Modal,
+  Platform,
+  Text,
+  TextInput,
+  ToastAndroid,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 export default function Bookmarks() {
@@ -385,10 +385,24 @@ const addToExistingCollection = async (
             </TouchableOpacity>
           )}
 
-       <TouchableOpacity
-  onPress={() =>
-    router.push("/collections" as any)
-  }
+<TouchableOpacity
+  disabled={!isOnline}
+  onPress={() => {
+    if (!isOnline) {
+      showCustomToast(
+        "Collections unavailable offline"
+      );
+      return;
+    }
+
+    router.push(
+      "/collections" as any
+    );
+  }}
+  style={{
+    opacity:
+      isOnline ? 1 : 0.4,
+  }}
 >
             <Ionicons
               name="folder-open"
@@ -434,15 +448,22 @@ const addToExistingCollection = async (
                   width: "33.33%",
                   padding: 3,
                 }}
-                onLongPress={() => {
-                  if (!selectionMode) {
-                    setSelectionMode(true);
+              onLongPress={() => {
+  if (!isOnline) {
+    showCustomToast(
+      "Collections unavailable offline"
+    );
+    return;
+  }
 
-                    setSelectedPosts([
-                      item._id as any,
-                    ]);
-                  }
-                }}
+  if (!selectionMode) {
+    setSelectionMode(true);
+
+    setSelectedPosts([
+      item._id as any,
+    ]);
+  }
+}}
                 onPress={() => {
                   if (selectionMode) {
                     toggleSelection(
@@ -621,6 +642,7 @@ const addToExistingCollection = async (
             >
               <TextInput
                 value={newCollectionName}
+                underlineColorAndroid="transparent"
                 onChangeText={
                   setNewCollectionName
                 }

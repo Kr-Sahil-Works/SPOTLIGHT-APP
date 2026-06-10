@@ -28,10 +28,10 @@
       "permissions": [
         "READ_MEDIA_IMAGES"
       ],
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#161616"
-      }
+    "adaptiveIcon": {
+  "foregroundImage": "./assets/images/adaptive-icon.png",
+  "backgroundColor": "#161616"
+}
     },
 
     "web": {

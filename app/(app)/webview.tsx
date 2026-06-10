@@ -2,9 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { WebView } from "react-native-webview";
 
@@ -18,9 +18,12 @@ export default function WebViewScreen() {
   const [progress, setProgress] = useState(0);
 
   // allow only github
-  const isAllowedUrl = (u: string) => {
-    return u.startsWith("https://github.com");
-  };
+const isAllowedUrl = (u: string) => {
+  return (
+    u.startsWith("https://github.com") ||
+    u.startsWith("https://spotlight-docs.onrender.com")
+  );
+};
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>

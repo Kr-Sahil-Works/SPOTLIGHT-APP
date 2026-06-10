@@ -91,7 +91,7 @@ const chatCount =
   )?.length || 0;
 
   const showFullSuggestions = chatCount === 0;
-  const showPeekTray = chatCount > 0 && chatCount < 3;
+  const showPeekTray = chatCount > 0 && chatCount < 24;
 
   const searchUsers = useQuery(api.users.index.searchUsers, {
     search: search || "",
@@ -203,13 +203,14 @@ return (
       }}
     >
       {/* HEADER */}
-      <ChatHeader
-        onOpenChatListTheme={() =>
-          setChatListThemeOpen(
-            true
-          )
-        }
-      />
+    <ChatHeader
+  isOnline={isOnline}
+  onOpenChatListTheme={() =>
+    setChatListThemeOpen(
+      true
+    )
+  }
+/>
 
       <ChatListThemeModal
         visible={

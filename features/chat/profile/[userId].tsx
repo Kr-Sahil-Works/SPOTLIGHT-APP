@@ -1,4 +1,4 @@
-import ChatProfileScreen from "@/app/chat/profile/ChatProfileScreen";
+import ChatProfileScreen from "@/features/chat/profile/ChatProfileScreen";
 import { useLocalSearchParams } from "expo-router";
 
 export default function ChatProfilePage() {

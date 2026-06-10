@@ -9,8 +9,6 @@ import {
   View
 } from "react-native";
 
-
-
 import * as Haptics from "expo-haptics";
 
 import {
@@ -33,7 +31,6 @@ import SwipeReply from "./SwipeReply";
 
 import useDoubleTap from "../gestures/useDoubleTap";
 
-import useNetwork from "@/hooks/useNetwork";
 import useMessageGestures from "../gestures/useMessageGestures";
 
 type Props = {
@@ -46,6 +43,8 @@ type Props = {
   avatar: string;
 
   isGrouped?: boolean;
+
+  isOnline: boolean;
 
  isHighlighted?: boolean;
 
@@ -69,6 +68,11 @@ type Props = {
   onScrollTo: (
     id: string
   ) => void;
+
+  onOpenReactions?: (
+  msg: Message
+) => void;
+
 };
 
 const areEqual = (
@@ -88,11 +92,11 @@ const areEqual = (
     prev.item.replyToText ===
       next.item.replyToText &&
 
-      JSON.stringify(
-  prev.item.reactions
+JSON.stringify(
+  prev.item.reactions ?? []
 ) ===
 JSON.stringify(
-  next.item.reactions
+  next.item.reactions ?? []
 ) &&
 
   prev.isHighlighted ===
@@ -118,6 +122,8 @@ function MessageItem({
 
   isGrouped,
 
+  isOnline,
+
 isHighlighted,
 
 isDeleting,
@@ -128,13 +134,12 @@ isDeleting,
 
   onLongPress,
 
-  onScrollTo,
-}: Props) {
+onScrollTo,
+
+onOpenReactions,
+}: Props)  {
   const msgRef =
     useRef<any>(null);
-
-    const isOnline =
-  useNetwork();
 
   const {
     panX,
@@ -300,10 +305,12 @@ onPress={handleTap}
       ? "flex-end"
       : "flex-start",
 
-    marginBottom:
-      isGrouped
-        ? 2
-        : 16,
+  marginBottom:
+  item.reactions?.length
+    ? 24
+    : isGrouped
+      ? 2
+      : 16,
 
     marginLeft:
       !isMe &&
@@ -407,11 +414,16 @@ onPress={handleTap}
   )}
 </View>
 
-            <Reactions
-              reactions={
-                item.reactions
-              }
-            />
+         <Reactions
+  reactions={
+    item.reactions
+  }
+  onPress={() =>
+    onOpenReactions?.(
+      item
+    )
+  }
+/>
           </View>
    </Animated.View>
       </Pressable>

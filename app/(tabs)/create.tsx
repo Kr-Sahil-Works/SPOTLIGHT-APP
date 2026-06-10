@@ -146,8 +146,8 @@ appToast({
   return;
 }
 
-let width = 1440;
-let compress = 0.92;
+let width = 1080;
+let compress = 0.90;
 
 const fileSize =
   asset.fileSize ?? 0;
@@ -798,6 +798,7 @@ width: "92%",
 
                 <TextInput
                   style={styles.captionInput}
+                  underlineColorAndroid="transparent"
                   placeholder="Write a caption..."
                   placeholderTextColor={COLORS.grey}
                   multiline

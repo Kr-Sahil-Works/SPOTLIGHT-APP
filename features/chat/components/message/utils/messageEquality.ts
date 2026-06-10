@@ -4,17 +4,15 @@ export const areMessageContentsEqual = (
   prev: Message,
   next: Message
 ) => {
-  return (
-    prev._id === next._id &&
-    prev.text === next.text &&
-    prev.updatedAt === next.updatedAt &&
-    prev.deleted === next.deleted &&
-    prev.pending === next.pending &&
-    prev.failed === next.failed &&
-    prev.replyTo?._id === next.replyTo?._id &&
-    prev.reactions?.length === next.reactions?.length &&
-    prev.status === next.status
-  );
+return (
+  prev.text === next.text &&
+  prev.status === next.status &&
+  prev.seen === next.seen &&
+  prev.edited === next.edited &&
+  prev.replyTo === next.replyTo &&
+  prev.reactions?.length ===
+    next.reactions?.length
+);
 };
 
 export const areMessageVisualPropsEqual = (

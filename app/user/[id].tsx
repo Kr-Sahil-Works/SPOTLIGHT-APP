@@ -330,9 +330,23 @@ style={[
               renderItem={({ item }) => (
                <TouchableOpacity
   style={styles.gridItem}
-  onPress={() =>
-    setSelectedPost(item)
-  }
+ onPress={() => {
+  router.push({
+    pathname:
+      "/posts/[userId]",
+
+    params: {
+      userId: item.userId,
+      postId: item._id,
+    },
+  });
+}}
+
+onLongPress={() =>
+  setSelectedPost(item)
+}
+
+delayLongPress={600}
 >
 <Image
   source={
@@ -443,6 +457,81 @@ style={[
         }}
       >
         {profile.bio}
+      </Text>
+    )}
+  </Pressable>
+</Modal>
+<Modal
+  visible={!!selectedPost}
+  transparent
+  animationType="fade"
+  statusBarTranslucent
+>
+  <Pressable
+    onPress={() =>
+      setSelectedPost(null)
+    }
+    style={{
+      flex: 1,
+      backgroundColor:
+        "rgba(0,0,0,0.94)",
+
+      justifyContent:
+        "center",
+
+      alignItems:
+        "center",
+    }}
+  >
+    <TouchableOpacity
+      onPress={() =>
+        setSelectedPost(null)
+      }
+      style={{
+        position:
+          "absolute",
+
+        top: 60,
+        right: 24,
+
+        zIndex: 20,
+      }}
+    >
+      <Ionicons
+        name="close"
+        size={30}
+        color="#fff"
+      />
+    </TouchableOpacity>
+
+    <Image
+      source={{
+        uri:
+          selectedPost?.imageUrl,
+      }}
+      style={{
+        width: "92%",
+        aspectRatio: 1,
+        borderRadius: 20,
+      }}
+      contentFit="contain"
+    />
+
+    {!!selectedPost?.caption && (
+      <Text
+        style={{
+          color: "#fff",
+
+          marginTop: 20,
+
+          textAlign:
+            "center",
+
+          paddingHorizontal:
+            24,
+        }}
+      >
+        {selectedPost.caption}
       </Text>
     )}
   </Pressable>

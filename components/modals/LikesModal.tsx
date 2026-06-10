@@ -22,18 +22,18 @@ export default function LikesModal({
 }: {
   visible: boolean;
   onClose: () => void;
-  postId: Id<"posts">;
+  postId: Id<"posts"> | null;
 }) {
   const router =
     useRouter();
 
-  const likes =
-    useQuery(
-      api.posts.index.getPostLikes,
-      {
-        postId,
-      }
-    ) || [];
+const likes =
+  useQuery(
+    api.posts.index.getPostLikes,
+    postId
+      ? { postId }
+      : "skip"
+  ) || [];
 
   if (!visible)
     return null;

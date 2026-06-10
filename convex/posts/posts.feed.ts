@@ -11,7 +11,7 @@ export const getFeedPosts = query({
   },
 
   handler: async (ctx, args) => {
-    const limit = args.limit ?? 50;
+    const limit = args.limit ?? 60;
 
     const posts = await ctx.db
       .query("posts")

@@ -5,6 +5,10 @@ import StoriesSection from "@/components/story/Stories";
 import { COLORS } from "@/constants/theme";
 import { api } from "@/convex/_generated/api";
 import {
+  setFeedRefresh,
+} from "@/lib/feedRefresh";
+
+import {
   getFeedCache,
   saveFeedCache,
 } from "@/lib/cache/feedCache";
@@ -20,6 +24,14 @@ import React, {
   useRef,
   useState,
 } from "react";
+
+import WelcomeModal from "@/components/modals/WelcomeModal";
+import { storage } from "@/lib/mmkv";
+import { useUser } from "@clerk/clerk-expo";
+
+import CommentsModal from "@/components/modals/CommentsModal";
+import LikesModal from "@/components/modals/LikesModal";
+import useNetwork from "@/hooks/useNetwork";
 import {
   Animated,
   RefreshControl,
@@ -31,7 +43,17 @@ import { styles } from "../../styles/feed.styles";
 
 export default function Index() {
   const { isSignedIn } = useAuth();
+  const isOnline =
+  useNetwork();
   const router = useRouter();
+
+  const { user } =
+  useUser();
+
+const [
+  showWelcome,
+  setShowWelcome,
+] = useState(false);
 
   const scale = useRef(new Animated.Value(1)).current;
   const glow = useRef(new Animated.Value(0)).current;
@@ -47,6 +69,28 @@ const posts = useQuery(
   api.posts.index.getFeedPosts,
   isSignedIn ? {} : "skip"
 );
+
+useEffect(() => {
+  const seen =
+    storage.getBoolean(
+      "welcome_card_seen"
+    );
+
+  if (!seen) {
+    const timer =
+      setTimeout(() => {
+        setShowWelcome(
+          true
+        );
+      }, 800);
+
+    return () =>
+      clearTimeout(
+        timer
+      );
+  }
+}, []);
+
   // ✅ CACHE (PREVENT BLANK UI)
   const [cachedPosts, setCachedPosts] = useState<any[]>([]);
 
@@ -68,6 +112,9 @@ const posts = useQuery(
   const [feedPosts, setFeedPosts] =
   useState<any[]>([]);
 
+  const initializedRef =
+  useRef(false);
+
 useEffect(() => {
   if (!posts?.length) {
     return;
@@ -76,41 +123,113 @@ useEffect(() => {
   setCachedPosts(posts);
 
   saveFeedCache(posts);
-  
 
-  const topFive = [...posts]
-    .slice(0, 5);
+const topFive =
+  [...posts].slice(
+    0,
+    5
+  );
 
-  const rest =
-    posts.slice(5);
+const rest =
+  posts.slice(5);
 
+if (
+  !initializedRef.current
+) {
   const shuffledTop =
     [...topFive].sort(
-      () => Math.random() - 0.5
+      () =>
+        Math.random() -
+        0.5
     );
 
   setFeedPosts([
     ...shuffledTop,
     ...rest,
   ]);
+
+  initializedRef.current =
+    true;
+}
 }, [posts]);
+
+useEffect(() => {
+  if (
+    !posts?.length ||
+    !initializedRef.current
+  ) {
+    return;
+  }
+
+  setFeedPosts(
+    current =>
+      current.map(
+        item =>
+          posts.find(
+            p =>
+              p._id ===
+              item._id
+          ) ?? item
+      )
+  );
+}, [posts]);
+
+  // ✅ FINAL DATA (NO BLANK STATE)
+const finalPosts =
+  posts && posts.length > 0
+    ? feedPosts.length > 0
+      ? feedPosts
+      : posts
+    : cachedPosts;
 
 
   const unreadCount =
     useQuery(api.notifications.getUnreadCount, isSignedIn ? {} : "skip") ?? 0;
 
+    const currentUser =
+  useQuery(
+    api.users.index.getCurrentUser
+  );
+
 const [refreshing, setRefreshing] = useState(false);
 const [storiesRefreshKey, setStoriesRefreshKey] = useState(0);
 const [showRefreshSkeleton, setShowRefreshSkeleton] = useState(false);
-const lastRefreshRef = useRef(0);
-const renderPost = useCallback(
-  ({ item }: any) => (
-    <Post post={item} />
-  ),
-  []
-);
 
-const onRefresh = async () => {
+const [commentsPostId,
+  setCommentsPostId] =
+  useState<any>(null);
+
+const [likesPostId,
+  setLikesPostId] =
+  useState<any>(null);
+
+const lastRefreshRef = useRef(0);
+const renderPost =
+  useCallback(
+    ({ item }: any) => (
+     <Post
+  post={item}
+  currentUser={currentUser}
+  isOnline={isOnline}
+        onOpenComments={() =>
+          setCommentsPostId(
+            item._id
+          )
+        }
+        onOpenLikes={() =>
+          setLikesPostId(
+            item._id
+          )
+        }
+      />
+    ),
+    [currentUser]
+  );
+
+const onRefresh =
+  useCallback(
+    async () => {
+
   const now = Date.now();
 
   if (
@@ -137,14 +256,32 @@ const onRefresh = async () => {
   if (
     finalPosts.length > 5
   ) {
-    const topFive =
-      [...finalPosts].slice(
-        0,
-        5
-      );
+const allPosts =
+  [...(posts ??
+    feedPosts)];
 
-    const rest =
-      finalPosts.slice(5);
+const shuffledAll =
+  [...allPosts].sort(
+    () =>
+      Math.random() -
+      0.5
+  );
+
+const topFive =
+  shuffledAll.slice(
+    0,
+    5
+  );
+
+const rest =
+  allPosts.filter(
+    (post) =>
+      !topFive.some(
+        (p) =>
+          p._id ===
+          post._id
+      )
+  );
 
     const shuffledTop =
       [...topFive].sort(
@@ -152,7 +289,6 @@ const onRefresh = async () => {
           Math.random() -
           0.5
       );
-
     setFeedPosts([
       ...shuffledTop,
       ...rest,
@@ -172,20 +308,23 @@ const onRefresh = async () => {
   );
 
   setRefreshing(false);
-};
+},
+[
+  posts,
+  feedPosts,
+]
+);
 
+useEffect(() => {
+  setFeedRefresh(
+    onRefresh
+  );
+}, [onRefresh]);
 
 
   if (!isSignedIn) {
     return <View style={{ flex: 1, backgroundColor: "#000" }} />;
   }
-
-  // ✅ FINAL DATA (NO BLANK STATE)
-  const finalPosts =
-  feedPosts.length > 0
-    ? feedPosts
-    : posts ??
-      cachedPosts;
 
 
   const storiesHeader = useMemo(
@@ -199,7 +338,25 @@ const onRefresh = async () => {
 );
 
   return (
-    <View style={styles.container}>
+    <>
+  <WelcomeModal
+    visible={
+      showWelcome
+    }
+    fullname={
+      user?.firstName ||
+      "Friend"
+    }
+    onClose={() =>
+      setShowWelcome(
+        false
+      )
+    }
+  />
+
+  <View
+    style={styles.container}
+  >
       {/* 🔥 HEADER */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Spotlight</Text>
@@ -263,7 +420,8 @@ const onRefresh = async () => {
         <FlashList
           ref={listRef}
           data={finalPosts}
-          drawDistance={600}
+          extraData={feedPosts}
+          drawDistance={200}
           removeClippedSubviews
           renderItem={renderPost}
           keyExtractor={(item) => item._id.toString()}
@@ -279,7 +437,39 @@ const onRefresh = async () => {
           }
         />
       )}
-    </View>
+
+      <LikesModal
+  visible={
+    !!likesPostId
+  }
+  postId={
+    likesPostId
+  }
+  onClose={() =>
+    setLikesPostId(
+      null
+    )
+  }
+/>
+
+<CommentsModal
+  visible={
+    !!commentsPostId
+  }
+  postId={
+    commentsPostId
+  }
+  onClose={() =>
+    setCommentsPostId(
+      null
+    )
+  }
+  onCommentAdded={() => {}}
+/>
+
+
+</View>
+</>
   );
 }
 

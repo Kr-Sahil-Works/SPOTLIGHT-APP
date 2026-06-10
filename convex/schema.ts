@@ -345,10 +345,19 @@ pinnedAt: v.optional(
 
     reactions: v.optional(
       v.array(
-        v.object({
-          userId: v.id("users"),
-          value: v.string(),
-        })
+      v.object({
+  userId: v.id("users"),
+
+  fullName: v.string(),
+
+  userName: v.string(),
+
+  userImage: v.optional(
+    v.string()
+  ),
+
+  value: v.string(),
+})
       )
     ),
   })

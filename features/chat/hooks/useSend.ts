@@ -71,8 +71,10 @@ if (!online) {
 
   return;
 }
-      if (!text.trim())
-        return;
+if (!text.trim()) {
+  setSending(false);
+  return;
+}
 
       const messageText =
         text.trim();
@@ -81,25 +83,27 @@ if (!online) {
 
       try {
         /* ✅ EDIT MODE */
-        if (
-          editingMessage
-        ) {
-          await editMessage(
-            {
-              messageId:
-                editingMessage._id,
+     if (
+  editingMessage
+) {
+  await editMessage(
+    {
+      messageId:
+        editingMessage._id,
 
-              newText:
-                messageText,
-            }
-          );
+      newText:
+        messageText,
+    }
+  );
 
-          setEditingMessage(
-            null
-          );
+  setEditingMessage(
+    null
+  );
 
-          return;
-        }
+  setSending(false);
+
+  return;
+}
 
         /* ✅ NORMAL SEND */
         await sendMessage({

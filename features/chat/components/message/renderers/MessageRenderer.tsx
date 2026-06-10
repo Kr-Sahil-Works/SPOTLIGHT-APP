@@ -1,6 +1,5 @@
 import React, {
-  memo,
-  useMemo,
+  useMemo
 } from "react";
 
 import MessageItem from "../MessageItem/MessageItem";
@@ -23,6 +22,8 @@ type Props = {
   item: any;
 
   index: number;
+
+  isOnline: boolean;
 
   messages: any[];
 
@@ -52,12 +53,19 @@ type Props = {
   onScrollTo: (
     id: string
   ) => void;
+
+  onOpenReactions?: (
+  msg: any
+) => void;
+
 };
 
 function MessageRenderer({
   item,
 
   index,
+
+  isOnline,
 
   messages,
 
@@ -75,7 +83,9 @@ function MessageRenderer({
 
   onLongPress,
 
-  onScrollTo,
+onScrollTo,
+
+onOpenReactions,
 }: Props) {
 const previous = useMemo(
   () => messages[index - 1],
@@ -154,6 +164,7 @@ const grouped = useMemo(
 
     <MessageItem
       item={item}
+      isOnline={isOnline}
       isMe={
         item.senderId ===
         currentUserId
@@ -181,9 +192,12 @@ isHighlighted={
       onScrollTo={
         onScrollTo
       }
+      onOpenReactions={
+  onOpenReactions
+}
     />
   </>
 );
 }
 
-export default memo(MessageRenderer);
+export default MessageRenderer;

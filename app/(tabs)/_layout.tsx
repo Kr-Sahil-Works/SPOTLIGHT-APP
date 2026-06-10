@@ -1,5 +1,8 @@
 import { COLORS } from "@/constants/theme";
 import {
+  triggerFeedRefresh,
+} from "@/lib/feedRefresh";
+import {
   useAuth
 } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,12 +10,12 @@ import { createMaterialTopTabNavigator } from "@react-navigation/material-top-ta
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { Redirect } from "expo-router";
-import React, { memo, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Platform, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-
 import { api } from "@/convex/_generated/api";
+import { getProfileImage, saveProfileImage } from "@/lib/cache/profileImageCache";
 import { useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
 
@@ -64,6 +67,16 @@ function TabsLayout() {
 );
 
   const insets = useSafeAreaInsets();
+
+useEffect(() => {
+  if (
+    currentUser?.image
+  ) {
+    saveProfileImage(
+      currentUser.image
+    );
+  }
+}, [currentUser?.image]);
 
   const [swipeEnabled,
     setSwipeEnabled] =
@@ -284,6 +297,8 @@ function CustomTabBar({ state, navigation }: any) {
   const currentUser = useQuery(
   api.users.index.getCurrentUser
 );
+const cachedProfileImage =
+  getProfileImage();
 
   const insets = useSafeAreaInsets();
 
@@ -334,8 +349,29 @@ style={{
           return (
             <TouchableOpacity
               key={route.key}
-              onPress={() => {
-  navigation.jumpTo(route.name);
+        onPress={() => {
+  const isFocused =
+    state.index === index;
+
+  if (
+    isFocused &&
+    route.name ===
+      "index"
+  ) {
+    Haptics.impactAsync(
+      Haptics
+        .ImpactFeedbackStyle
+        .Medium
+    );
+
+    triggerFeedRefresh();
+
+    return;
+  }
+
+  navigation.jumpTo(
+    route.name
+  );
 }}
               style={{
                 flex: 1,
@@ -349,8 +385,9 @@ style={{
   size={24}
   color="rgba(255,255,255,0.5)"
   focused={isFocused}
-  profileImage={
-  currentUser?.image
+profileImage={
+  currentUser?.image ??
+  cachedProfileImage
 }
 />
             </TouchableOpacity>

@@ -1,32 +1,34 @@
 import React, {
-  memo,
-  useMemo,
+  useMemo
 } from "react";
 
 
+import { Reaction } from "@/types/chat";
 import {
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
-type Reaction = {
-  value: string;
-};
-
 type Props = {
   reactions?: Reaction[];
+
+  onPress?: () => void;
 };
+
+
 
 function Reactions({
   reactions,
-}: Props) {
+  onPress,
+}: Props)  {
 
   const reactionItems = useMemo(
   () =>
     reactions?.map(
       (reaction, index) => (
         <Text
-          key={`${reaction.value}-${index}`}
+          key={`${reaction.userId}-${reaction.value}`}
           style={{
             fontSize: 13,
             marginRight:
@@ -51,12 +53,19 @@ function Reactions({
     return null;
   }
 
-  return (
-    <View
+return (
+<TouchableOpacity
+  key={JSON.stringify(
+    reactions ?? []
+  )}
+  activeOpacity={0.8}
+  onPress={onPress}
+>
+<View
       style={{
         position: "absolute",
 
-        bottom: -18,
+        bottom: -16,
 
         backgroundColor:
           "#000000cc",
@@ -65,7 +74,7 @@ function Reactions({
 
         paddingHorizontal: 8,
 
-        paddingVertical: 3,
+        paddingVertical: 4,
 
         flexDirection: "row",
 
@@ -75,8 +84,9 @@ function Reactions({
       }}
     >
    {reactionItems}
-    </View>
+      </View>
+</TouchableOpacity>
   );
 }
 
-export default memo(Reactions);
+export default Reactions;

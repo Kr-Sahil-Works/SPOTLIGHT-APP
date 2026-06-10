@@ -7,17 +7,42 @@ import {
   View,
 } from "react-native";
 
+import {
+  useMMKVString,
+} from "react-native-mmkv";
+
+import {
+  storage,
+} from "@/lib/mmkv";
+
 
 type Props = {
   onOpenChatListTheme: () => void;
+  isOnline?: boolean;
 };
 
 export default function ChatHeader({
   onOpenChatListTheme,
+  isOnline = true,
 }: Props) {
   const router = useRouter();
   const theme =
   useChatListTheme();
+
+const [selectedTheme] =
+  useMMKVString(
+    "selected-chat-list-theme",
+    storage
+  );
+
+const useGreenNotes =
+  selectedTheme ===
+    "spotlight-green" ||
+  selectedTheme ===
+    "aurora" ||
+  selectedTheme ===
+    "soundwave";
+
 
 return (
   <View
@@ -53,31 +78,35 @@ return (
       >
         {/* APP THEME */}
 
-        <TouchableOpacity
-          onPress={
-            onOpenChatListTheme
-          }
-          style={{
-            backgroundColor:
-              theme.cardBg,
+<TouchableOpacity
+  disabled={!isOnline}
+  onPress={onOpenChatListTheme}
+  style={{
+    backgroundColor:
+      theme.cardBg,
 
-            borderWidth: 1,
+    borderWidth: 1,
 
-            borderColor:
-              theme.cardBorder,
+    borderColor:
+      theme.cardBorder,
 
-            padding: 6,
+    padding: 6,
 
-            borderRadius: 10,
-          }}
-        >
-          <Image
-            source={require("@/assets/images/icons/theme.webp")}
-            style={{
-              width: 20,
-              height: 20,
-            }}
-          />
+    borderRadius: 10,
+
+    opacity:
+      !isOnline
+        ? 0.45
+        : 1,
+  }}
+>
+  <Image
+    source={require("@/assets/images/icons/theme.webp")}
+    style={{
+      width: 20,
+      height: 20,
+    }}
+  />
         </TouchableOpacity>
 
         {/* NOTES */}
@@ -102,13 +131,17 @@ return (
             borderRadius: 10,
           }}
         >
-          <Image
-            source={require("@/assets/images/icons/notes.webp")}
-            style={{
-              width: 20,
-              height: 20,
-            }}
-          />
+  <Image
+  source={
+    useGreenNotes
+      ? require("@/assets/images/icons/notes.webp")
+      : require("@/assets/images/icons/notetheme.webp")
+  }
+  style={{
+    width: 20,
+    height: 20,
+  }}
+/>
         </TouchableOpacity>
 
         {/* CALCULATOR */}
@@ -134,7 +167,11 @@ return (
           }}
         >
           <Image
-            source={require("@/assets/images/icons/calc.webp")}
+            source={
+              useGreenNotes 
+              ?  require("@/assets/images/icons/calc.webp")
+                : require("@/assets/images/icons/calctheme.webp")
+              }
             style={{
               width: 20,
               height: 20,

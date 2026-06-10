@@ -34,7 +34,7 @@ const [currentImage, setCurrentImage] = useState(0);
 useEffect(() => {
   const interval = setInterval(() => {
     setCurrentImage((prev) => (prev + 1) % images.length);
-  }, 4000);
+  }, 4200);
 
   return () => clearInterval(interval);
 }, []);

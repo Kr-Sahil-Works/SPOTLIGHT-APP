@@ -7,11 +7,13 @@ import {
 import NoPosts from "./NoPosts";
 
 import { AppImage } from "@/shared/ui/AppImage";
+import { useRouter } from "expo-router";
 
 export default function ProfileGrid({
   posts,
   setSelectedPost,
 }: any) {
+  const router = useRouter();
   return (
     <View style={{ width: "100%" }}>
       {(!posts || posts.length === 0) && <NoPosts />}
@@ -24,7 +26,26 @@ export default function ProfileGrid({
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.gridItem}
-            onPress={() => setSelectedPost(item)}
+onPress={() => {
+  router.push({
+    pathname:
+      "/posts/[userId]",
+
+    params: {
+      userId:
+        item.userId,
+
+      postId:
+        item._id,
+    },
+  });
+}}
+
+onLongPress={() =>
+  setSelectedPost(item)
+}
+
+delayLongPress={400}
           >
 <AppImage
   uri={item?.imageUrl}

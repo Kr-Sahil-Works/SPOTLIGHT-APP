@@ -9,6 +9,7 @@
  */
 
 import type * as admin_admin from "../admin/admin.js";
+import type * as admin_getUsersWithRanks from "../admin/getUsersWithRanks.js";
 import type * as bookmarks from "../bookmarks.js";
 import type * as collections from "../collections.js";
 import type * as comments from "../comments.js";
@@ -20,6 +21,7 @@ import type * as notes_index from "../notes/index.js";
 import type * as notes_notes from "../notes/notes.js";
 import type * as notifications from "../notifications.js";
 import type * as posts_index from "../posts/index.js";
+import type * as security from "../security.js";
 import type * as social_index from "../social/index.js";
 import type * as users_index from "../users/index.js";
 import type * as users_webhook from "../users/webhook.js";
@@ -32,6 +34,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "admin/admin": typeof admin_admin;
+  "admin/getUsersWithRanks": typeof admin_getUsersWithRanks;
   bookmarks: typeof bookmarks;
   collections: typeof collections;
   comments: typeof comments;
@@ -43,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   "notes/notes": typeof notes_notes;
   notifications: typeof notifications;
   "posts/index": typeof posts_index;
+  security: typeof security;
   "social/index": typeof social_index;
   "users/index": typeof users_index;
   "users/webhook": typeof users_webhook;

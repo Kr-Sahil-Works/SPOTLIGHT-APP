@@ -4,12 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,17 +18,21 @@ import {
 } from "react-native";
 
 export const IOS_COLORS = {
-  bg: "#0B0B0F",
-  card: "rgba(255,255,255,0.04)",
-  border: "rgba(255,255,255,0.06)",
+  bg: "#020403",
 
-  primary: "#30D158",     
-  accent: "#d1c430",      
-  accentDim: "#d1c430",
-        // iOS green
-  danger: "#FF453A",
-  headercolor: "#079027"
-  
+  card: "rgba(255,255,255,0.03)",
+
+  border: "rgba(34,197,94,0.12)",
+
+  primary: "#22C55E",
+
+  accent: "#F8FAFC",
+
+  accentDim: "#94A3B8",
+
+  danger: "#EF4444",
+
+  headercolor: "#22C55E",
 };
 
 export default function AccountScreen() {
@@ -94,13 +98,21 @@ const stats = useQuery(
   return (
     <View style={{ flex: 1, backgroundColor: "#020403" }}>
       {/* HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={22} color= {IOS_COLORS.headercolor }/>
-        </TouchableOpacity>
-        <Text style={styles.headerText}>Profile</Text>
-        <View style={{ width: 22 }} />
-      </View>
+     <View style={styles.header}>
+  <TouchableOpacity onPress={() => router.back()}>
+    <Ionicons
+      name="arrow-back"
+      size={22}
+      color={IOS_COLORS.headercolor}
+    />
+  </TouchableOpacity>
+
+  <View style={{ flex: 1 }} />
+
+  <Text style={styles.headerText}>
+Profile
+  </Text>
+</View>
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         {/* PROFILE */}
@@ -132,7 +144,7 @@ const stats = useQuery(
       : require("@/assets/images/icons/iconbg.webp")
   }
   style={styles.avatar}
-  resizeMode="cover"
+contentFit="cover"
   fadeDuration={0}
 />
           </View>
@@ -189,14 +201,18 @@ const stats = useQuery(
                 title="Deactivate Account"
                 onPress={() => {
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-                  showToast("Feature in testing");
+               showToast(
+  "This feature isn't available yet. Reach out to the developer for support."
+);
                 }}
               />
               <DangerBtn
                 title="Delete Account"
                 onPress={() => {
                   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-                  showToast("Feature in testing");
+              showToast(
+  "This feature isn't available yet. Reach out to the developer for support."
+);
                 }}
               />
             </View>
@@ -264,15 +280,20 @@ const styles = StyleSheet.create({
     padding: 18,
   },
 
-  headerText: { color: IOS_COLORS.primary, fontSize: 17 },
+headerText: {
+  color: "#22C55E",
+  fontSize: 18,
+  fontWeight: "700",
+  marginRight: 2,
+},
 
   glassCard: {
     borderRadius: 22,
     padding: 16,
     marginBottom: 14,
-      backgroundColor: "rgba(255,255,255,0.03)",
-    borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.25)",
+backgroundColor: "rgba(255,255,255,0.02)",
+borderWidth: 1,
+borderColor: "rgba(255,255,255,0.06)",
     alignItems: "center",
   },
 
@@ -287,7 +308,7 @@ const styles = StyleSheet.create({
     width: 102,
     height: 102,
     borderRadius: 60,
-    backgroundColor: "rgba(10,132,255,0.15)",
+    backgroundColor: "rgba(34,197,94,0.15)",
   },
 
   avatar: {
@@ -297,7 +318,11 @@ const styles = StyleSheet.create({
   },
 
   name: { color: IOS_COLORS.primary, fontSize: 22, fontWeight: "700" },
-  email: { color: IOS_COLORS.accent, fontSize: 12 },
+  email: {
+  color: IOS_COLORS.accentDim,
+  fontSize: 13,
+  marginTop: 4,
+},
 
   row: {
     flexDirection: "row",
@@ -310,14 +335,18 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     paddingVertical: 20,
     marginBottom: 14,
-    backgroundColor: "rgba(255,255,255,0.03)",
-    borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.25)",
+backgroundColor: "rgba(255,255,255,0.02)",
+borderWidth: 1,
+borderColor: "rgba(255,255,255,0.06)",
     alignItems: "center",
   },
 
   memberTitle: {  color: IOS_COLORS.primary, fontSize: 12 },
-  memberDate: {  color: IOS_COLORS.accent, fontSize: 18, fontWeight: "700" },
+  memberDate: {
+  color: "#59b300",
+  fontSize: 18,
+  fontWeight: "700",
+},
 
   cardTitle: {  color: IOS_COLORS.primary, marginBottom: 10 },
 
@@ -338,8 +367,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  modValue: {  color: IOS_COLORS.accent, fontSize: 18, fontWeight: "600" },
-  modLabel: { color: "#ffffff", fontSize: 11 },
+modValue: {
+  color: "#ffffff",
+  fontSize: 22,
+  fontWeight: "800",
+},
+  modLabel: {
+  color: "#94A3B8",
+  fontSize: 11,
+},
 
   dangerCard: {
     padding: 14,

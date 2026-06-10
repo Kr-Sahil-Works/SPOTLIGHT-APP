@@ -255,6 +255,7 @@ setHasLocalChanges,
 
            <TextInput
   value={profile.username}
+  underlineColorAndroid="transparent"
   onChangeText={(t) => {
     setHasLocalChanges?.(true);
 
@@ -297,6 +298,7 @@ setHasLocalChanges,
 
                   <TextInput
                     value={profile.fullname}
+                    underlineColorAndroid="transparent"
                     onChangeText={(t) => {
                           setHasLocalChanges?.(true);
                     
@@ -336,6 +338,7 @@ setHasLocalChanges,
                <TextInput
   value={profile.bio}
   scrollEnabled={false}
+  underlineColorAndroid="transparent"
   blurOnSubmit={false}
   returnKeyType="done"
                     multiline

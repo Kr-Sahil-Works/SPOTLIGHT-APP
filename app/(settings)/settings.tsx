@@ -1,6 +1,9 @@
+import { useAppToast } from "@/components/common/AppToast";
+import { api } from "@/convex/_generated/api";
 import useNetwork from "@/hooks/useNetwork";
 import { useAuth } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
+import { useMutation } from "convex/react";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -15,6 +18,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+
+
 /* ================= TYPES ================= */
 
 type ItemProps = {
@@ -39,16 +44,12 @@ const Item = ({
   isOnline,
 }: ItemProps) => {
 const isAllowed =
-  title ===
-    "About Developer" ||
-  title ===
-    "Logout" ||
-  title ===
-    "Backup chats" ||
-  title ===
-    "Export data" ||
-  title ===
-    "Account settings";
+  title === "Developer's Github" ||
+  title === "Documentation" ||
+  title === "Logout" ||
+  title === "Backup chats" ||
+  title === "Export data" ||
+  title === "Account settings";
 
 const canUse =
   isOnline &&
@@ -188,16 +189,15 @@ const [showDevModal, setShowDevModal] =
 const [devCode, setDevCode] =
   useState("");
 
-const SECRET_CODE = "123";
+
+const verifyDeveloperCode =
+  useMutation(
+    api.security.verifyDeveloperCode
+  );
 
 
-const unlockDeveloperMode = () => {
-  if (devCode === SECRET_CODE) {
-    setShowDevModal(false);
-
-router.push("/developer");
-  }
-};
+  const { showToast } =
+  useAppToast();
 
   return (
     <View style={{ flex: 1, backgroundColor: "#020403", paddingTop: 10 }}>
@@ -269,8 +269,18 @@ router.push("/developer");
         <Section title="Support">
           <Item
   isOnline={isOnline}
-  icon="heart-outline"
-  title="About Developer"
+  icon="document-text"
+  title="Documentation"
+  onPress={() =>
+    router.push(
+      "/(app)/webview?url=https://spotlight-docs.onrender.com"
+    )
+  }
+/>
+          <Item
+  isOnline={isOnline}
+  icon="code"
+  title="Developer's Github"
 onPress={() =>
   router.push("/(app)/webview?url=https://github.com/Kr-Sahil-Works")
 }
@@ -356,10 +366,32 @@ onPress={() =>
         </Section>
 
         <Section title="Data">
+<Item
+  isOnline={isOnline}
+  icon="cloud-upload-outline"
+  title="Backup chats"
+  onPress={() => {
+  showToast({
+  message:
+    "Chat backup coming soon : )",
+  type:
+    "success",
+});
+  }}
+/>
           <Item
-  isOnline={isOnline} icon="cloud-upload-outline" title="Backup chats" onPress={() => {}} />
-          <Item
-  isOnline={isOnline} icon="document-outline" title="Export data" onPress={() => {}} />
+  isOnline={isOnline}
+  icon="document-outline"
+  title="Export data"
+  onPress={() => {
+  showToast({
+  message:
+    "Exporting Data Feature coming soon : )",
+  type:
+    "success",
+});
+  }}
+/>
         </Section>
 
         <Section title="Account">
@@ -599,6 +631,7 @@ onPress={() =>
       <TextInput
         value={devCode}
         onChangeText={setDevCode}
+        underlineColorAndroid="transparent"
         placeholder="Enter access code"
         placeholderTextColor="#555"
 
@@ -666,9 +699,20 @@ onPress={() =>
 
         {/* ENTER */}
         <TouchableOpacity
-          onPress={
-            unlockDeveloperMode
-          }
+       onPress={async () => {
+  const valid =
+    await verifyDeveloperCode({
+      code: devCode,
+    });
+
+  if (!valid) {
+    return;
+  }
+
+  setShowDevModal(false);
+
+  router.push("/developer");
+}}
           style={{
             flex: 1,
 

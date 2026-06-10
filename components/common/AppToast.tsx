@@ -1,12 +1,12 @@
 import React, {
-    createContext,
-    useContext,
-    useState,
+  createContext,
+  useContext,
+  useState,
 } from "react";
 
 import {
-    Animated,
-    Text
+  Animated,
+  Text
 } from "react-native";
 
 type ToastType =
@@ -97,7 +97,7 @@ export function AppToastProvider({
               toast.type ===
               "error"
                 ? "rgba(255,59,48,0.92)"
-                : "rgba(0,255,136,0.92)",
+                : "rgba(30, 197, 0, 0.92)",
 
             paddingHorizontal:
               18,

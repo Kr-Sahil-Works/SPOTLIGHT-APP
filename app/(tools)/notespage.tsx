@@ -247,6 +247,7 @@ const openSheet = (note?: any) => {
           <TextInput
             placeholder="Search"
             placeholderTextColor="#888"
+            underlineColorAndroid="transparent"
             value={search}
             onChangeText={setSearch}
             style={{ color: "#fff", marginLeft: 10, flex: 1 }}
@@ -408,6 +409,7 @@ showToast(
         ref={inputRef}
         value={text}
         onChangeText={setText}
+        underlineColorAndroid="transparent"
         placeholder="Write note..."
         placeholderTextColor="#666"
         multiline

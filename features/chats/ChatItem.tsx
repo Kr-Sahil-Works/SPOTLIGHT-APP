@@ -136,12 +136,18 @@ elevation:
     >
 <View
   style={{
-    padding: item.isOnline ? 2 : 2,
+    width: 64,
+height: 64,
 
-    borderRadius: 999,
+alignItems: "center",
 
-    backgroundColor: item.isOnline
-      ? "#02c612"
+justifyContent: "center",
+
+    borderRadius: 32,
+
+backgroundColor: item.isOnline
+      ? theme.glow ??
+        theme.cardBorder
       : "rgba(255,255,255,0.08)",
   }}
 >
@@ -211,8 +217,9 @@ style={{
 
 <Text
   style={{
-    color: item.isOnline
-      ? "#22c55e"
+color: item.isOnline
+      ? theme.glow ??
+        theme.cardBorder
       : "#6b7280",
 
     fontSize: 11,
@@ -264,7 +271,9 @@ style={{
 
           borderRadius: 999,
 
-          backgroundColor: "#22c55e",
+          backgroundColor:
+  theme.glow ??
+  theme.cardBorder,
 
           justifyContent: "center",
           alignItems: "center",
@@ -272,7 +281,8 @@ style={{
       >
         <Text
           style={{
-            color: "#000",
+            color:
+  theme.background,
             fontSize: 10,
             fontWeight: "700",
           }}

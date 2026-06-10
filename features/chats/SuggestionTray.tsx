@@ -11,11 +11,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  useMMKVString,
+} from "react-native-mmkv";
 
+import {
+  storage,
+} from "@/lib/mmkv";
 const { height } = Dimensions.get("window");
 
-const TRAY_HEIGHT = height * 0.52;
-const COLLAPSED_OFFSET = TRAY_HEIGHT - 140;
+const TRAY_HEIGHT = height * 0.48;
+const COLLAPSED_OFFSET = TRAY_HEIGHT -90;
 
 export default function SuggestionTray({ users = [], forceOpen }: any) {
   const [open, setOpen] = useState(false);
@@ -25,6 +31,15 @@ const [shuffledUsers, setShuffledUsers] = useState<any[]>([]);
 
   const theme =
   useChatListTheme();
+
+  const [layout] =
+  useMMKVString(
+    "chat-list-layout",
+    storage
+  );
+
+const isModern =
+  layout === "container";
 
   const translateY = useRef(
     new Animated.Value(COLLAPSED_OFFSET)
@@ -68,22 +83,43 @@ useEffect(() => {
   };
 
   return (
-    <Animated.View
-      style={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
+ <Animated.View
+  style={{
+    position: "absolute",
+
+    bottom: 0,
+
+    left:
+      isModern
+        ? 8
+        : 0,
+
+    right:
+      isModern
+        ? 8
+        : 0,
         height: TRAY_HEIGHT,
         transform: [{ translateY }],
         backgroundColor:
   theme.cardBg,
-        borderTopLeftRadius: 24,
+    borderTopLeftRadius:
+  isModern
+    ? 28
+    : 24,
+borderLeftWidth:
+  isModern ? 1 : 0,
+
+borderRightWidth:
+  isModern ? 1 : 0,
+
         borderTopWidth: 1,
 
 borderColor:
   theme.cardBorder,
-        borderTopRightRadius: 24,
+      borderTopRightRadius:
+  isModern
+    ? 28
+    : 24,
         overflow: "hidden",
         paddingTop: 10,
         paddingBottom: 12,
@@ -123,7 +159,7 @@ borderColor:
               fontWeight: "600",
             }}
           >
-            Find People
+            Discover People ({shuffledUsers.length})
           </Text>
         </TouchableOpacity>
 
@@ -147,7 +183,7 @@ borderColor:
     }}
   >
     <Ionicons
-      name="refresh"
+      name="shuffle"
       size={18}
       color={
         theme.headerColor ??
@@ -191,6 +227,25 @@ borderColor:
     zIndex: 1,
   }}
 />
+
+{shuffledUsers.length === 0 ? (
+  <View
+    style={{
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <Text
+      style={{
+        color: "#888",
+      }}
+    >
+      No suggestions available
+    </Text>
+  </View>
+) : (
+
         <FlatList
         initialNumToRender={8}
 maxToRenderPerBatch={8}
@@ -289,6 +344,7 @@ removeClippedSubviews
             </TouchableOpacity>
           )}
         />
+        )}
       </View>
     </Animated.View>
   );

@@ -58,29 +58,29 @@ import {
   api,
 } from "@/convex/_generated/api";
 
-import ChatHeader from "./components/layout/ChatHeader";
+import ChatHeader from "../../features/chat/components/layout/ChatHeader";
 
-import ChatInput from "./components/layout/ChatInput";
+import ChatInput from "../../features/chat/components/layout/ChatInput";
 
-import ChatSkeleton from "./components/layout/ChatSkeleton";
+import ChatSkeleton from "../../features/chat/components/layout/ChatSkeleton";
 
-import TypingDots from "./components/layout/TypingDots";
+import TypingDots from "../../features/chat/components/layout/TypingDots";
 
-import MessageList from "./components/message/MessageList";
+import MessageList from "../../features/chat/components/message/MessageList";
 
 
 import {
   ChatOverlayProvider,
-} from "./components/message";
+} from "../../features/chat/components/message";
 
-import ThemeModal from "./components/ThemeModal";
+import ThemeModal from "../../features/chat/components/ThemeModal";
 
-import useMessages from "./hooks/useMessages";
+import useMessages from "../../features/chat/hooks/useMessages";
 
-import useSend from "./hooks/useSend";
+import useSend from "../../features/chat/hooks/useSend";
 
 import { Ionicons } from "@expo/vector-icons";
-import useTheme from "./hooks/useTheme";
+import useTheme from "../../features/chat/hooks/useTheme";
 
 export default function ChatScreen() {
   const {
@@ -507,78 +507,182 @@ if (
                 />
               ) : messages.length ===
                 0 ? (
-              <View
+          <View
   style={{
     flex: 1,
-
     justifyContent: "center",
-
     alignItems: "center",
-
     paddingHorizontal: 32,
   }}
 >
+<View
+  style={{
+    width: 170,
+    height: 120,
+
+    marginBottom: 28,
+
+    justifyContent: "center",
+    alignItems: "center",
+  }}
+>
+  {/* Glow */}
   <View
     style={{
-      width: 88,
+      position: "absolute",
 
-      height: 88,
+      width: 140,
+      height: 140,
 
-      borderRadius: 44,
+      borderRadius: 70,
 
       backgroundColor:
-        "rgba(255,255,255,0.08)",
+        "rgba(0,255,136,0.05)",
+    }}
+  />
 
-      justifyContent: "center",
+  {/* Left Bubble */}
+  <View
+    style={{
+      position: "absolute",
 
-      alignItems: "center",
+      left: 15,
 
-      marginBottom: 20,
+      width: 90,
+      height: 90,
 
-      borderWidth: 1,
+      borderRadius: 28,
+
+      backgroundColor:
+        "rgba(0,255,136,0.08)",
+
+      borderWidth: 1.5,
 
       borderColor:
-        "rgba(255,255,255,0.06)",
+        "rgba(0,255,136,0.25)",
+
+      justifyContent: "center",
+      alignItems: "center",
     }}
   >
-    <Text
+    <Ionicons
+      name="person"
+      size={34}
+      color="#d1d5db"
+    />
+
+    <View
       style={{
-        fontSize: 34,
+        position: "absolute",
+
+        bottom: -7,
+        left: 18,
+
+        width: 16,
+        height: 16,
+
+        backgroundColor:
+          "rgba(0,255,136,0.08)",
+
+        borderLeftWidth: 1.5,
+        borderBottomWidth: 1.5,
+
+        borderColor:
+          "rgba(0,255,136,0.25)",
+
+        transform: [
+          { rotate: "45deg" },
+        ],
       }}
-    >
-      💬
-    </Text>
+    />
   </View>
+
+  {/* Right Bubble */}
+  <View
+    style={{
+      position: "absolute",
+
+      right: 10,
+      top: 28,
+
+      width: 90,
+      height: 72,
+
+      borderRadius: 24,
+
+      backgroundColor:
+        "rgba(0,255,136,0.08)",
+
+      borderWidth: 1.5,
+
+      borderColor:
+        "rgba(0,255,136,0.25)",
+
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <TypingDots
+      theme={theme}
+      typing
+    />
+
+    <View
+      style={{
+        position: "absolute",
+
+        bottom: -7,
+        right: 16,
+
+        width: 14,
+        height: 14,
+
+        backgroundColor:
+          "rgba(0,255,136,0.08)",
+
+        borderRightWidth: 1.5,
+        borderBottomWidth: 1.5,
+
+        borderColor:
+          "rgba(0,255,136,0.25)",
+
+        transform: [
+          { rotate: "-45deg" },
+        ],
+      }}
+    />
+  </View>
+</View>
 
   <Text
     style={{
-      color:
-        theme.headerText,
+      color: theme.headerText,
 
-      fontSize: 22,
+      fontSize: 24,
 
-      fontWeight: "700",
+      fontWeight: "800",
 
-      marginBottom: 8,
+      marginBottom: 10,
     }}
   >
-    Your chat starts here
+    No messages yet
   </Text>
 
   <Text
     style={{
-      color:
-        "#999",
+      color: "#8f8f8f",
 
       textAlign: "center",
 
       lineHeight: 22,
 
       fontSize: 14,
+
+      maxWidth: 260,
     }}
   >
-    Send a message, share
-    thoughts, and Say Hi !
+    Every great conversation
+    starts with a simple hello.
   </Text>
 </View>
               ) : (
@@ -586,6 +690,7 @@ if (
                   messages={
                     messages
                   }
+                  isOnline={isOnline}
                   flatListRef={
   flatListRef
 }
