@@ -15,7 +15,7 @@ export const WALLPAPER_PREVIEWS: Record<WallpaperId, any> = {
   Cherry: require("@/assets/images/theme_previews_optimized/ChatsPatterns/Cherry_preview.webp"),
   Flower: require("@/assets/images/theme_previews_optimized/ChatsPatterns/Flower_preview.webp"),
   Flowers: require("@/assets/images/theme_previews_optimized/ChatsPatterns/Flowers_preview.webp"),
-  Ghost: require("@/assets/images/theme_previews_optimized/ChatsPatterns/Ghost_preview.webp"),
+  TinyGhost: require("@/assets/images/theme_previews_optimized/ChatsPatterns/TinyGhost_preview.webp"),
   HeartOutline: require("@/assets/images/theme_previews_optimized/ChatsPatterns/HeartOutline_preview.webp"),
   Icons: require("@/assets/images/theme_previews_optimized/ChatsPatterns/Icons_preview.webp"),
   LittleSpace: require("@/assets/images/theme_previews_optimized/ChatsPatterns/LittleSpace_preview.webp"),
@@ -62,22 +62,25 @@ export const WALLPAPER_PREVIEWS: Record<WallpaperId, any> = {
   RedVelvet: require("@/assets/images/theme_previews_optimized/Hearts/RedVelvet_preview.webp"),
 
   // LANDSCAPES
+  Away: require("@/assets/images/theme_previews_optimized/Landscapes/Away_preview.webp"),
+  CherryRed: require("@/assets/images/theme_previews_optimized/Landscapes/CherryRed_preview.webp"),
   ForestHouse: require("@/assets/images/theme_previews_optimized/Landscapes/ForestHouse_preview.webp"),
   Home: require("@/assets/images/theme_previews_optimized/Landscapes/Home_preview.webp"),
+  HomeTown: require("@/assets/images/theme_previews_optimized/Landscapes/hometown_preview.webp"),
   Japan: require("@/assets/images/theme_previews_optimized/Landscapes/japan_preview.webp"),
-  MoonLightLandscape: require("@/assets/images/theme_previews_optimized/Landscapes/MoonLight_preview.webp"),
-  NightLandscape: require("@/assets/images/theme_previews_optimized/Landscapes/Night_preview.webp"),
-  PurpleForestLandscape: require("@/assets/images/theme_previews_optimized/Landscapes/PurpleForest_preview.webp"),
+  Night: require("@/assets/images/theme_previews_optimized/Landscapes/Night_preview.webp"),
+  PurpleForest: require("@/assets/images/theme_previews_optimized/Landscapes/PurpleForest_preview.webp"),
   Valley: require("@/assets/images/theme_previews_optimized/Landscapes/Valleypreview.webp"),
   WaterFall: require("@/assets/images/theme_previews_optimized/Landscapes/WaterFall_preview.webp"),
 
   // LUNAR
-  BigMoon: require("@/assets/images/theme_previews_optimized/Lunar/BigMoon_preview.webp"),
+
+  BlueMoon: require("@/assets/images/theme_previews_optimized/Lunar/BlueMoon_preview.webp"),
+  DeepForest: require("@/assets/images/theme_previews_optimized/Lunar/DeepForest_preview.webp"),
   Earth: require("@/assets/images/theme_previews_optimized/Lunar/Earth_preview.webp"),
-  Moon: require("@/assets/images/theme_previews_optimized/Lunar/Moon_preview.webp"),
   MoonLight: require("@/assets/images/theme_previews_optimized/Lunar/MoonLight_preview.webp"),
+  MoonSide: require("@/assets/images/theme_previews_optimized/Lunar/MoonSide_preview.webp"),
   PinkSky: require("@/assets/images/theme_previews_optimized/Lunar/PinkSky_preview.webp"),
-  PurpleForest: require("@/assets/images/theme_previews_optimized/Lunar/PurpleForest_preview.webp"),
   Rocket: require("@/assets/images/theme_previews_optimized/Lunar/Rocket_preview.webp"),
   Trace: require("@/assets/images/theme_previews_optimized/Lunar/Trace_preview.webp"),
 
@@ -97,25 +100,27 @@ export const WALLPAPER_PREVIEWS: Record<WallpaperId, any> = {
 
   // FEATURED
   BlueSolar: require("@/assets/images/theme_previews_optimized/Featured/BlueSolar_preview.webp"),
+  CandyClouds: require("@/assets/images/theme_previews_optimized/Featured/CandyClouds_preview.webp"),
   Clouds: require("@/assets/images/theme_previews_optimized/Featured/Clouds_preview.webp"),
   DreamSky: require("@/assets/images/theme_previews_optimized/Featured/DreamSky_preview.webp"),
   Dreamy: require("@/assets/images/theme_previews_optimized/Featured/Dreamy_preview.webp"),
+  DreamyMoons: require("@/assets/images/theme_previews_optimized/Featured/DreamyMoons_preview.webp"),
+  FallenStar: require("@/assets/images/theme_previews_optimized/Featured/FallenStar_preview.webp"),
+  CuteGhosts: require("@/assets/images/theme_previews_optimized/Featured/Ghost_preview.webp"),
   Hands: require("@/assets/images/theme_previews_optimized/Featured/Hands_preview.webp"),
   LateDream: require("@/assets/images/theme_previews_optimized/Featured/LateDream_preview.webp"),
-  PickMoon: require("@/assets/images/theme_previews_optimized/Featured/Moon_preview.webp"),
+  PickMoon: require("@/assets/images/theme_previews_optimized/Featured/PickMoon_preview.webp"),
   PinkTree: require("@/assets/images/theme_previews_optimized/Featured/PinkTree_preview.webp"),
   Roses: require("@/assets/images/theme_previews_optimized/Featured/Roses_preview.webp"),
-  Samurai: require("@/assets/images/theme_previews_optimized/Featured/Samurai_preview.webp"),
   She: require("@/assets/images/theme_previews_optimized/Featured/She_preview.webp"),
-  PickValley: require("@/assets/images/theme_previews_optimized/Featured/Valley_preview.webp"),
 
   // PIXEL ART
   Camp: require("@/assets/images/theme_previews_optimized/PixelsArt/camp_preview.webp"),
   Game: require("@/assets/images/theme_previews_optimized/PixelsArt/Game_preview.webp"),
   PixelLateNights: require("@/assets/images/theme_previews_optimized/PixelsArt/LateNights_preview.webp"),
-  Orange: require("@/assets/images/theme_previews_optimized/PixelsArt/Orange_preview.webp"),
   Towers: require("@/assets/images/theme_previews_optimized/PixelsArt/Towers_preview.webp"),
   We: require("@/assets/images/theme_previews_optimized/PixelsArt/We_preview.webp"),
+  Wire: require("@/assets/images/theme_previews_optimized/PixelsArt/wire_preview.webp"),
 
   // TOGETHER
   Bench: require("@/assets/images/theme_previews_optimized/Together/Bench_preview.webp"),

@@ -1,6 +1,6 @@
 import {
-    useEffect,
-    useRef,
+  useEffect,
+  useRef,
 } from "react";
 
 export default function useAutoScroll(
@@ -13,6 +13,9 @@ export default function useAutoScroll(
       null
     );
 
+    const hasMountedRef =
+  useRef(false);
+
   useEffect(() => {
     if (
       !enabled ||
@@ -20,6 +23,18 @@ export default function useAutoScroll(
     ) {
       return;
     }
+
+    if (!hasMountedRef.current) {
+  hasMountedRef.current =
+    true;
+
+  lastIdRef.current =
+    messages[
+      messages.length - 1
+    ]?._id;
+
+  return;
+}
 
     const latest =
       messages[

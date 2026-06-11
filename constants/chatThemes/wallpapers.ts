@@ -19,7 +19,7 @@ export const WALLPAPERS = {
   Cherry: require("@/assets/images/ThemeWalls/ChatsPatterns/Cherry.webp"),
   Flower: require("@/assets/images/ThemeWalls/ChatsPatterns/Flower.webp"),
   Flowers: require("@/assets/images/ThemeWalls/ChatsPatterns/Flowers.webp"),
-  Ghost: require("@/assets/images/ThemeWalls/ChatsPatterns/Ghost.webp"),
+  TinyGhost: require("@/assets/images/ThemeWalls/ChatsPatterns/TinyGhost.webp"),
   HeartOutline: require("@/assets/images/ThemeWalls/ChatsPatterns/HeartOutline.webp"),
   Icons: require("@/assets/images/ThemeWalls/ChatsPatterns/Icons.webp"),
   LittleSpace: require("@/assets/images/ThemeWalls/ChatsPatterns/LittleSpace.webp"),
@@ -77,13 +77,14 @@ export const WALLPAPERS = {
   // ======================
   // LANDSCAPES
   // ======================
-
+  Away: require("@/assets/images/ThemeWalls/Landscapes/Away.webp"),
+  CherryRed: require("@/assets/images/ThemeWalls/Landscapes/CherryRed.webp"),
   ForestHouse: require("@/assets/images/ThemeWalls/Landscapes/ForestHouse.webp"),
   Home: require("@/assets/images/ThemeWalls/Landscapes/Home.webp"),
+  HomeTown: require("@/assets/images/ThemeWalls/Landscapes/hometown.webp"),
   Japan: require("@/assets/images/ThemeWalls/Landscapes/japan.webp"),
-  MoonLightLandscape: require("@/assets/images/ThemeWalls/Landscapes/MoonLight.webp"),
-  NightLandscape: require("@/assets/images/ThemeWalls/Landscapes/Night.webp"),
-  PurpleForestLandscape: require("@/assets/images/ThemeWalls/Landscapes/PurpleForest.webp"),
+  Night: require("@/assets/images/ThemeWalls/Landscapes/Night.webp"),
+  PurpleForest: require("@/assets/images/ThemeWalls/Landscapes/PurpleForest.webp"),
   Valley: require("@/assets/images/ThemeWalls/Landscapes/Valley.webp"),
   WaterFall: require("@/assets/images/ThemeWalls/Landscapes/WaterFall.webp"),
 
@@ -91,12 +92,12 @@ export const WALLPAPERS = {
   // LUNAR
   // ======================
 
-  BigMoon: require("@/assets/images/ThemeWalls/Lunar/BigMoon.webp"),
+  BlueMoon: require("@/assets/images/ThemeWalls/Lunar/BlueMoon.webp"),
+  DeepForest: require("@/assets/images/ThemeWalls/Lunar/DeepForest.webp"),
   Earth: require("@/assets/images/ThemeWalls/Lunar/Earth.webp"),
-  Moon: require("@/assets/images/ThemeWalls/Lunar/Moon.webp"),
   MoonLight: require("@/assets/images/ThemeWalls/Lunar/MoonLight.webp"),
+  MoonSide: require("@/assets/images/ThemeWalls/Lunar/MoonSide.webp"),
   PinkSky: require("@/assets/images/ThemeWalls/Lunar/PinkSky.webp"),
-  PurpleForest: require("@/assets/images/ThemeWalls/Lunar/PurpleForest.webp"),
   Rocket: require("@/assets/images/ThemeWalls/Lunar/Rocket.webp"),
   Trace: require("@/assets/images/ThemeWalls/Lunar/Trace.webp"),
 
@@ -118,21 +119,23 @@ export const WALLPAPERS = {
   ValleyView: require("@/assets/images/ThemeWalls/Nature/ValleyView.webp"),
 
   // ======================
-  // PICKS
+  // FEATURED
   // ======================
 
   BlueSolar: require("@/assets/images/ThemeWalls/Featured/BlueSolar.webp"),
+  CandyClouds: require("@/assets/images/ThemeWalls/Featured/CandyClouds.webp"),
   Clouds: require("@/assets/images/ThemeWalls/Featured/Clouds.webp"),
   DreamSky: require("@/assets/images/ThemeWalls/Featured/DreamSky.webp"),
   Dreamy: require("@/assets/images/ThemeWalls/Featured/Dreamy.webp"),
+  DreamyMoons: require("@/assets/images/ThemeWalls/Featured/DreamyMoons.webp"),
+  FallenStar: require("@/assets/images/ThemeWalls/Featured/FallenStar.webp"),
+  CuteGhosts: require("@/assets/images/ThemeWalls/Featured/Ghost.webp"),
   Hands: require("@/assets/images/ThemeWalls/Featured/Hands.webp"),
   LateDream: require("@/assets/images/ThemeWalls/Featured/LateDream.webp"),
-  PickMoon: require("@/assets/images/ThemeWalls/Featured/Moon.webp"),
+  PickMoon: require("@/assets/images/ThemeWalls/Featured/PickMoon.webp"),
   PinkTree: require("@/assets/images/ThemeWalls/Featured/PinkTree.webp"),
   Roses: require("@/assets/images/ThemeWalls/Featured/Roses.webp"),
-  Samurai: require("@/assets/images/ThemeWalls/Featured/Samurai.webp"),
   She: require("@/assets/images/ThemeWalls/Featured/She.webp"),
-  PickValley: require("@/assets/images/ThemeWalls/Featured/Valley.webp"),
 
   // ======================
   // PIXEL ART
@@ -141,9 +144,9 @@ export const WALLPAPERS = {
   Camp: require("@/assets/images/ThemeWalls/PixelsArt/camp.webp"),
   Game: require("@/assets/images/ThemeWalls/PixelsArt/Game.webp"),
   PixelLateNights: require("@/assets/images/ThemeWalls/PixelsArt/LateNights.webp"),
-  Orange: require("@/assets/images/ThemeWalls/PixelsArt/Orange.webp"),
   Towers: require("@/assets/images/ThemeWalls/PixelsArt/Towers.webp"),
   We: require("@/assets/images/ThemeWalls/PixelsArt/We.webp"),
+  Wire: require("@/assets/images/ThemeWalls/PixelsArt/wire.webp"),
 
   // ======================
   // TOGETHER

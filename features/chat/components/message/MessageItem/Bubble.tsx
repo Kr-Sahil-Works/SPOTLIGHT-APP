@@ -248,7 +248,7 @@ onPress={
 
         fontSize: 14,
 
-        lineHeight: 20,
+        lineHeight: 18,
 
         textDecorationLine:
           isPhoneNumber ||
@@ -323,9 +323,9 @@ if (
           },
         ],
 
-        paddingVertical: 10,
+        paddingVertical: 8,
 
-        paddingHorizontal: 14,
+        paddingHorizontal: 12,
 
         ...bubbleStyle,
       }}

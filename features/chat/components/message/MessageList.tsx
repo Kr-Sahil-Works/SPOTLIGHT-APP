@@ -163,6 +163,9 @@ const [
   null
 );
 
+const initialScrollDone =
+  React.useRef(false);
+
 const [
   scrollHighlightId,
   setScrollHighlightId,
@@ -185,7 +188,7 @@ const [
     scrollOffsetRef,
   } = useChatScroll();
 
- useKeyboardScroll(
+useKeyboardScroll(
   flatListRef
 );
 
@@ -237,13 +240,26 @@ setTimeout(() => {
 }, 1200);
 };
 
-  useEffect(() => {
-    if (
-      messages?.length
-    ) {
-      onNewMessage();
-    }
-  }, [messages]);
+const firstLoadRef =
+  React.useRef(true);
+
+useEffect(() => {
+  if (
+    firstLoadRef.current
+  ) {
+    firstLoadRef.current =
+      false;
+
+    return;
+  }
+
+  if (
+    messages?.length
+  ) {
+    onNewMessage();
+  }
+}, [messages]);
+
 
   const editMessage =
   useMutation(
@@ -369,13 +385,12 @@ const deleteMessage =
       )}
 
       <FlashList
-      extraData={messages}
       keyboardShouldPersistTaps="always"
         ref={flatListRef}
         data={messages}
         renderItem={renderItem}
         drawDistance={
-          300
+          800
         }
         removeClippedSubviews
         keyExtractor={(
@@ -391,6 +406,22 @@ const deleteMessage =
 
           paddingVertical: 10,
         }}
+        onLoad={() => {
+  if (
+    initialScrollDone.current
+  ) {
+    return;
+  }
+
+  initialScrollDone.current =
+    true;
+
+requestAnimationFrame(() => {
+  flatListRef.current?.scrollToEnd({
+    animated: false,
+  });
+});
+}}
         onScroll={(e) => {
           onScroll(e);
 

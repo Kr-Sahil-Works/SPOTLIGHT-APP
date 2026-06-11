@@ -3,6 +3,54 @@ import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const LANDSCAPE_THEMES: ChatTheme[] = [
+
+{
+  name: "Away",
+  category: "Landscapes",
+
+  wallpaper: WALLPAPERS.Away,
+  preview: WALLPAPER_PREVIEWS.Away,
+
+  bubbleMe: "#7c6cff",
+  bubbleOther: "#1d2740",
+
+  background: "#07101d",
+  header: "#0c1626",
+  inputBg: "#152338",
+
+  textMe: "#ffffff",
+  textOther: "#ffffff",
+
+  headerText: "#e5edff",
+
+  sendBtn: "#8b7dff",
+  sendIcon: "#ffffff",
+},
+
+{
+  name: "CherryRed",
+  category: "Landscapes",
+
+  wallpaper: WALLPAPERS.CherryRed,
+  preview: WALLPAPER_PREVIEWS.CherryRed,
+
+  bubbleMe: "#ff4f7d",
+  bubbleOther: "#2a1f2d",
+
+  background: "#100b11",
+  header: "#180f18",
+  inputBg: "#241823",
+
+  textMe: "#ffffff",
+  textOther: "#ffffff",
+
+  headerText: "#ffe7ef",
+
+  sendBtn: "#ff4f7d",
+  sendIcon: "#ffffff",
+},
+
+
   {
     name: "Forest House",
     category: "Landscapes",
@@ -50,6 +98,29 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
   },
 
   {
+  name: "Hometown",
+  category: "Landscapes",
+
+  wallpaper: WALLPAPERS.HomeTown,
+  preview: WALLPAPER_PREVIEWS.HomeTown,
+
+  bubbleMe: "#b06cff",
+  bubbleOther: "#22213a",
+
+  background: "#0b0c17",
+  header: "#121425",
+  inputBg: "#1a1e31",
+
+  textMe: "#ffffff",
+  textOther: "#ffffff",
+
+  headerText: "#f0e8ff",
+
+  sendBtn: "#c07cff",
+  sendIcon: "#ffffff",
+},
+
+  {
     name: "Japan",
     category: "Landscapes",
 
@@ -76,8 +147,8 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     name: "Moonlight Valley",
     category: "Landscapes",
 
-    wallpaper: WALLPAPERS.MoonLightLandscape,
-    preview: WALLPAPER_PREVIEWS.MoonLightLandscape,
+    wallpaper: WALLPAPERS.MoonLight,
+    preview: WALLPAPER_PREVIEWS.MoonLight,
 
     bubbleMe: "#6366f1",
     bubbleOther: "#17192f",
@@ -99,8 +170,8 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     name: "Midnight Horizon",
     category: "Landscapes",
 
-    wallpaper: WALLPAPERS.NightLandscape,
-    preview: WALLPAPER_PREVIEWS.NightLandscape,
+    wallpaper: WALLPAPERS.Night,
+    preview: WALLPAPER_PREVIEWS.Night,
 
     bubbleMe: "#3b82f6",
     bubbleOther: "#132035",
@@ -122,8 +193,8 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     name: "Purple Forest",
     category: "Landscapes",
 
-    wallpaper: WALLPAPERS.PurpleForestLandscape,
-    preview: WALLPAPER_PREVIEWS.PurpleForestLandscape,
+    wallpaper: WALLPAPERS.PurpleForest,
+    preview: WALLPAPER_PREVIEWS.PurpleForest,
 
     bubbleMe: "#a855f7",
     bubbleOther: "#241338",

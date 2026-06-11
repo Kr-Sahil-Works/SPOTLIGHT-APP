@@ -479,10 +479,13 @@ if (
   style={{
     flex: 1,
   }}
+  contentContainerStyle={{
+  backgroundColor: "transparent",
+}}
   behavior={
     Platform.OS === "ios"
       ? "padding"
-      : "padding"
+      : "height"
   }
   keyboardVerticalOffset={
     Platform.OS === "android"
@@ -1030,10 +1033,10 @@ onReact={async ({
       <View
   style={{
     flex: 1,
-paddingBottom:
-  Platform.OS === "android"
-    ? 40
-    : 0,
+// paddingBottom:
+//   Platform.OS === "android"
+//     ? 40
+//     : 0,
   }}
 >
 {theme.wallpaper ? (
@@ -1061,29 +1064,27 @@ paddingBottom:
       renderToHardwareTextureAndroid={false}
       style={{
         flex: 1,
-        backgroundColor: "#00000055",
+        backgroundColor: "transparent",
       }}
     >
       {renderContent()}
     </Animated.View>
   </View>
 ) : theme.gradient ? (
-  <LinearGradient
-    colors={theme.gradient}
+ <LinearGradient
+  colors={theme.gradient}
+  style={{
+    flex: 1,
+  }}
+>
+  <View
     style={{
       flex: 1,
     }}
   >
-    <Animated.View
-      renderToHardwareTextureAndroid={false}
-      style={{
-        flex: 1,
-        backgroundColor: "#00000055",
-      }}
-    >
-      {renderContent()}
-    </Animated.View>
-  </LinearGradient>
+    {renderContent()}
+  </View>
+</LinearGradient>
 ) : (
   <Animated.View
     renderToHardwareTextureAndroid={false}

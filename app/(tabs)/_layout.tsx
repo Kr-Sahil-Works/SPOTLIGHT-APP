@@ -15,6 +15,7 @@ import { Animated, Dimensions, Platform, TouchableOpacity, View } from "react-na
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { api } from "@/convex/_generated/api";
+import useChatListTheme from "@/hooks/useChatListTheme";
 import { getProfileImage, saveProfileImage } from "@/lib/cache/profileImageCache";
 import { useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
@@ -190,11 +191,11 @@ if (name === "profile") {
             : "person-outline"
         }
         size={24}
-        color={
-          focused
-            ? COLORS.primary
-            : color
-        }
+       color={
+  focused
+    ? color
+    : "rgba(255,255,255,0.5)"
+}
       />
     );
   }
@@ -264,8 +265,8 @@ if (name === "profile") {
   }
   color={
     focused
-      ? COLORS.primary
-      : color
+      ? color
+      : "rgba(255,255,255,0.5)"
   }
  style={
   name === "chats"
@@ -293,6 +294,8 @@ if (name === "profile") {
 
 function CustomTabBar({ state, navigation }: any) {
 
+const chatTheme =
+  useChatListTheme();
 
   const currentUser = useQuery(
   api.users.index.getCurrentUser
@@ -380,15 +383,22 @@ style={{
               }}
               activeOpacity={0.8}
             >
-          <TabIcon
+<TabIcon
   name={route.name}
   size={24}
-  color="rgba(255,255,255,0.5)"
+  color={
+    route.name === "chats" &&
+    isFocused
+      ? chatTheme.glow ??
+        chatTheme.headerColor ??
+        COLORS.primary
+      : "rgba(255,255,255,0.5)"
+  }
   focused={isFocused}
-profileImage={
-  currentUser?.image ??
-  cachedProfileImage
-}
+  profileImage={
+    currentUser?.image ??
+    cachedProfileImage
+  }
 />
             </TouchableOpacity>
           );

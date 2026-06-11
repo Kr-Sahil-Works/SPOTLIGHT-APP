@@ -27,6 +27,8 @@ type Props = {
   onClose: () => void;
 
   onApply: (i: number) => void;
+
+  profileMode?: boolean;
 };
 
 
@@ -189,7 +191,8 @@ export default function ThemeModal({
   onPreview,
   onClose,
   onApply,
-}: Props) {
+  profileMode = false,
+}: Props) { {
 if (!visible) {
   return null;
 }
@@ -472,11 +475,19 @@ return (
     theme={theme}
     expanded={expanded}
     selected={selected}
-    onPress={() =>
-      onPreview(
-        originalIndex
-      )
-    }
+   onPress={() => {
+  if (profileMode) {
+    onApply(
+      originalIndex
+    );
+
+    return;
+  }
+
+  onPreview(
+    originalIndex
+  );
+}}
   />
 );
     },
@@ -508,11 +519,18 @@ return (
         position: "absolute",
         bottom: 0,
         width: "100%",
-        height: expanded ? "90%" : "65%",
+        height: profileMode
+  ? "100%"
+  : expanded
+  ? "90%"
+  : "65%",
         overflow: "hidden",
         paddingBottom: insets.bottom,
-        borderTopLeftRadius: 34,
-        borderTopRightRadius: 34,
+      borderTopLeftRadius:
+  profileMode ? 0 : 34,
+
+borderTopRightRadius:
+  profileMode ? 0 : 34,
       }}
     >
       {/* GLASS BG */}
@@ -521,10 +539,15 @@ return (
         tint="systemChromeMaterialDark"
         style={{
           flex: 1,
-          paddingTop: 6,
+          paddingTop:
+  profileMode
+    ? 60
+    : 6,
           paddingHorizontal: 16,
-          backgroundColor:
-  allCollapsed
+        backgroundColor:
+  profileMode
+    ? "#000"
+    : allCollapsed
     ? "#000000cc"
     : expanded
     ? "#00000040"
@@ -536,6 +559,7 @@ return (
         }}
       >
         {/* HANDLE */}
+        {!profileMode && (
         <View
           style={{
             width: 48,
@@ -547,6 +571,7 @@ return (
             marginBottom: 2,
           }}
         />
+        )}
 
         {/* TITLE */}
     <View
@@ -559,7 +584,9 @@ return (
 >
   <Text
     style={{
-      color: "#a3fa00e7",
+  color: allCollapsed
+  ? "#a3fa00e7"
+  : "#ffffff",
       fontSize: 24,
       fontWeight: "700",
       letterSpacing: 0.3,
@@ -571,9 +598,11 @@ return (
 <View
   style={{
     flexDirection: "row",
+    alignItems: "center",
     gap: 10,
   }}
 >
+
   <TouchableOpacity
 onPress={toggleAllCategories}
 
@@ -602,8 +631,40 @@ delayLongPress={250}
       color="#fff"
     />
   </TouchableOpacity>
-
+{profileMode && (
+<>
   <TouchableOpacity
+    onPress={() =>
+      setExpanded(!expanded)
+    }
+    activeOpacity={0.8}
+    style={{
+      width: 42,
+      height: 42,
+      borderRadius: 14,
+      backgroundColor: "#ffffff10",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: "#ffffff10",
+      marginRight: 10,
+    }}
+  >
+    <Ionicons
+      name={
+        expanded
+          ? "grid"
+          : "grid-outline"
+      }
+      size={18}
+      color="#fff"
+    />
+  </TouchableOpacity>
+</>
+)}
+
+ {!profileMode && (
+<TouchableOpacity
     onPress={() =>
       setExpanded(!expanded)
     }
@@ -619,6 +680,7 @@ delayLongPress={250}
       borderColor: "#ffffff10",
     }}
   >
+  
     <Ionicons
       name={
         expanded
@@ -629,6 +691,29 @@ delayLongPress={250}
       color="#fff"
     />
   </TouchableOpacity>
+ )}
+
+ <TouchableOpacity
+  onPress={onClose}
+  activeOpacity={0.8}
+  style={{
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+marginLeft: profileMode ? 0 : -10,
+    backgroundColor: "#ffffff10",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#ffffff10",
+  }}
+>
+  <Ionicons
+    name="close"
+    size={22}
+    color="#fff"
+  />
+</TouchableOpacity>
 </View>
 </View>
 
@@ -673,6 +758,7 @@ renderItem={
 />
 
         {/* BUTTONS */}
+        {!profileMode && (
         <View
           style={{
             flexDirection: "row",
@@ -754,9 +840,10 @@ renderItem={
             </Text>
           </TouchableOpacity>
         </View>
+        )}
       </BlurView>
     </Pressable>
   </Pressable>
 </Modal>
   );
-}
+}}

@@ -10,22 +10,24 @@ export default function useKeyboardScroll(
   listRef: any
 ) {
   useEffect(() => {
-    const sub =
+    const showSub =
       Keyboard.addListener(
         "keyboardDidShow",
         () => {
-          setTimeout(() => {
-            listRef.current?.scrollToEnd(
-              {
-                animated: true,
-              }
-            );
-          }, 150);
+          requestAnimationFrame(
+            () => {
+              listRef.current?.scrollToEnd(
+                {
+                  animated: true,
+                }
+              );
+            }
+          );
         }
       );
 
     return () => {
-      sub.remove();
+      showSub.remove();
     };
   }, [listRef]);
 }

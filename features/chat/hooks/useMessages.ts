@@ -113,35 +113,35 @@ cachedChat
           String(userId)
         );
 
-      if (
-        cached?.messages &&
-        cached.messages.length > 0
-      ) {
-        setMessages(
-          cached.messages as Message[]
-        );
+//       if (
+//         cached?.messages &&
+//         cached.messages.length > 0
+//       ) {
+//         setMessages(
+//           cached.messages as Message[]
+//         );
 
-    setConversationId(
-  cached
-    ?.conversationId &&
-  cached
-    ?.conversationId !==
-    "undefined"
-    ? (cached.conversationId as Id<"conversations">)
-    : undefined
-);
-        setCurrentUserId(
-          cached.currentUserId as
-            | Id<"users">
-            | undefined
-        );
+//     setConversationId(
+//   cached
+//     ?.conversationId &&
+//   cached
+//     ?.conversationId !==
+//     "undefined"
+//     ? (cached.conversationId as Id<"conversations">)
+//     : undefined
+// );
+//         setCurrentUserId(
+//           cached.currentUserId as
+//             | Id<"users">
+//             | undefined
+//         );
 
-        setThemeIndex(
-          cached.themeIndex ?? 0
-        );
+//         setThemeIndex(
+//           cached.themeIndex ?? 0
+//         );
 
-        setIsLoading(false);
-      }
+//         setIsLoading(false);
+//       }
 
       try {
         const data =
@@ -157,13 +157,28 @@ cachedChat
           data?.conversationId
         );
 
-       if (
+   if (
   data?.messages &&
   data.messages.length > 0
 ) {
-  setMessages(
-    data.messages as Message[]
-  );
+  const currentLast =
+    messages[
+      messages.length - 1
+    ]?._id;
+
+  const serverLast =
+    data.messages[
+      data.messages.length - 1
+    ]?._id;
+
+  if (
+    currentLast !==
+    serverLast
+  ) {
+    setMessages(
+      data.messages as Message[]
+    );
+  }
 }
 
         setThemeIndex(
@@ -228,10 +243,24 @@ cachedChat
       liveData.currentUserId ??
         undefined
     );
+setMessages((prev) => {
+  const prevLast =
+    prev[prev.length - 1]?._id;
 
-    setMessages(
-      liveData.messages as Message[]
-    );
+  const nextLast =
+    liveData.messages[
+      liveData.messages.length - 1
+    ]?._id;
+
+  if (
+    prev.length > 0 &&
+    prevLast === nextLast
+  ) {
+    return prev;
+  }
+
+  return liveData.messages as Message[];
+});
 
     saveChatCache(
       String(userId),

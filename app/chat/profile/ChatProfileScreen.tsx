@@ -3,20 +3,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import {
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import useUser from "@/features/chat/hooks/useUser";
 
 type Props = {
   userId: Id<"users">;
+  onOpenTheme?: () => void;
 };
+
 
 export default function ChatProfileScreen({
   userId,
+  onOpenTheme,
 }: Props) {
   const router = useRouter();
 
@@ -44,12 +47,14 @@ export default function ChatProfileScreen({
     alignItems: "center",
   }}
 >
-  <TouchableOpacity
-    onPress={() => router.back()}
-  >
+<TouchableOpacity
+  onPress={() =>
+    router.back()
+  }
+>
     <Ionicons
       name="arrow-back"
-      size={28}
+      size={22}
       color="#fff"
     />
   </TouchableOpacity>
@@ -126,40 +131,17 @@ export default function ChatProfileScreen({
     marginTop: 24,
   }}
 >
-  <TouchableOpacity
-    activeOpacity={0.85}
-    onPress={() => router.back()}
-    style={{
-      flex: 1,
-      height: 48,
-      borderRadius: 14,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "#ffffff10",
-      borderWidth: 1,
-      borderColor:
-        "rgba(255,255,255,0.06)",
-    }}
-  >
-    <Text
-      style={{
-        color: "#fff",
-        fontWeight: "600",
-      }}
-    >
-      Message
-    </Text>
-  </TouchableOpacity>
 
-  <TouchableOpacity
-    activeOpacity={0.85}
+<TouchableOpacity
+  activeOpacity={0.85}
+  onPress={onOpenTheme}
     style={{
       flex: 1,
       height: 48,
       borderRadius: 14,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: "#478200",
+      backgroundColor: "#111",
     }}
   >
     <Text
@@ -171,6 +153,36 @@ export default function ChatProfileScreen({
      Themes
     </Text>
   </TouchableOpacity>
+
+  <TouchableOpacity
+  activeOpacity={0.85}
+  onPress={() =>
+    router.push(
+      `/user/${String(userId)}`
+    )
+  }
+  style={{
+    flex: 1,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff10",
+    borderWidth: 1,
+    borderColor:
+      "rgba(255,255,255,0.06)",
+  }}
+>
+  <Text
+    style={{
+      color: "#fff",
+      fontWeight: "600",
+    }}
+  >
+    Profile
+  </Text>
+</TouchableOpacity>
+
 </View>
         </View>
 </View>
@@ -218,19 +230,6 @@ export default function ChatProfileScreen({
   />
 </View>
       </View>
-
-<Text
-  style={{
-    color: "#ffffffbf",
-    textAlign: "center",
-    fontSize: 11,
-    letterSpacing: 1.2,
-    marginTop: 28,
-    marginBottom: -10,
-  }}
->
- More Conversation Settings Coming Soon
-</Text>
 
       {/* MENU */}
       <ScrollView

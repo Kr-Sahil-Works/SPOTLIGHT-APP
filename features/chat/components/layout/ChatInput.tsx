@@ -6,7 +6,6 @@ import {
 
 import { api } from "@/convex/_generated/api";
 import { useMutation } from "convex/react";
-import { BlurView } from "expo-blur";
 import {
   useEffect,
   useRef,
@@ -156,19 +155,18 @@ const handleTyping = (value: string) => {
 
   return (
     <View
-      style={{
-        padding: 10,
+     style={{
+  paddingHorizontal: 10,
+  paddingTop: 10,
 
-        paddingBottom:
-          isOnline
-            ? 10
-            : 35,
+  paddingBottom:
+    isOnline
+      ? 10
+      : 35,
 
-      backgroundColor:
-  theme.wallpaper
-    ? "transparent"
-    : theme.background,
-      }}
+  backgroundColor:
+    "transparent",
+}}
     >
       <View
         style={{
@@ -177,9 +175,9 @@ const handleTyping = (value: string) => {
         }}
       >
         {/* 💬 INPUT */}
-        <BlurView
-          intensity={25}
-          tint="dark"
+        <View
+          // intensity={25}
+          // tint="dark"
           style={{
             flex: 1,
 
@@ -190,6 +188,8 @@ const handleTyping = (value: string) => {
             marginRight: 8,
 
             borderWidth: 1,
+
+            backgroundColor: "#00000040",
 
             borderColor: focused
               ? theme.sendBtn
@@ -237,17 +237,17 @@ const handleTyping = (value: string) => {
     ? "Message..."
     : "Reconnect to send"
 }
-              autoFocus
-              placeholderTextColor="#aaa"
+              placeholderTextColor="#bdbdbd"
               style={{
                 color:
                   theme.headerText,
 
-                fontSize: 14,
+                fontSize: 16,
+                paddingVertical: 8,
               }}
             />
           </View>
-        </BlurView>
+        </View>
 
         {/* 🚀 MORPH BUTTON */}
 <Animated.View

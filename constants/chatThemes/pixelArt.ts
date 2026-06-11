@@ -72,28 +72,7 @@ export const PIXEL_ART_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Orange",
-    category: "PixelArt",
 
-    wallpaper: WALLPAPERS.Orange,
-    preview: WALLPAPER_PREVIEWS.Orange,
-
-    bubbleMe: "#fb923c",
-    bubbleOther: "#31200f",
-
-    background: "#0f0802",
-    header: "#191104",
-    inputBg: "#261b08",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ffedd5",
-
-    sendBtn: "#fb923c",
-    sendIcon: "#000000",
-  },
 
   {
     name: "Towers",
@@ -124,6 +103,28 @@ export const PIXEL_ART_THEMES: ChatTheme[] = [
 
     wallpaper: WALLPAPERS.We,
     preview: WALLPAPER_PREVIEWS.We,
+
+    bubbleMe: "#ec4899",
+    bubbleOther: "#2c1224",
+
+    background: "#0d0610",
+    header: "#180b1c",
+    inputBg: "#24112a",
+
+    textMe: "#ffffff",
+    textOther: "#ffffff",
+
+    headerText: "#fbcfe8",
+
+    sendBtn: "#ec4899",
+    sendIcon: "#ffffff",
+  },
+  {
+    name: "Wire",
+    category: "PixelArt",
+
+    wallpaper: WALLPAPERS.Wire,
+    preview: WALLPAPER_PREVIEWS.Wire,
 
     bubbleMe: "#ec4899",
     bubbleOther: "#2c1224",

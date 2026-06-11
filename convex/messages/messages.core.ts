@@ -151,10 +151,6 @@ export const sendMessage = mutation({
     if (
       receiver?.pushToken
     ) {
-      console.log(
-  "PUSH TOKEN",
-  receiver.pushToken
-);
   await ctx.scheduler.runAfter(
   0,
   api.messages.index.sendPushNotification,

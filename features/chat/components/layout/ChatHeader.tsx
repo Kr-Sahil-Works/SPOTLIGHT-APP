@@ -111,12 +111,12 @@ return (
   <>
     <View
       style={{
-        height: 56,
+        height: 50,
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 12,
         borderBottomWidth: 0.5,
-        borderColor: "#222",
+        borderBottomColor: "transparent",
         backgroundColor: theme.header,
       }}
     >
@@ -141,7 +141,7 @@ return (
 >
         <Ionicons
           name="arrow-back"
-          size={24}
+          size={20}
           color={theme.headerText}
         />
       </TouchableOpacity>
@@ -154,18 +154,22 @@ return (
           flex: 1,
         }}
       >
-       <TouchableOpacity
+    <TouchableOpacity
   activeOpacity={0.8}
+  disabled={!isOnline}
   onPress={() =>
     router.push(
       `/chat/profile/${userId}`
     )
   }
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    opacity: isOnline
+      ? 1
+      : 0.45,
+  }}
+>
 <Image
   source={
     user?.image?.trim()
@@ -176,23 +180,23 @@ return (
   transition={120}
   allowDownscaling
   style={{
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 32,
+    height: 32,
+    borderRadius: 18,
   }}
 />
 
           <View
             style={{
-              marginLeft: 10,
+              marginLeft: 8,
               maxWidth: 170,
             }}
           >
             <Text
               numberOfLines={1}
               style={{
-                color: "#fff",
-                fontSize: 16,
+                color: "#e8e8e8",
+                fontSize: 12,
                 fontWeight: "600",
               }}
             >
@@ -203,7 +207,7 @@ return (
               numberOfLines={1}
               style={{
                 color: "#999",
-                fontSize: 12,
+                fontSize: 10,
                 marginTop: 1,
               }}
             >
@@ -226,7 +230,7 @@ return (
 >
   <Ionicons
     name="call-sharp"
-    size={22}
+    size={20}
     color={
       isOnline
         ? theme.headerText
@@ -248,8 +252,8 @@ return (
   <Image
     source={require("@/assets/images/icons/theme.webp")}
     style={{
-      width: 24,
-      height: 24,
+      width: 22,
+      height: 22,
       opacity:
         isOnline
           ? 0.92

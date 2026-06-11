@@ -349,7 +349,7 @@ onPress={handleTap}
 
           <View
             style={{
-              maxWidth: "75%",
+              maxWidth: "78%",
             }}
           >
             <ReplyPreview
