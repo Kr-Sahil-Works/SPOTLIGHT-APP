@@ -1,11 +1,13 @@
 import {
-    useCallback,
-    useRef,
-    useState,
+  useCallback,
+  useRef,
+  useState,
 } from "react";
 
-export default function useChatScroll() {
-  const listRef = useRef<any>(null);
+export default function useChatScroll(
+  listRef: any
+) {
+
 
   const isAtBottom =
     useRef(true);
@@ -39,8 +41,8 @@ export default function useChatScroll() {
         (contentOffset.y +
           layoutMeasurement.height);
 
-      const atBottom =
-        distanceFromBottom < 60;
+const atBottom =
+  distanceFromBottom <= 10;
 
       isAtBottom.current =
         atBottom;
@@ -54,40 +56,46 @@ export default function useChatScroll() {
     []
   );
 
-  const scrollToBottom =
-    useCallback(() => {
-      listRef.current?.scrollToEnd({
-        animated: true,
-      });
+const scrollToBottom =
+  useCallback(() => {
+    listRef.current?.scrollToEnd({
+      animated: true,
+    });
 
-      setShowScrollBtn(false);
+    setShowScrollBtn(false);
+    setNewMsgCount(0);
+  }, [listRef]);
 
-      setNewMsgCount(0);
-    }, []);
-
-  const onNewMessage =
-    useCallback(() => {
-      if (isAtBottom.current) {
-        requestAnimationFrame(() => {
+const onNewMessage =
+  useCallback(() => {
+    if (
+      isAtBottom.current
+    ) {
+      requestAnimationFrame(
+        () => {
           listRef.current?.scrollToEnd(
             {
-              animated: true,
+              animated:
+                true,
             }
           );
-        });
-
-        return;
-      }
-
-      setNewMsgCount(
-        (prev) => prev + 1
+        }
       );
 
-      setShowScrollBtn(true);
-    }, []);
+      return;
+    }
+
+    setNewMsgCount(
+      (prev) =>
+        prev + 1
+    );
+
+    setShowScrollBtn(
+      true
+    );
+  }, [listRef]);
 
   return {
-    listRef,
 
     onScroll,
 

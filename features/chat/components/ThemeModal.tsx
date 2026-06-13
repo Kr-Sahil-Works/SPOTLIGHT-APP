@@ -700,7 +700,7 @@ delayLongPress={250}
     width: 42,
     height: 42,
     borderRadius: 14,
-marginLeft: profileMode ? 0 : -10,
+marginLeft: !profileMode ? 0 : -10,
     backgroundColor: "#ffffff10",
     alignItems: "center",
     justifyContent: "center",

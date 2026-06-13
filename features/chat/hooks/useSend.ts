@@ -1,5 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { storage } from "@/lib/mmkv";
 import { Message } from "@/types/chat";
 
 import {
@@ -79,6 +80,9 @@ if (!text.trim()) {
       const messageText =
         text.trim();
 
+        const draftKey =
+  `draft-${userId}`;
+
       setText("");
 
       try {
@@ -86,19 +90,23 @@ if (!text.trim()) {
      if (
   editingMessage
 ) {
-  await editMessage(
-    {
-      messageId:
-        editingMessage._id,
+await editMessage(
+  {
+    messageId:
+      editingMessage._id,
 
-      newText:
-        messageText,
-    }
-  );
+    newText:
+      messageText,
+  }
+);
 
-  setEditingMessage(
-    null
-  );
+storage.remove(
+  draftKey
+);
+
+setEditingMessage(
+  null
+);
 
   setSending(false);
 
@@ -120,6 +128,10 @@ if (!text.trim()) {
           replyToText:
             replyMsg?.text,
         });
+
+storage.remove(
+  draftKey
+);
       } catch (e) {
           setSending(false);
   console.log(e);

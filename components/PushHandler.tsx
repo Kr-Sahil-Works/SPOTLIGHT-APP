@@ -20,12 +20,6 @@ export default function PushHandler() {
         .savePushToken
     );
 
-    const markSeen =
-  useMutation(
-    api.messages.index
-      .markAsSeen
-  );
-
   const {
     isLoaded,
     isSignedIn,
@@ -221,11 +215,6 @@ if (
   isSignedIn &&
   data?.userId
 ) {
-  markSeen({
-    userId:
-      data.userId,
-  }).catch(() => {});
-
   router.push({
                   pathname:
                     "/chat/[id]",

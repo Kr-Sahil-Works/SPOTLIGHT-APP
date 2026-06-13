@@ -1,4 +1,5 @@
 import useNetwork from "@/hooks/useNetwork";
+import { useIsFocused } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -9,7 +10,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-
 import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
@@ -45,6 +45,7 @@ import {
 import React, {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -57,6 +58,8 @@ import { storage } from "@/lib/mmkv";
 import {
   api,
 } from "@/convex/_generated/api";
+
+import useUser from "@/features/chat/hooks/useUser";
 
 import ChatHeader from "../../features/chat/components/layout/ChatHeader";
 
@@ -87,8 +90,10 @@ export default function ChatScreen() {
   isLoaded,
   isSignedIn,
 } = useAuth();
-  const insets =
+
+const insets =
   useSafeAreaInsets();
+
   const isOnline =
   useNetwork();
 
@@ -97,6 +102,9 @@ export default function ChatScreen() {
       id: string;
     }>();
 
+    const draftLoadedRef =
+  React.useRef(false);
+
     const flatListRef =
   React.useRef<any>(
     null
@@ -104,6 +112,15 @@ export default function ChatScreen() {
 
   const userId =
     params.id as Id<"users">;
+
+    const { user } =
+  useUser(userId);
+
+  const markingRef =
+  useRef(false);
+
+    const isFocused =
+  useIsFocused();
 
     useEffect(() => {
   (global as any)
@@ -202,7 +219,6 @@ const typing =
       : "skip"
   );
 
-
 const conversation =
   useQuery(
     api.conversations
@@ -255,49 +271,69 @@ const deleteMessage =
   );
 
 useEffect(() => {
-if (
-  !userId ||
-  !isLoaded ||
-  !isSignedIn ||
-  !isOnline ||
-  !conversationId
-) {
-  return;
-}
-
-const run = async () => {
   if (
+    !userId ||
     !isLoaded ||
     !isSignedIn ||
-    !userId
+    !isOnline ||
+    !conversationId ||
+    !isFocused
   ) {
     return;
   }
 
-  try {
-    await markAsDelivered({
-      userId,
-    });
+const run = async () => {
 
-    await markAsSeen({
-      userId,
-    });
-  } catch (error) {
-    console.log(
-      "Mark status error",
-      error
+  const hasUnread =
+    messages.some(
+      (m) =>
+        String(
+          m.senderId
+        ) ===
+          String(
+            userId
+          ) &&
+        !m.seen
     );
-  }
+if (!hasUnread) {
+  return;
+}
+
+if (markingRef.current) {
+  return;
+}
+
+markingRef.current =
+  true;
+
+try {
+  await markAsDelivered({
+    userId,
+  });
+
+  await markAsSeen({
+    userId,
+  });
+} catch (error) {
+  console.log(
+    "Mark status error",
+    error
+  );
+} finally {
+  markingRef.current =
+    false;
+}
 };
 
-run();
+  run();
 }, [
   isLoaded,
   isSignedIn,
   isOnline,
   userId,
   conversationId,
-  messages.length,
+  isFocused,
+  messages,
 ]);
 
 
@@ -333,6 +369,34 @@ const {
   editingMessage,
   setEditingMessage
 );
+
+useEffect(() => {
+  if (
+    draftLoadedRef.current
+  ) {
+    return;
+  }
+
+  draftLoadedRef.current =
+    true;
+
+  const draft =
+    storage.getString(
+      `draft-${userId}`
+    );
+
+  if (
+    draft &&
+    draft.trim()
+  ) {
+    setText(draft);
+  }
+}, [userId]);
+
+useEffect(() => {
+  draftLoadedRef.current =
+    false;
+}, [userId]);
 
   if (!userId) {
     return (
@@ -694,6 +758,8 @@ if (
                     messages
                   }
                   isOnline={isOnline}
+                  isChatOpen={true}
+                  
                   flatListRef={
   flatListRef
 }
@@ -760,14 +826,18 @@ onScrollTo={(
                   loadingMore={
                     loadingMore
                   }
-                  currentUserId={
-                    currentUserId
-                  }
-                  
+                currentUserId={
+  currentUserId
+}
+
+otherUserAvatar={
+  user?.image
+}
 
 onPin={async (msg) => {
   if (!isOnline)
-  return;
+    return;
+
   if (!conversationId)
     return;
 
@@ -778,24 +848,24 @@ onPin={async (msg) => {
     ) ===
     String(msg._id);
 
- await setPinnedMessage(
-  {
-    conversationId,
+  await setPinnedMessage(
+    {
+      conversationId,
 
-    text:
-      alreadyPinned
-        ? undefined
-        : msg.text,
+      text:
+        alreadyPinned
+          ? undefined
+          : msg.text,
 
-    messageId:
-      alreadyPinned
-        ? undefined
-        : msg._id,
+      messageId:
+        alreadyPinned
+          ? undefined
+          : msg._id,
 
-    pinnedBy:
-      currentUserId,
-  }
-);
+      pinnedBy:
+        currentUserId,
+    }
+  );
 }}
 
 onReply={
@@ -1014,9 +1084,14 @@ onReact={async ({
             <ChatInput
               text={text}
               userId={userId}
-              setText={
-                setText
-              }
+             setText={(value) => {
+  setText(value);
+
+  storage.set(
+    `draft-${userId}`,
+    value
+  );
+}}
               onSend={
                 handleSend
               }

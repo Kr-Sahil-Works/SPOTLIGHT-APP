@@ -152,18 +152,7 @@ setLastPinnedId] =
 
   const msg = overlay.message;
 
-  const formattedTime =
-  msg?.createdAt
-    ? new Date(
-        msg.createdAt
-      ).toLocaleTimeString(
-        [],
-        {
-          hour: "numeric",
-          minute: "2-digit",
-        }
-      )
-    : "";
+
 
   const isMine =
     msg?.senderId === currentUserId;
@@ -189,7 +178,37 @@ const canUnpin =
   isPinned;
 
 
+const sentDateTime =
+  msg?.createdAt
+    ? new Date(
+        msg.createdAt
+      ).toLocaleString(
+        [],
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }
+      )
+    : "";
 
+const seenDateTime =
+  msg?.seenAt
+    ? new Date(
+        msg.seenAt
+      ).toLocaleString(
+        [],
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        }
+      )
+    : "";
 
   return (
     <View
@@ -244,14 +263,8 @@ top:
   },
 ]}
       >
-  <View
+<View
   style={{
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    flexWrap: "wrap",
-
     paddingHorizontal: 18,
 
     paddingTop: 14,
@@ -269,12 +282,9 @@ top:
       color: "#8e8e93",
 
       fontSize: 13,
-
-      fontWeight: "500",
     }}
   >
-    Sent at{" "}
-    {formattedTime}
+    Sent • {sentDateTime}
   </Text>
 
   {isMine &&
@@ -285,20 +295,10 @@ top:
 
           fontSize: 13,
 
-          fontWeight: "600",
+          marginTop: 4,
         }}
       >
-        {"  •  "}Seen at{" "}
-        {new Date(
-          msg.seenAt
-        ).toLocaleTimeString(
-          [],
-          {
-            hour: "numeric",
-            minute:
-              "2-digit",
-          }
-        )}
+        Seen • {seenDateTime}
       </Text>
     )}
 </View>

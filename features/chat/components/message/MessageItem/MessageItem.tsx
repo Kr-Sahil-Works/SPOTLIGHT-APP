@@ -6,6 +6,7 @@ import React, {
 import {
   Animated,
   Pressable,
+  Text,
   View
 } from "react-native";
 
@@ -46,6 +47,8 @@ type Props = {
 
   isOnline: boolean;
 
+  isChatOpen?: boolean;
+
  isHighlighted?: boolean;
 
  isDeleting?: boolean;
@@ -73,42 +76,77 @@ type Props = {
   msg: Message
 ) => void;
 
+isLastOutgoing?: boolean;
+
 };
 
 const areEqual = (
   prev: Props,
   next: Props
 ) => {
-  return (
-    prev.item._id ===
-      next.item._id &&
+ return (
+  prev.item._id === next.item._id &&
+  prev.item.text === next.item.text &&
+  prev.item.edited === next.item.edited &&
+  prev.item.replyToText === next.item.replyToText &&
+  prev.item.status === next.item.status &&
+  prev.item.seen === next.item.seen &&
+  prev.item.seenAt === next.item.seenAt &&
+  JSON.stringify(prev.item.reactions ?? []) ===
+    JSON.stringify(next.item.reactions ?? []) &&
+  prev.isHighlighted === next.isHighlighted &&
+prev.isGrouped ===
+  next.isGrouped &&
 
-    prev.item.text ===
-      next.item.text &&
+prev.isMe === next.isMe &&
 
-    prev.item.edited ===
-      next.item.edited &&
+prev.theme === next.theme &&
 
-    prev.item.replyToText ===
-      next.item.replyToText &&
+prev.isLastOutgoing ===
+  next.isLastOutgoing
 
-JSON.stringify(
-  prev.item.reactions ?? []
-) ===
-JSON.stringify(
-  next.item.reactions ?? []
-) &&
+);
+};
 
-  prev.isHighlighted ===
-  next.isHighlighted &&
+const formatSeenTime = (
+  timestamp?: number
+) => {
+  if (!timestamp)
+    return "";
 
-    prev.isGrouped ===
-      next.isGrouped &&
+  const diff =
+    Date.now() - timestamp;
 
-    prev.isMe === next.isMe &&
+  const minutes =
+    Math.floor(
+      diff / 60000
+    );
 
-    prev.theme === next.theme
-  );
+  const hours =
+    Math.floor(
+      diff / 3600000
+    );
+
+  const days =
+    Math.floor(
+      diff / 86400000
+    );
+
+  if (minutes < 1)
+    return "just now";
+
+  if (minutes < 60)
+    return `${minutes}m ago`;
+
+  if (hours < 24)
+    return `${hours}h ago`;
+
+  if (days < 7)
+    return `${days}d ago`;
+
+  return new Date(
+    timestamp
+  ).toLocaleDateString();
 };
 
 function MessageItem({
@@ -124,6 +162,8 @@ function MessageItem({
 
   isOnline,
 
+isChatOpen,
+
 isHighlighted,
 
 isDeleting,
@@ -137,7 +177,8 @@ isDeleting,
 onScrollTo,
 
 onOpenReactions,
-}: Props)  {
+isLastOutgoing,
+}: Props) {
   const msgRef =
     useRef<any>(null);
 
@@ -194,6 +235,9 @@ useEffect(() => {
   }
 }, [isDeleting]);
 
+const showStatus =
+  isLastOutgoing &&
+  isMe;
 
   const handleTap =
     useDoubleTap({
@@ -210,6 +254,7 @@ onDoubleTap: async () => {
   onReact(item);
 },
     });
+
 
   if (item.type === "system") {
     return (
@@ -305,10 +350,12 @@ onPress={handleTap}
       ? "flex-end"
       : "flex-start",
 
-  marginBottom:
+marginBottom:
   item.reactions?.length
     ? 24
     : isGrouped
+      ? 2
+      : isLastOutgoing
       ? 2
       : 16,
 
@@ -426,6 +473,31 @@ onPress={handleTap}
 />
           </View>
    </Animated.View>
+   {showStatus && (
+    <Text
+      style={{
+        alignSelf:
+          "flex-end",
+
+        marginTop: 4,
+
+        marginRight: 6,
+
+        fontSize: 11,
+
+        color:
+          "#c1c1c1",
+      }}
+    >
+   {
+  item.seen
+    ? `Seen ${formatSeenTime(
+        item.seenAt
+      )}`
+    : "Sent"
+}
+    </Text>
+)}
       </Pressable>
     </Animated.View>
   );

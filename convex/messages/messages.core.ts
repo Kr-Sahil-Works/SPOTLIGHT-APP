@@ -54,46 +54,6 @@ export const sendMessage = mutation({
         }
       );
 
-      if (args.replyTo) {
-  const messages =
-    await ctx.db
-      .query("messages")
-      .withIndex(
-        "by_conversation",
-        (q) =>
-          q.eq(
-            "conversationId",
-            conversationId
-          )
-      )
-      .collect();
-
-  await Promise.all(
-    messages.map((msg) => {
-      if (
-        msg.receiverId ===
-          current._id &&
-        msg.senderId ===
-          args.receiverId &&
-        !msg.seen
-      ) {
-        return ctx.db.patch(
-          msg._id,
-          {
-            seen: true,
-            seenAt:
-              Date.now(),
-            status:
-              "seen",
-          }
-        );
-      }
-
-      return null;
-    })
-  );
-}
-
     await ctx.db.insert(
       "messages",
       {
@@ -197,6 +157,7 @@ handler: async (ctx, args) => {
   const user =
     await getAuthenticatedUser(ctx);
 
+
     const conversationId =
       await ctx.runMutation(
         api.conversations.index
@@ -218,6 +179,20 @@ handler: async (ctx, args) => {
       )
       .order("desc")
       .take(200);
+      const unseen =
+  messages.some(
+    (msg) =>
+      msg.receiverId ===
+        user._id &&
+      !msg.seen &&
+      msg.senderId ===
+        args.userId
+  );
+  
+
+if (!unseen) {
+  return;
+}
 
     await Promise.all(
       messages.map((msg) => {
@@ -244,7 +219,6 @@ handler: async (ctx, args) => {
 export const markAsSeen = mutation({
   args: { userId: v.id("users") },
 handler: async (ctx, args) => {
-
   const identity =
     await ctx.auth.getUserIdentity();
 
@@ -255,10 +229,18 @@ handler: async (ctx, args) => {
   const user =
     await getAuthenticatedUser(ctx);
 
- const conversationId = await ctx.runMutation(
-api.conversations.index.createConversation,
-  { userId: args.userId }
+const conversation = await getConversationInternal(
+  ctx,
+  user._id,
+  args.userId
 );
+
+if (!conversation) {
+  return;
+}
+
+const conversationId =
+  conversation._id;
 
     const messages = await ctx.db
       .query("messages")
@@ -267,26 +249,23 @@ api.conversations.index.createConversation,
       )
       .order("desc")
       .take(200);
+for (const msg of messages) {
 
-    await Promise.all(
- messages.map((msg) => {
   if (
     msg.receiverId === user._id &&
     !msg.seen &&
     msg.senderId === args.userId
   ) {
-    return ctx.db.patch(
-  msg._id,
-  {
-    seen: true,
-    seenAt: Date.now(),
-    status: "seen",
-  }
-);
-  }
-  return null;
-})
+    await ctx.db.patch(
+      msg._id,
+      {
+        seen: true,
+        seenAt: Date.now(),
+        status: "seen",
+      }
     );
+  }
+}
   },
 });
 

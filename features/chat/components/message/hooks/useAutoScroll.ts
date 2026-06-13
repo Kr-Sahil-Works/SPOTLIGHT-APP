@@ -6,6 +6,7 @@ import {
 export default function useAutoScroll(
   messages: any[],
   listRef: any,
+  isAtBottom: any,
   enabled = true
 ) {
   const lastIdRef =
@@ -51,18 +52,30 @@ export default function useAutoScroll(
     lastIdRef.current =
       latest?._id;
 
-    requestAnimationFrame(
-      () => {
-        listRef.current?.scrollToEnd(
-          {
-            animated: true,
-          }
-        );
-      }
-    );
-  }, [
-    enabled,
-    messages,
-    listRef,
-  ]);
+const shouldScroll =
+  isAtBottom.current;
+
+if (
+  !shouldScroll
+) {
+  return;
+}
+
+setTimeout(() => {
+  if (
+    !isAtBottom.current
+  ) {
+    return;
+  }
+
+  listRef.current?.scrollToEnd({
+    animated: true,
+  });
+}, 100);
+  },  [
+  enabled,
+  messages,
+  listRef,
+  isAtBottom,
+]);
 }

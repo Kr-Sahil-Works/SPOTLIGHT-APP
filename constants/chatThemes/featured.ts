@@ -79,8 +79,8 @@ sendIcon: "#ffffff",
     wallpaper: WALLPAPERS.DreamSky,
     preview: WALLPAPER_PREVIEWS.DreamSky,
 
-    bubbleMe: "#8b5cf6",
-    bubbleOther: "#24173b",
+    bubbleMe: "#24173b",
+    bubbleOther: "#412d716d",
 
     background: "#080510",
     header: "#110b1f",
@@ -102,19 +102,19 @@ sendIcon: "#ffffff",
     wallpaper: WALLPAPERS.Dreamy,
     preview: WALLPAPER_PREVIEWS.Dreamy,
 
-    bubbleMe: "#0089b6",
-    bubbleOther: "#02536e",
+    bubbleMe: "#cc0058ac",
+    bubbleOther: "#00253198",
 
-    background: "#0d050b",
+    background: "#cc0058ac",
     header: "#002c4f73",
-    inputBg: "#24111d",
+    inputBg: "#cc0058ac",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+    textMe: "#e9dcdc",
+    textOther: "#fff9f9",
 
-    headerText: "#fce7f3",
+    headerText: "#caccd2",
 
-    sendBtn: "#006894",
+    sendBtn: "#cc0058",
     sendIcon: "#ffffff",
   },
   {

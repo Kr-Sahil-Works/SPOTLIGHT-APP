@@ -113,35 +113,6 @@ cachedChat
           String(userId)
         );
 
-//       if (
-//         cached?.messages &&
-//         cached.messages.length > 0
-//       ) {
-//         setMessages(
-//           cached.messages as Message[]
-//         );
-
-//     setConversationId(
-//   cached
-//     ?.conversationId &&
-//   cached
-//     ?.conversationId !==
-//     "undefined"
-//     ? (cached.conversationId as Id<"conversations">)
-//     : undefined
-// );
-//         setCurrentUserId(
-//           cached.currentUserId as
-//             | Id<"users">
-//             | undefined
-//         );
-
-//         setThemeIndex(
-//           cached.themeIndex ?? 0
-//         );
-
-//         setIsLoading(false);
-//       }
 
       try {
         const data =
@@ -157,29 +128,10 @@ cachedChat
           data?.conversationId
         );
 
-   if (
-  data?.messages &&
-  data.messages.length > 0
-) {
-  const currentLast =
-    messages[
-      messages.length - 1
-    ]?._id;
-
-  const serverLast =
-    data.messages[
-      data.messages.length - 1
-    ]?._id;
-
-  if (
-    currentLast !==
-    serverLast
-  ) {
-    setMessages(
-      data.messages as Message[]
-    );
-  }
-}
+  setMessages(
+  (data?.messages ??
+    []) as Message[]
+);
 
         setThemeIndex(
           data?.themeIndex ?? 0
@@ -228,60 +180,69 @@ cachedChat
     loadInitialMessages();
   }, [userId]);
 
-  useEffect(() => {
-    if (!liveData) return;
+useEffect(() => {
+  if (!liveData) return;
 
-    setConversationId(
-      liveData.conversationId
-    );
+  setConversationId(
+    liveData.conversationId
+  );
 
-    setThemeIndex(
-      liveData.themeIndex ?? 0
-    );
+  setThemeIndex(
+    liveData.themeIndex ?? 0
+  );
 
-    setCurrentUserId(
-      liveData.currentUserId ??
-        undefined
-    );
+  setCurrentUserId(
+    liveData.currentUserId ??
+      undefined
+  );
+
 setMessages((prev) => {
-  const prevLast =
-    prev[prev.length - 1]?._id;
-
-  const nextLast =
-    liveData.messages[
-      liveData.messages.length - 1
-    ]?._id;
-
-  if (
-    prev.length > 0 &&
-    prevLast === nextLast
-  ) {
-    return prev;
+  if (prev.length <= 30) {
+    return liveData.messages as Message[];
   }
 
-  return liveData.messages as Message[];
+  const olderMessages =
+    prev.filter(
+      (oldMsg) =>
+        !liveData.messages.some(
+          (newMsg) =>
+            newMsg._id ===
+            oldMsg._id
+        )
+    );
+
+  return [
+    ...olderMessages,
+    ...liveData.messages,
+  ] as Message[];
 });
 
-    saveChatCache(
-      String(userId),
-      {
-        messages:
-          liveData.messages,
 
-        currentUserId:
-          String(
-            liveData.currentUserId
-          ),
+  const last =
+  liveData.messages[
+    liveData.messages.length - 1
+  ];
+
+
+  saveChatCache(
+    String(userId),
+    {
+      messages:
+        liveData.messages,
+
+      currentUserId:
+        String(
+          liveData.currentUserId
+        ),
 
       conversationId:
-  liveData.conversationId,
+        liveData.conversationId,
 
-        themeIndex:
-          liveData.themeIndex ??
-          0,
-      }
-    );
-  }, [liveData, userId]);
+      themeIndex:
+        liveData.themeIndex ?? 0,
+    }
+  );
+}, [liveData, userId]);
 
   const loadOlder = async () => {
     if (
@@ -328,6 +289,7 @@ setMessages((prev) => {
 
     setLoadingMore(false);
   };
+
 
   return {
     messages,

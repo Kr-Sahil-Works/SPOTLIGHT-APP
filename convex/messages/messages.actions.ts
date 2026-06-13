@@ -83,10 +83,6 @@ export const sendPushNotification = action({
   },
 
   handler: async (_, args) => {
-    console.log(
-  "PUSH TITLE",
-  args.title
-);
   const response = await fetch(
   "https://exp.host/--/api/v2/push/send",
   {
@@ -128,10 +124,5 @@ subtitle:
 
 const result =
   await response.json();
-
-console.log(
-  "PUSH RESULT",
-  JSON.stringify(result)
-);
   },
 });

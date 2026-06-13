@@ -26,7 +26,7 @@ type Props = {
   isOnline: boolean;
 
   messages: any[];
-
+isChatOpen?: boolean;
   currentUserId?: string;
 
   theme: any;
@@ -68,6 +68,7 @@ function MessageRenderer({
   isOnline,
 
   messages,
+  isChatOpen,
 
   currentUserId,
 
@@ -123,6 +124,36 @@ const grouped = useMemo(
   [item, next]
 );
 
+const lastStatusMessageId =
+  useMemo(() => {
+    const ownMessages =
+      messages.filter(
+        (m) =>
+          String(
+            m.senderId
+          ) ===
+          String(
+            currentUserId
+          )
+      );
+
+    const latest =
+      ownMessages.sort(
+        (a, b) =>
+          (a.createdAt || 0) -
+          (b.createdAt || 0)
+      );
+
+    return latest.length
+      ? latest[
+          latest.length - 1
+        ]._id
+      : null;
+  }, [
+    messages,
+    currentUserId,
+  ]);
+
  return (
   <>
     {showDate && (
@@ -165,6 +196,15 @@ const grouped = useMemo(
     <MessageItem
       item={item}
       isOnline={isOnline}
+      isChatOpen={
+  isChatOpen
+}
+isLastOutgoing={
+  String(item._id) ===
+  String(
+    lastStatusMessageId
+  )
+}
       isMe={
         item.senderId ===
         currentUserId

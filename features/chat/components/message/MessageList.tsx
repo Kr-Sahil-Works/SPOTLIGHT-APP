@@ -4,8 +4,7 @@ import React, {
 } from "react";
 
 import {
-  Text,
-  TouchableOpacity,
+  ActivityIndicator,
   View
 } from "react-native";
 
@@ -16,6 +15,8 @@ import {
 import {
   MessageRenderer,
 } from "./renderers";
+
+import NewMessagesBadge from "./NewMessagesBadge";
 
 import {
   OverlayRenderer,
@@ -47,12 +48,14 @@ type Props = {
   highlightId?: string;
 
   loadingMore?: boolean;
+  isChatOpen?: boolean;
 
   loadOlder?: () => void;
 
   pinnedMessageId?: string;
 
   flatListRef?: any;
+  otherUserAvatar?: string;
 
   onReply: (
     msg: any
@@ -101,9 +104,11 @@ export default function MessageList({
   theme,
 
   isOnline,
-
+isChatOpen,
   highlightId,
   onScrollTo,
+
+  otherUserAvatar,
 
   flatListRef,
 
@@ -173,7 +178,6 @@ const [
   string | null
 >(null);
   const {
-    listRef,
 
     onScroll,
 
@@ -186,7 +190,11 @@ const [
     newMsgCount,
 
     scrollOffsetRef,
-  } = useChatScroll();
+
+    isAtBottom
+  } = useChatScroll(
+    flatListRef
+  );
 
 useKeyboardScroll(
   flatListRef
@@ -194,11 +202,12 @@ useKeyboardScroll(
 
 useAutoScroll(
   messages,
-  flatListRef
+  flatListRef,
+  isAtBottom
 );
 
   useThemeScrollSync(
-    listRef,
+    flatListRef,
     scrollOffsetRef,
     theme
   );
@@ -243,22 +252,42 @@ setTimeout(() => {
 const firstLoadRef =
   React.useRef(true);
 
+const lastMessageIdRef =
+  React.useRef<
+    string | null
+  >(null);
+
 useEffect(() => {
-  if (
-    firstLoadRef.current
-  ) {
+  if (firstLoadRef.current) {
     firstLoadRef.current =
       false;
+
+    lastMessageIdRef.current =
+      messages[
+        messages.length - 1
+      ]?._id ?? null;
 
     return;
   }
 
+  const latestId =
+    messages[
+      messages.length - 1
+    ]?._id;
+
   if (
-    messages?.length
+    !latestId ||
+    latestId ===
+      lastMessageIdRef.current
   ) {
-    onNewMessage();
+    return;
   }
-}, [messages]);
+
+lastMessageIdRef.current =
+  latestId;
+
+onNewMessage();
+}, [messages.length]);
 
 
   const editMessage =
@@ -279,6 +308,9 @@ const deleteMessage =
       item={item}
       index={index}
       isOnline={isOnline}
+      isChatOpen={
+  isChatOpen
+}
    onOpenReactions={(
   msg
 ) => {
@@ -349,40 +381,35 @@ const deleteMessage =
             : theme.background,
       }}
     >
-      {loadingMore && (
-        <View
-          style={{
-            position:
-              "absolute",
+{loadingMore && (
+  <View
+    style={{
+      position: "absolute",
+      top: 12,
+      alignSelf: "center",
+      zIndex: 999,
 
-            top: 8,
+      width: 34,
+      height: 34,
 
-            alignSelf:
-              "center",
+      borderRadius: 17,
 
-            zIndex: 999,
+      backgroundColor:
+        "#1c1c1ecc",
 
-            backgroundColor:
-              "#000000aa",
+      justifyContent:
+        "center",
 
-            paddingHorizontal: 12,
-
-            paddingVertical: 6,
-
-            borderRadius: 999,
-          }}
-        >
-          <Text
-            style={{
-              color: "#fff",
-
-              fontSize: 12,
-            }}
-          >
-            Loading Chats...
-          </Text>
-        </View>
-      )}
+      alignItems:
+        "center",
+    }}
+  >
+    <ActivityIndicator
+      size="small"
+      color="#ffffff"
+    />
+  </View>
+)}
 
       <FlashList
       keyboardShouldPersistTaps="always"
@@ -422,64 +449,30 @@ requestAnimationFrame(() => {
   });
 });
 }}
-        onScroll={(e) => {
-          onScroll(e);
+    onScroll={(e) => {
+  onScroll(e);
 
-          if (
-            e.nativeEvent
-              .contentOffset
-              .y < 80 &&
-            !loadingMore
-          ) {
-            loadOlder?.();
-          }
-        }}
+  if (
+    e.nativeEvent
+      .contentOffset
+      .y < 80 &&
+    !loadingMore
+  ) {
+    loadOlder?.();
+  }
+}}
       />
 
-      {showScrollBtn && (
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={
-            scrollToBottom
-          }
-          style={{
-            position:
-              "absolute",
 
-            right: 18,
+{showScrollBtn && (
+  <NewMessagesBadge
+    count={newMsgCount}
+    theme={theme}
+    avatar={otherUserAvatar}
+    onPress={scrollToBottom}
+  />
+)}
 
-            bottom: 18,
-
-            backgroundColor:
-              theme.bubbleMe,
-
-            minWidth: 44,
-
-            height: 44,
-
-            borderRadius: 22,
-
-            alignItems:
-              "center",
-
-            justifyContent:
-              "center",
-
-            paddingHorizontal: 10,
-          }}
-        >
-          <Text
-            style={{
-              color: "#e8dddd",
-
-              fontWeight:
-                "600",
-            }}
-          >
-            ↓ {newMsgCount}
-          </Text>
-        </TouchableOpacity>
-      )}
 
       <OverlayRenderer
       

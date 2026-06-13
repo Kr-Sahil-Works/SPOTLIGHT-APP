@@ -27,10 +27,5 @@ export const sendSocialPush = action({
         }),
       }
     );
-
-    console.log(
-      "SOCIAL PUSH",
-      await response.text()
-    );
   },
 });
