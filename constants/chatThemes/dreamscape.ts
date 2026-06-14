@@ -10,11 +10,11 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.BoyOnBoat,
     preview: WALLPAPER_PREVIEWS.BoyOnBoat,
 
-    bubbleMe: "#7c3aed",
-    bubbleOther: "#22173a",
+    bubbleMe: "#1063a7",
+    bubbleOther: "#021529",
 
     background: "#0b0614",
-    header: "#140c24",
+    header: "#000000",
     inputBg: "#1d1330",
 
     textMe: "#ffffff",
@@ -22,7 +22,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
 
     headerText: "#ede9fe",
 
-    sendBtn: "#8b5cf6",
+    sendBtn: "#106bb6",
     sendIcon: "#ffffff",
   },
 
@@ -37,7 +37,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     bubbleOther: "#2c1224",
 
     background: "#0d0710",
-    header: "#180b1c",
+    header: "#2e002f31",
     inputBg: "#24112a",
 
     textMe: "#ffffff",
@@ -49,41 +49,135 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
+   
   {
-    name: "Roadside Dream",
-    category: "Dreamscape",
+    name: "Candy Clouds",
+    category: "Featured",
 
-    wallpaper: WALLPAPERS.RoadsideDream,
-    preview: WALLPAPER_PREVIEWS.RoadsideDream,
+    wallpaper: WALLPAPERS.CandyClouds,
+    preview: WALLPAPER_PREVIEWS.CandyClouds,
 
-    bubbleMe: "#f97316",
-    bubbleOther: "#2f1a0f",
+bubbleMe: "#1d000ee9",
+bubbleOther: "#7c002dd7",
 
-    background: "#100804",
-    header: "#1c0e06",
-    inputBg: "#2a170b",
+background: "#120d12",
+header: "#2a002055",
+inputBg: "#261b22",
+
+textMe: "#ffffff",
+textOther: "#ffffff",
+
+headerText: "#ffe9f2",
+
+sendBtn: "#f6005a",
+sendIcon: "#ffffff",
+  },
+
+  {
+    name: "Clouds",
+    category: "Featured",
+
+    wallpaper: WALLPAPERS.Clouds,
+    preview: WALLPAPER_PREVIEWS.Clouds,
+
+    bubbleMe: "#0b0b0be2",
+    bubbleOther: "#05001267",
+
+    background: "#040812",
+    header: "#000306",
+    inputBg: "#122033",
 
     textMe: "#ffffff",
     textOther: "#ffffff",
 
-    headerText: "#fed7aa",
+    headerText: "#e0f2fe",
 
-    sendBtn: "#f97316",
+    sendBtn: "#070d15",
     sendIcon: "#ffffff",
   },
 
   {
+    name: "Dream Window",
+    category: "Dreamscape",
+
+    wallpaper: WALLPAPERS.DreamWindow,
+    preview: WALLPAPER_PREVIEWS.DreamWindow,
+
+    bubbleMe: "#11124d",
+    bubbleOther: "#17192f",
+
+    background: "#05060f",
+    header: "#0c1020",
+    inputBg: "#131a2d",
+
+    textMe: "#ffffff",
+    textOther: "#ffffff",
+
+    headerText: "#e0e7ff",
+
+    sendBtn: "#292b6d",
+    sendIcon: "#ffffff",
+  },
+
+    {
+    name: "Dreamy",
+    category: "Featured",
+
+    wallpaper: WALLPAPERS.Dreamy,
+    preview: WALLPAPER_PREVIEWS.Dreamy,
+
+    bubbleMe: "#cc0058ac",
+    bubbleOther: "#00253198",
+
+    background: "#cc0058ac",
+    header: "#002c4f73",
+    inputBg: "#cc0058ac",
+
+    textMe: "#e9dcdc",
+    textOther: "#fff9f9",
+
+    headerText: "#caccd2",
+
+    sendBtn: "#cc0058",
+    sendIcon: "#ffffff",
+  },
+
+    {
+    name: "Fallen Stars",
+    category: "Featured",
+
+    wallpaper: WALLPAPERS.FallenStar,
+    preview: WALLPAPER_PREVIEWS.FallenStar,
+
+bubbleMe: "#ff539b",
+bubbleOther: "#261722",
+
+background: "#090507",
+header: "#120b1037",
+inputBg: "#1c1318",
+
+textMe: "#ffffff",
+textOther: "#ffffff",
+
+headerText: "#ffe7f1",
+
+sendBtn: "#ff1074",
+sendIcon: "#ffffff",
+  },
+
+
+{
     name: "Into Clouds",
     category: "Dreamscape",
 
     wallpaper: WALLPAPERS.IntoClouds,
     preview: WALLPAPER_PREVIEWS.IntoClouds,
 
-    bubbleMe: "#38bdf8",
-    bubbleOther: "#112534",
+    bubbleMe: "#290052",
+    bubbleOther: "#521048",
 
     background: "#040b10",
-    header: "#091521",
+    header: "#00000018",
     inputBg: "#112130",
 
     textMe: "#ffffff",
@@ -91,7 +185,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
 
     headerText: "#e0f2fe",
 
-    sendBtn: "#38bdf8",
+    sendBtn: "#1b0037",
     sendIcon: "#ffffff",
   },
 
@@ -106,7 +200,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     bubbleOther: "#2e220d",
 
     background: "#0d0902",
-    header: "#181103",
+    header: "#020003",
     inputBg: "#251a08",
 
     textMe: "#ffffff",
@@ -125,11 +219,11 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.PaintedSky,
     preview: WALLPAPER_PREVIEWS.PaintedSky,
 
-    bubbleMe: "#a855f7",
+    bubbleMe: "#440083",
     bubbleOther: "#241338",
 
     background: "#0c0614",
-    header: "#140a22",
+    header: "#0d001f",
     inputBg: "#211133",
 
     textMe: "#ffffff",
@@ -137,7 +231,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
 
     headerText: "#f3e8ff",
 
-    sendBtn: "#a855f7",
+    sendBtn: "#440083",
     sendIcon: "#ffffff",
   },
 
@@ -149,10 +243,10 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     preview: WALLPAPER_PREVIEWS.PinkWaves,
 
     bubbleMe: "#fb7185",
-    bubbleOther: "#30141d",
+    bubbleOther: "#30141d87",
 
     background: "#0d0608",
-    header: "#190b10",
+    header: "#000000",
     inputBg: "#251118",
 
     textMe: "#ffffff",
@@ -164,26 +258,28 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Dream Window",
+
+
+    {
+    name: "Roadside Dream",
     category: "Dreamscape",
 
-    wallpaper: WALLPAPERS.DreamWindow,
-    preview: WALLPAPER_PREVIEWS.DreamWindow,
+    wallpaper: WALLPAPERS.RoadsideDream,
+    preview: WALLPAPER_PREVIEWS.RoadsideDream,
 
-    bubbleMe: "#6366f1",
-    bubbleOther: "#17192f",
+    bubbleMe: "#a4076d",
+    bubbleOther: "#462d4a",
 
-    background: "#05060f",
-    header: "#0c1020",
-    inputBg: "#131a2d",
+    background: "#100804",
+    header: "#0000004a",
+    inputBg: "#2a170b",
 
     textMe: "#ffffff",
     textOther: "#ffffff",
 
-    headerText: "#e0e7ff",
+    headerText: "#fed7aa",
 
-    sendBtn: "#6366f1",
+    sendBtn: "#0a0107",
     sendIcon: "#ffffff",
   },
 ];

@@ -3,16 +3,12 @@ export type ChatTheme = {
 
   category:
     | "Featured"
-    | "ChatPatterns"
     | "Dark"
     | "Dreamscape"
     | "Hearts"
     | "Landscapes"
-    | "Lunar"
     | "Nature"
-    | "PixelArt"
-    | "Together"
-    | "Accents"
+    | "Special"
     | "Solid"
     | "Gradient";
 

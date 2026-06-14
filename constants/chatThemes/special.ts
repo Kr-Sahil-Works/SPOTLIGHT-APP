@@ -2,56 +2,11 @@ import { ChatTheme } from "./types";
 import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
-export const TOGETHER_THEMES: ChatTheme[] = [
-  {
-    name: "Bench",
-    category: "Together",
-
-    wallpaper: WALLPAPERS.Bench,
-    preview: WALLPAPER_PREVIEWS.Bench,
-
-    bubbleMe: "#f59e0b",
-    bubbleOther: "#2a1d0b",
-
-    background: "#0d0802",
-    header: "#161005",
-    inputBg: "#24190b",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#fde68a",
-
-    sendBtn: "#f59e0b",
-    sendIcon: "#000000",
-  },
-
-  {
-    name: "Cute",
-    category: "Together",
-
-    wallpaper: WALLPAPERS.Cute,
-    preview: WALLPAPER_PREVIEWS.Cute,
-
-    bubbleMe: "#fb7185",
-    bubbleOther: "#32161f",
-
-    background: "#0f0508",
-    header: "#190a0f",
-    inputBg: "#261118",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ffe4e6",
-
-    sendBtn: "#fb7185",
-    sendIcon: "#ffffff",
-  },
+export const SPECIAL_THEMES: ChatTheme[] = [
 
   {
     name: "Eternal",
-    category: "Together",
+    category: "Special",
 
     wallpaper: WALLPAPERS.Eternal,
     preview: WALLPAPER_PREVIEWS.Eternal,
@@ -74,7 +29,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
 
   {
     name: "Hold On",
-    category: "Together",
+    category: "Special",
 
     wallpaper: WALLPAPERS.Hold,
     preview: WALLPAPER_PREVIEWS.Hold,
@@ -97,7 +52,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
 
   {
     name: "Late Nights",
-    category: "Together",
+    category: "Special",
 
     wallpaper: WALLPAPERS.TogetherLateNights,
     preview: WALLPAPER_PREVIEWS.TogetherLateNights,
@@ -120,7 +75,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
 
   {
     name: "On The Roof",
-    category: "Together",
+    category: "Special",
 
     wallpaper: WALLPAPERS.OnRoof,
     preview: WALLPAPER_PREVIEWS.OnRoof,
@@ -143,7 +98,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
 
   {
     name: "Vintage Love",
-    category: "Together",
+    category: "Special",
 
     wallpaper: WALLPAPERS.Vintage,
     preview: WALLPAPER_PREVIEWS.Vintage,
@@ -166,7 +121,7 @@ export const TOGETHER_THEMES: ChatTheme[] = [
 
   {
     name: "Somewhere",
-    category: "Together",
+    category: "Special",
 
     wallpaper: WALLPAPERS.Where,
     preview: WALLPAPER_PREVIEWS.Where,

@@ -50,29 +50,6 @@ export const NATURE_THEMES: ChatTheme[] = [
   },
 
   {
-    name: "Butterfly",
-    category: "Nature",
-
-    wallpaper: WALLPAPERS.Butterfly,
-    preview: WALLPAPER_PREVIEWS.Butterfly,
-
-    bubbleMe: "#ec4899",
-    bubbleOther: "#2c1224",
-
-    background: "#0d0610",
-    header: "#180b1c",
-    inputBg: "#24112a",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#fbcfe8",
-
-    sendBtn: "#ec4899",
-    sendIcon: "#ffffff",
-  },
-
-  {
     name: "Evening",
     category: "Nature",
 
@@ -139,75 +116,6 @@ export const NATURE_THEMES: ChatTheme[] = [
 
     sendBtn: "#22c55e",
     sendIcon: "#000000",
-  },
-
-  {
-    name: "In Search",
-    category: "Nature",
-
-    wallpaper: WALLPAPERS.InSearch,
-    preview: WALLPAPER_PREVIEWS.InSearch,
-
-    bubbleMe: "#14b8a6",
-    bubbleOther: "#13302b",
-
-    background: "#04100d",
-    header: "#071916",
-    inputBg: "#102622",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ccfbf1",
-
-    sendBtn: "#14b8a6",
-    sendIcon: "#ffffff",
-  },
-
-  {
-    name: "Lamp",
-    category: "Nature",
-
-    wallpaper: WALLPAPERS.Lamp,
-    preview: WALLPAPER_PREVIEWS.Lamp,
-
-    bubbleMe: "#fbbf24",
-    bubbleOther: "#30260f",
-
-    background: "#0d0902",
-    header: "#171204",
-    inputBg: "#251d09",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#fef3c7",
-
-    sendBtn: "#fbbf24",
-    sendIcon: "#000000",
-  },
-
-  {
-    name: "Mount",
-    category: "Nature",
-
-    wallpaper: WALLPAPERS.Mount,
-    preview: WALLPAPER_PREVIEWS.Mount,
-
-    bubbleMe: "#64748b",
-    bubbleOther: "#1a2230",
-
-    background: "#04070c",
-    header: "#0c131d",
-    inputBg: "#161f2b",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#e2e8f0",
-
-    sendBtn: "#64748b",
-    sendIcon: "#ffffff",
   },
 
   {

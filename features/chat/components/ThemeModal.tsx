@@ -221,12 +221,6 @@ const sections = useMemo(
       ),
     },
     {
-      title: "Chat Patterns",
-      data: CHAT_THEMES.filter(
-        (t) => t.category === "ChatPatterns"
-      ),
-    },
-    {
       title: "Dark",
       data: CHAT_THEMES.filter(
         (t) => t.category === "Dark"
@@ -251,27 +245,15 @@ const sections = useMemo(
       ),
     },
     {
-      title: "Lunar",
-      data: CHAT_THEMES.filter(
-        (t) => t.category === "Lunar"
-      ),
-    },
-    {
       title: "Nature",
       data: CHAT_THEMES.filter(
         (t) => t.category === "Nature"
       ),
     },
     {
-      title: "Pixel Art",
+      title: "Special",
       data: CHAT_THEMES.filter(
-        (t) => t.category === "PixelArt"
-      ),
-    },
-    {
-      title: "Together",
-      data: CHAT_THEMES.filter(
-        (t) => t.category === "Together"
+        (t) => t.category === "Nature"
       ),
     },
     {
@@ -300,15 +282,12 @@ const [expanded, setExpanded] =
 ] = useState<
   Record<string, boolean>
 >({
-  "Chat Patterns": true,
   Dark: true,
   Dreamscape: true,
   Hearts: true,
   Landscapes: true,
-  Lunar: true,
   Nature: true,
-  "Pixel Art": true,
-  Together: true,
+  Special: true,
   Solid: true,
   Gradient: true,
 });

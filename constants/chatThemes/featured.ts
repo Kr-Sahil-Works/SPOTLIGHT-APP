@@ -25,52 +25,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
     sendBtn: "#3b82f6",
     sendIcon: "#ffffff",
   },
-  
-  {
-    name: "Candy Clouds",
-    category: "Featured",
-
-    wallpaper: WALLPAPERS.CandyClouds,
-    preview: WALLPAPER_PREVIEWS.CandyClouds,
-
-bubbleMe: "#1d000ee9",
-bubbleOther: "#7c002dd7",
-
-background: "#120d12",
-header: "#2a002055",
-inputBg: "#261b22",
-
-textMe: "#ffffff",
-textOther: "#ffffff",
-
-headerText: "#ffe9f2",
-
-sendBtn: "#f6005a",
-sendIcon: "#ffffff",
-  },
-
-  {
-    name: "Clouds",
-    category: "Featured",
-
-    wallpaper: WALLPAPERS.Clouds,
-    preview: WALLPAPER_PREVIEWS.Clouds,
-
-    bubbleMe: "#0b0b0be2",
-    bubbleOther: "#05001267",
-
-    background: "#040812",
-    header: "#000306",
-    inputBg: "#122033",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#e0f2fe",
-
-    sendBtn: "#070d15",
-    sendIcon: "#ffffff",
-  },
+ 
 
   {
     name: "Dream Sky",
@@ -95,73 +50,29 @@ sendIcon: "#ffffff",
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Dreamy",
+    {
+    name: "Earth",
     category: "Featured",
 
-    wallpaper: WALLPAPERS.Dreamy,
-    preview: WALLPAPER_PREVIEWS.Dreamy,
+    wallpaper: WALLPAPERS.Earth,
+    preview: WALLPAPER_PREVIEWS.Earth,
 
-    bubbleMe: "#cc0058ac",
-    bubbleOther: "#00253198",
+    bubbleMe: "#0ea5e9",
+    bubbleOther: "#102938",
 
-    background: "#cc0058ac",
-    header: "#002c4f73",
-    inputBg: "#cc0058ac",
+    background: "#020817",
+    header: "#071524",
+    inputBg: "#102233",
 
-    textMe: "#e9dcdc",
-    textOther: "#fff9f9",
+    textMe: "#ffffff",
+    textOther: "#ffffff",
 
-    headerText: "#caccd2",
+    headerText: "#e0f2fe",
 
-    sendBtn: "#cc0058",
+    sendBtn: "#0ea5e9",
     sendIcon: "#ffffff",
   },
-  {
-    name: "Dreamy Moons",
-    category: "Featured",
 
-    wallpaper: WALLPAPERS.DreamyMoons,
-    preview: WALLPAPER_PREVIEWS.DreamyMoons,
-
-   bubbleMe: "#6a31fb",
-bubbleOther: "#2b2240",
-
-background: "#0d0918",
-header: "#1c0e4a99",
-inputBg: "#211933",
-
-textMe: "#ffffff",
-textOther: "#ffffff",
-
-headerText: "#efe7ff",
-
-sendBtn: "#4818c2",
-sendIcon: "#ffffff",
-  },
-
-  {
-    name: "Fallen Stars",
-    category: "Featured",
-
-    wallpaper: WALLPAPERS.FallenStar,
-    preview: WALLPAPER_PREVIEWS.FallenStar,
-
-bubbleMe: "#ff86b8",
-bubbleOther: "#261722",
-
-background: "#090507",
-header: "#120b1037",
-inputBg: "#1c1318",
-
-textMe: "#ffffff",
-textOther: "#ffffff",
-
-headerText: "#ffe7f1",
-
-sendBtn: "#ff86b8",
-sendIcon: "#ffffff",
-  },
   {
     name: "Ghosts",
     category: "Featured",
@@ -217,8 +128,8 @@ sendIcon: "#ffffff",
     wallpaper: WALLPAPERS.LateDream,
     preview: WALLPAPER_PREVIEWS.LateDream,
 
-    bubbleMe: "#575af564",
-    bubbleOther: "#17192f63",
+    bubbleMe: "#000102c6",
+    bubbleOther: "#0001024d",
 
     background: "#05060f",
     header: "#000a3250",
@@ -229,7 +140,52 @@ sendIcon: "#ffffff",
 
     headerText: "#e0e7ff",
 
-    sendBtn: "#6063f3",
+    sendBtn: "#21226b",
+    sendIcon: "#ffffff",
+  },
+  {
+    name: "Late Nights",
+    category: "Featured",
+
+    wallpaper: WALLPAPERS.LateNights,
+    preview: WALLPAPER_PREVIEWS.LateNights,
+
+    bubbleMe: "#ec4899",
+    bubbleOther: "#2c1224",
+
+    background: "#0d0610",
+    header: "#180b1c",
+    inputBg: "#24112a",
+
+    textMe: "#ffffff",
+    textOther: "#ffffff",
+
+    headerText: "#fbcfe8",
+
+    sendBtn: "#ec4899",
+    sendIcon: "#ffffff",
+  },
+
+  {
+    name: "Moonlight",
+    category: "Featured",
+
+    wallpaper: WALLPAPERS.MoonLight,
+    preview: WALLPAPER_PREVIEWS.MoonLight,
+
+    bubbleMe: "#60a5fa",
+    bubbleOther: "#162238",
+
+    background: "#040814",
+    header: "#091223",
+    inputBg: "#121d30",
+
+    textMe: "#ffffff",
+    textOther: "#ffffff",
+
+    headerText: "#dbeafe",
+
+    sendBtn: "#60a5fa",
     sendIcon: "#ffffff",
   },
 
@@ -243,7 +199,6 @@ sendIcon: "#ffffff",
 bubbleMe: "rgba(255,255,255,0.25)",
 bubbleOther: "rgba(255,255,255,0.12)",
 sendBtn: "rgba(255,255,255,0.28)",
-  // bubbleOther: "rgba(255,255,255,0.10)",
 
   background: "#05070c",
   header: "#ffffff1a",
@@ -253,8 +208,6 @@ sendBtn: "rgba(255,255,255,0.28)",
   textOther: "#ffffff",
 
   headerText: "#f8fafc",
-
-  // sendBtn: "#ffffff33",
   sendIcon: "#ffffff",
 },
 
@@ -281,6 +234,29 @@ sendBtn: "rgba(255,255,255,0.28)",
     sendIcon: "#ffffff",
   },
 
+  {
+    name: "Rocket",
+    category: "Featured",
+
+    wallpaper: WALLPAPERS.Rocket,
+    preview: WALLPAPER_PREVIEWS.Rocket,
+
+    bubbleMe: "#06b6d4",
+    bubbleOther: "#14303a",
+
+    background: "#030b10",
+    header: "#07171f",
+    inputBg: "#11232b",
+
+    textMe: "#ffffff",
+    textOther: "#ffffff",
+
+    headerText: "#cffafe",
+
+    sendBtn: "#06b6d4",
+    sendIcon: "#000000",
+  },
+
 {
   name: "Roses",
   category: "Featured",
@@ -294,15 +270,12 @@ inputBg: "rgba(255,255,255,0.12)",
 sendBtn: "#df1379",
 
   background: "#08080839",
-  header: "rgba(10, 10, 10, 0.32)",
-  // inputBg: "rgba(255,255,255,0.08)",
-
+  header: "#0a0a0a52",
+  
   textMe: "#ffffff",
   textOther: "#ffffff",
 
   headerText: "#ffffff",
-
-  // sendBtn: "rgba(8, 3, 3, 0.22)",
   sendIcon: "#ffffff",
 },
 

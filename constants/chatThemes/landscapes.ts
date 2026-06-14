@@ -27,28 +27,28 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
   sendIcon: "#ffffff",
 },
 
-{
-  name: "CherryRed",
-  category: "Landscapes",
+  {
+    name: "Blue Moon",
+    category: "Nature",
 
-  wallpaper: WALLPAPERS.CherryRed,
-  preview: WALLPAPER_PREVIEWS.CherryRed,
+    wallpaper: WALLPAPERS.BlueMoon,
+    preview: WALLPAPER_PREVIEWS.BlueMoon,
 
-  bubbleMe: "#ff4f7d",
-  bubbleOther: "#2a1f2d",
+    bubbleMe: "#3b82f6",
+    bubbleOther: "#162338",
 
-  background: "#100b11",
-  header: "#180f18",
-  inputBg: "#241823",
+    background: "#030712",
+    header: "#08111f",
+    inputBg: "#111d30",
 
-  textMe: "#ffffff",
-  textOther: "#ffffff",
+    textMe: "#ffffff",
+    textOther: "#ffffff",
 
-  headerText: "#ffe7ef",
+    headerText: "#dbeafe",
 
-  sendBtn: "#ff4f7d",
-  sendIcon: "#ffffff",
-},
+    sendBtn: "#3b82f6",
+    sendIcon: "#ffffff",
+  },
 
 
   {
@@ -98,75 +98,6 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
   },
 
   {
-  name: "Hometown",
-  category: "Landscapes",
-
-  wallpaper: WALLPAPERS.HomeTown,
-  preview: WALLPAPER_PREVIEWS.HomeTown,
-
-  bubbleMe: "#b06cff",
-  bubbleOther: "#22213a",
-
-  background: "#0b0c17",
-  header: "#121425",
-  inputBg: "#1a1e31",
-
-  textMe: "#ffffff",
-  textOther: "#ffffff",
-
-  headerText: "#f0e8ff",
-
-  sendBtn: "#c07cff",
-  sendIcon: "#ffffff",
-},
-
-  {
-    name: "Japan",
-    category: "Landscapes",
-
-    wallpaper: WALLPAPERS.Japan,
-    preview: WALLPAPER_PREVIEWS.Japan,
-
-    bubbleMe: "#ef4444",
-    bubbleOther: "#2d1414",
-
-    background: "#0d0505",
-    header: "#170808",
-    inputBg: "#241111",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#fecaca",
-
-    sendBtn: "#ef4444",
-    sendIcon: "#ffffff",
-  },
-
-  {
-    name: "Moonlight Valley",
-    category: "Landscapes",
-
-    wallpaper: WALLPAPERS.MoonLight,
-    preview: WALLPAPER_PREVIEWS.MoonLight,
-
-    bubbleMe: "#6366f1",
-    bubbleOther: "#17192f",
-
-    background: "#05060f",
-    header: "#0c1020",
-    inputBg: "#131a2d",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#e0e7ff",
-
-    sendBtn: "#6366f1",
-    sendIcon: "#ffffff",
-  },
-
-  {
     name: "Midnight Horizon",
     category: "Landscapes",
 
@@ -212,6 +143,30 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
+
+    {
+    name: "Trace",
+    category: "Landscapes",
+
+    wallpaper: WALLPAPERS.Trace,
+    preview: WALLPAPER_PREVIEWS.Trace,
+
+    bubbleMe: "#0ea5e9",
+    bubbleOther: "#112a38",
+
+    background: "#040b10",
+    header: "#081722",
+    inputBg: "#102432",
+
+    textMe: "#ffffff",
+    textOther: "#ffffff",
+
+    headerText: "#e0f2fe",
+
+    sendBtn: "#0ea5e9",
+    sendIcon: "#ffffff",
+  },
+  
   {
     name: "Valley",
     category: "Landscapes",
@@ -235,26 +190,5 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Waterfall",
-    category: "Landscapes",
 
-    wallpaper: WALLPAPERS.WaterFall,
-    preview: WALLPAPER_PREVIEWS.WaterFall,
-
-    bubbleMe: "#0ea5e9",
-    bubbleOther: "#112a38",
-
-    background: "#040b10",
-    header: "#081722",
-    inputBg: "#102432",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#e0f2fe",
-
-    sendBtn: "#0ea5e9",
-    sendIcon: "#ffffff",
-  },
 ];

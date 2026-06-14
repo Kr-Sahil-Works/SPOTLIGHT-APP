@@ -27,52 +27,6 @@ export const HEART_THEMES: ChatTheme[] = [
   },
 
   {
-    name: "Heartbeat",
-    category: "Hearts",
-
-    wallpaper: WALLPAPERS.Heartbeat,
-    preview: WALLPAPER_PREVIEWS.Heartbeat,
-
-    bubbleMe: "#ef4444",
-    bubbleOther: "#321212",
-
-    background: "#100404",
-    header: "#180707",
-    inputBg: "#250d0d",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#fecaca",
-
-    sendBtn: "#ef4444",
-    sendIcon: "#ffffff",
-  },
-
-  {
-    name: "Heart Garden",
-    category: "Hearts",
-
-    wallpaper: WALLPAPERS.HeartGarden,
-    preview: WALLPAPER_PREVIEWS.HeartGarden,
-
-    bubbleMe: "#fb7185",
-    bubbleOther: "#341822",
-
-    background: "#0f0608",
-    header: "#180b10",
-    inputBg: "#24131a",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ffe4e6",
-
-    sendBtn: "#fb7185",
-    sendIcon: "#ffffff",
-  },
-
-  {
     name: "I Love You",
     category: "Hearts",
 
