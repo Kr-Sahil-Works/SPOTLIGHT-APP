@@ -1,168 +1,202 @@
 import { ChatTheme } from "./types";
 
 export const GRADIENT_THEMES: ChatTheme[] = [
-  {
-    name: "Instagram",
+{
+  name: "Instagram",
 
-    category: "Gradient",
+  category: "Gradient",
 
-    bubbleMe: "#833ab4",
-    bubbleOther: "#1f2937",
+  bubbleMe: "#f43f5e",
+  bubbleOther: "#151a21",
 
-    bubbleGradient: [
-      "#833ab4",
-      "#fd1d1d",
-      "#fcb045",
-    ],
+  bubbleGradient: [
+    "#8b5cf6",
+    "#ec4899",
+    "#fb7185",
+  ],
 
-    gradient: [
-      "#833ab4",
-      "#fd1d1d",
-      "#fcb045",
-    ],
+  gradient: [
+    "#8b5cf6",
+    "#ec4899",
+    "#b03c5b",
+  ],
 
-    background: "#000000",
-    header: "#080808",
-    inputBg: "#121212",
+  background: "#080809",
+  header: "#060606",
+  inputBg: "#181118",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    headerText: "#ffffff",
+  headerText: "#ffffff",
 
-    sendBtn: "#fd1d1d",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#f45f78",
+  sendIcon: "#ffffff",
+},
 
-  {
-    name: "Aurora",
 
-    category: "Gradient",
+{
+  name: "Aurora",
 
-    bubbleMe: "#06b6d4",
-    bubbleOther: "#1f2937",
+  category: "Gradient",
 
-    bubbleGradient: [
-      "#06b6d4",
-      "#3b82f6",
-      "#8b5cf6",
-    ],
+  bubbleMe: "#6366f1",
+  bubbleOther: "#1f2937",
 
-    gradient: [
-      "#06b6d4",
-      "#3b82f6",
-      "#8b5cf6",
-    ],
+  bubbleGradient: [
+    "#22d3ee",
+    "#6366f1",
+    "#a855f7",
+  ],
 
-    background: "#030712",
-    header: "#07111f",
-    inputBg: "#101d30",
+  gradient: [
+    "#22d3ee",
+    "#6366f1",
+    "#a855f7",
+  ],
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  background: "#04060c",
+  header: "#303171",
+  inputBg: "#0e1b2f",
 
-    headerText: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    sendBtn: "#3b82f6",
-    sendIcon: "#ffffff",
-  },
+  headerText: "#ffffff",
 
-  {
-    name: "Neon",
-
-    category: "Gradient",
-
-    bubbleMe: "#22c55e",
-    bubbleOther: "#1f2937",
-
-    bubbleGradient: [
-      "#22c55e",
-      "#14b8a6",
-      "#06b6d4",
-    ],
-
-    gradient: [
-      "#22c55e",
-      "#14b8a6",
-      "#06b6d4",
-    ],
-
-    background: "#020617",
-    header: "#08111f",
-    inputBg: "#111c2f",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ffffff",
-
-    sendBtn: "#14b8a6",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#6366f1",
+  sendIcon: "#ffffff",
+},
 
   {
-    name: "Sunset",
+  name: "Neon",
 
-    category: "Gradient",
+  category: "Gradient",
 
-    bubbleMe: "#f97316",
-    bubbleOther: "#2a1d0b",
+  bubbleMe: "#06b6d4",
+  bubbleOther: "#1f2937",
 
-    bubbleGradient: [
-      "#f97316",
-      "#ef4444",
-      "#ec4899",
-    ],
+  bubbleGradient: [
+    "#22c55e",
+    "#06b6d4",
+    "#3b82f6",
+  ],
 
-    gradient: [
-      "#f97316",
-      "#ef4444",
-      "#ec4899",
-    ],
+  gradient: [
+    "#22c55e",
+    "#06b6d4",
+    "#274f8f",
+  ],
 
-    background: "#0b0503",
-    header: "#150805",
-    inputBg: "#220f0b",
+  background: "#020617",
+  header: "#03181e",
+  inputBg: "#132621",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    headerText: "#ffffff",
+  headerText: "#ffffff",
 
-    sendBtn: "#ef4444",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#06b6d4",
+  sendIcon: "#ffffff",
+},
+
+ {
+  name: "Sunset",
+
+  category: "Gradient",
+
+  bubbleMe: "#f97316",
+  bubbleOther: "#231808",
+
+  bubbleGradient: [
+    "#facc15",
+    "#f53955",
+    "#f97316",
+  ],
+
+  gradient: [
+    "#facc15",
+    "#9a404e",
+    "#f97316",
+  ],
+
+  background: "#0b0503",
+  header: "#180e05",
+  inputBg: "#24110d",
+
+  textMe: "#ffffff",
+  textOther: "#ffffff",
+
+  headerText: "#ffffff",
+
+  sendBtn: "#f97316",
+  sendIcon: "#ffffff",
+},
+
+{
+  name: "Emerald Smoke",
+
+  category: "Gradient",
+
+  bubbleMe: "#10b981",
+  bubbleOther: "#1b2320",
+
+  bubbleGradient: [
+    "#065f46",
+    "#5b8b14",
+    "#788b4b",
+  ],
+
+  gradient: [
+    "#065f46",
+    "#84cc16",
+    "#5c6b28",
+  ],
+
+  background: "#040605",
+  header: "#183b2a",
+  inputBg: "#121813",
+
+  textMe: "#ffffff",
+  textOther: "#ffffff",
+
+  headerText: "#fefce8",
+
+  sendBtn: "#10b981",
+  sendIcon: "#ffffff",
+},
 
   {
-    name: "Galaxy",
+  name: "Obsidian",
 
-    category: "Gradient",
+  category: "Gradient",
 
-    bubbleMe: "#6366f1",
-    bubbleOther: "#1e1b4b",
+  bubbleMe: "#64748b",
+  bubbleOther: "#1a1a1a",
 
-    bubbleGradient: [
-      "#6366f1",
-      "#8b5cf6",
-      "#ec4899",
-    ],
+  bubbleGradient: [
+    "#0f172a",
+    "#334155",
+    "#94a4b8",
+  ],
 
-    gradient: [
-      "#6366f1",
-      "#8b5cf6",
-      "#ec4899",
-    ],
+  gradient: [
+    "#0f172a",
+    "#334155",
+    "#2f353d",
+  ],
 
-    background: "#05060f",
-    header: "#0c1020",
-    inputBg: "#131a2d",
+  background: "#030303",
+  header: "#080808",
+  inputBg: "#111111",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    headerText: "#ffffff",
+  headerText: "#f8fafc",
 
-    sendBtn: "#8b5cf6",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#64748b",
+  sendIcon: "#ffffff",
+}
 ];

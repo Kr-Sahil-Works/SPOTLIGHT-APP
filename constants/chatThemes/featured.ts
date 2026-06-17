@@ -57,11 +57,11 @@ export const FEATURED_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.Earth,
     preview: WALLPAPER_PREVIEWS.Earth,
 
-    bubbleMe: "#0ea5e9",
-    bubbleOther: "#102938",
+    bubbleMe: "#08141b",
+    bubbleOther: "#0ea5e9",
 
     background: "#020817",
-    header: "#071524",
+    header: "#0715244a",
     inputBg: "#102233",
 
     textMe: "#ffffff",
@@ -69,7 +69,7 @@ export const FEATURED_THEMES: ChatTheme[] = [
 
     headerText: "#e0f2fe",
 
-    sendBtn: "#0ea5e9",
+    sendBtn: "#91e90e",
     sendIcon: "#ffffff",
   },
 
@@ -144,50 +144,50 @@ sendIcon: "#ffffff",
     sendIcon: "#ffffff",
   },
   {
-    name: "Late Nights",
+    name: "Lake",
     category: "Featured",
 
-    wallpaper: WALLPAPERS.LateNights,
-    preview: WALLPAPER_PREVIEWS.LateNights,
+    wallpaper: WALLPAPERS.Lake,
+    preview: WALLPAPER_PREVIEWS.Lake,
 
-    bubbleMe: "#ec4899",
-    bubbleOther: "#2c1224",
+  bubbleMe: "#a455ee",
+bubbleOther: "#2a1d42",
 
-    background: "#0d0610",
-    header: "#180b1c",
-    inputBg: "#24112a",
+background: "#12081e",
+header: "#1a0f2b",
+inputBg: "#241437",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+textMe: "#ffffff",
+textOther: "#f8f4ff",
 
-    headerText: "#fbcfe8",
+headerText: "#e9d5ff",
 
-    sendBtn: "#ec4899",
-    sendIcon: "#ffffff",
+sendBtn: "#c084fc",
+sendIcon: "#ffffff",
   },
 
-  {
-    name: "Moonlight",
-    category: "Featured",
+{
+  name: "Moonlight",
+  category: "Featured",
 
-    wallpaper: WALLPAPERS.MoonLight,
-    preview: WALLPAPER_PREVIEWS.MoonLight,
+  wallpaper: WALLPAPERS.MoonLight,
+  preview: WALLPAPER_PREVIEWS.MoonLight,
 
-    bubbleMe: "#60a5fa",
-    bubbleOther: "#162238",
+  bubbleMe: "#ffffff18",
+  bubbleOther: "#ffffff0d",
 
-    background: "#040814",
-    header: "#091223",
-    inputBg: "#121d30",
+  background: "#030303",
+  header: "#080808",
+  inputBg: "#101010",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#f5f5f5",
 
-    headerText: "#dbeafe",
+  headerText: "#e5e7eb",
 
-    sendBtn: "#60a5fa",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#020202",
+  sendIcon: "#000000",
+},
 
 {
   name: "PickMoon",
@@ -196,9 +196,32 @@ sendIcon: "#ffffff",
   wallpaper: WALLPAPERS.PickMoon,
   preview: WALLPAPER_PREVIEWS.PickMoon,
 
+bubbleMe: "#520063ef",
+bubbleOther: "#0808081f",
+sendBtn: "#ffffff47",
+
+  background: "#05070c",
+  header: "#ffffff1a",
+  inputBg: "#ffffff14",
+
+  textMe: "#ffffff",
+  textOther: "#ffffff",
+
+  headerText: "#f8fafc",
+  sendIcon: "#ffffff",
+},
+
+
+{
+  name: "PinkSky",
+  category: "Featured",
+
+  wallpaper: WALLPAPERS.PinkSky,
+  preview: WALLPAPER_PREVIEWS.PinkSky,
+
 bubbleMe: "rgba(255,255,255,0.25)",
 bubbleOther: "rgba(255,255,255,0.12)",
-sendBtn: "rgba(255,255,255,0.28)",
+sendBtn: "#ffffff47",
 
   background: "#05070c",
   header: "#ffffff1a",
@@ -245,7 +268,7 @@ sendBtn: "rgba(255,255,255,0.28)",
     bubbleOther: "#14303a",
 
     background: "#030b10",
-    header: "#07171f",
+    header: "#000000",
     inputBg: "#11232b",
 
     textMe: "#ffffff",
@@ -254,7 +277,7 @@ sendBtn: "rgba(255,255,255,0.28)",
     headerText: "#cffafe",
 
     sendBtn: "#06b6d4",
-    sendIcon: "#000000",
+    sendIcon: "#eae8e8",
   },
 
 {
@@ -303,5 +326,4 @@ sendBtn: "#de7905",
     sendIcon: "#ffffff",
   },
  
-
 ];

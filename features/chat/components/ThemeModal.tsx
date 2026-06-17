@@ -253,7 +253,7 @@ const sections = useMemo(
     {
       title: "Special",
       data: CHAT_THEMES.filter(
-        (t) => t.category === "Nature"
+        (t) => t.category === "Special"
       ),
     },
     {
@@ -794,7 +794,7 @@ renderItem={
               backgroundColor:
                 CHAT_THEMES[
                   selectedIndex
-                ].bubbleMe,
+                ].sendBtn,
               flexDirection: "row",
               alignItems: "center",
               justifyContent:

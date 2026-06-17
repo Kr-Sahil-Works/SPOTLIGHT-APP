@@ -14,8 +14,8 @@ export const SPECIAL_THEMES: ChatTheme[] = [
     bubbleMe: "#8b5cf6",
     bubbleOther: "#24173b",
 
-    background: "#080510",
-    header: "#110b1f",
+    background: "#000000",
+    header: "#000000",
     inputBg: "#1b1330",
 
     textMe: "#ffffff",
@@ -27,75 +27,74 @@ export const SPECIAL_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Hold On",
-    category: "Special",
+{
+  name: "Hold On",
+  category: "Special",
 
-    wallpaper: WALLPAPERS.Hold,
-    preview: WALLPAPER_PREVIEWS.Hold,
+  wallpaper: WALLPAPERS.Hold,
+  preview: WALLPAPER_PREVIEWS.Hold,
 
-    bubbleMe: "#ec4899",
-    bubbleOther: "#2c1224",
+  bubbleMe: "#f59e0b",
+  bubbleOther: "#111b1e",
 
-    background: "#0d0610",
-    header: "#180b1c",
-    inputBg: "#24112a",
+  background: "#08070b",
+  header: "#000000",
+  inputBg: "#191722",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    headerText: "#fbcfe8",
+  headerText: "#fde68a",
 
-    sendBtn: "#ec4899",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#f59e0b",
+  sendIcon: "#000000",
+},
 
-  {
-    name: "Late Nights",
-    category: "Special",
+{
+  name: "Late Nights",
+  category: "Special",
 
-    wallpaper: WALLPAPERS.TogetherLateNights,
-    preview: WALLPAPER_PREVIEWS.TogetherLateNights,
+  wallpaper: WALLPAPERS.TogetherLateNights,
+  preview: WALLPAPER_PREVIEWS.TogetherLateNights,
 
-    bubbleMe: "#6366f1",
-    bubbleOther: "#17192f",
+  bubbleMe: "#06b6d4",
+  bubbleOther: "#13212b",
 
-    background: "#05060f",
-    header: "#0c1020",
-    inputBg: "#131a2d",
+  background: "#04090d",
+  header: "#09131a",
+  inputBg: "#10202a",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    headerText: "#e0e7ff",
+  headerText: "#cffafe",
 
-    sendBtn: "#6366f1",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#06b6d4",
+  sendIcon: "#ffffff",
+},
 
-  {
-    name: "On The Roof",
-    category: "Special",
+ {
+  name: "On The Roof",
+  category: "Special",
 
-    wallpaper: WALLPAPERS.OnRoof,
-    preview: WALLPAPER_PREVIEWS.OnRoof,
+  wallpaper: WALLPAPERS.OnRoof,
+  preview: WALLPAPER_PREVIEWS.OnRoof,
 
-    bubbleMe: "#3b82f6",
-    bubbleOther: "#162338",
+  bubbleMe: "#8b5cf6",
+  bubbleOther: "#24193d",
 
-    background: "#030712",
-    header: "#08111f",
-    inputBg: "#111d30",
+  background: "#070510",
+  header: "#100a1d",
+  inputBg: "#181126",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    headerText: "#dbeafe",
+  headerText: "#ede9fe",
 
-    sendBtn: "#3b82f6",
-    sendIcon: "#ffffff",
-  },
-
+  sendBtn: "#8b5cf6",
+  sendIcon: "#ffffff",
+},
   {
     name: "Vintage Love",
     category: "Special",

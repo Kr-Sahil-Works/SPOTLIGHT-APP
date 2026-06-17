@@ -3,41 +3,20 @@ import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const HEART_THEMES: ChatTheme[] = [
-  {
-    name: "Sweet Hearts",
-    category: "Hearts",
 
-    wallpaper: WALLPAPERS.ThreeHearts,
-    preview: WALLPAPER_PREVIEWS.ThreeHearts,
-
-    bubbleMe: "#ff5d8f",
-    bubbleOther: "#341722",
-
-    background: "#0f0608",
-    header: "#190b10",
-    inputBg: "#251218",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ffe4e6",
-
-    sendBtn: "#ff5d8f",
-    sendIcon: "#ffffff",
-  },
 
   {
-    name: "I Love You",
+    name: "Love In Air",
     category: "Hearts",
 
     wallpaper: WALLPAPERS.ILoveYou,
     preview: WALLPAPER_PREVIEWS.ILoveYou,
 
-    bubbleMe: "#f43f5e",
-    bubbleOther: "#301218",
+    bubbleMe: "#f30029",
+    bubbleOther: "#250b10",
 
-    background: "#0d0406",
-    header: "#17080c",
+    background: "#000000",
+    header: "#000000",
     inputBg: "#230f14",
 
     textMe: "#ffffff",
@@ -49,52 +28,7 @@ export const HEART_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Love",
-    category: "Hearts",
-
-    wallpaper: WALLPAPERS.Love,
-    preview: WALLPAPER_PREVIEWS.Love,
-
-    bubbleMe: "#ff477e",
-    bubbleOther: "#31131d",
-
-    background: "#0e0407",
-    header: "#18080d",
-    inputBg: "#241019",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ffe4e6",
-
-    sendBtn: "#ff477e",
-    sendIcon: "#ffffff",
-  },
-
-  {
-    name: "Love Notes",
-    category: "Hearts",
-
-    wallpaper: WALLPAPERS.LoveNotes,
-    preview: WALLPAPER_PREVIEWS.LoveNotes,
-
-    bubbleMe: "#ff7099",
-    bubbleOther: "#381a26",
-
-    background: "#100609",
-    header: "#1a0d12",
-    inputBg: "#26151c",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#fce7f3",
-
-    sendBtn: "#ff7099",
-    sendIcon: "#ffffff",
-  },
-
+ 
   {
     name: "Love Waves",
     category: "Hearts",
@@ -103,10 +37,10 @@ export const HEART_THEMES: ChatTheme[] = [
     preview: WALLPAPER_PREVIEWS.LoveWaves,
 
     bubbleMe: "#ff4d6d",
-    bubbleOther: "#301218",
+    bubbleOther: "#491b24",
 
-    background: "#0e0405",
-    header: "#170708",
+    background: "#000000",
+    header: "#00000030",
     inputBg: "#240f12",
 
     textMe: "#ffffff",
@@ -118,28 +52,30 @@ export const HEART_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Endless Love",
+   {
+    name: "Heart Pot",
     category: "Hearts",
 
-    wallpaper: WALLPAPERS.LoveWaves2,
-    preview: WALLPAPER_PREVIEWS.LoveWaves2,
+    wallpaper: WALLPAPERS.HeartPot,
+    preview: WALLPAPER_PREVIEWS.HeartPot,
 
-    bubbleMe: "#ff5f7e",
-    bubbleOther: "#34141d",
 
-    background: "#0f0507",
-    header: "#18090c",
-    inputBg: "#251117",
+  bubbleMe: "#b21406",
+  bubbleOther: "#000000a7",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  background: "#000000",
+  header: "#000000",
+  inputBg: "#24131a",
 
-    headerText: "#ffe4e6",
+  textMe: "#ffffff",
+  textOther: "#fff1f5",
 
-    sendBtn: "#ff5f7e",
-    sendIcon: "#ffffff",
+  headerText: "#ffd6e5",
+
+  sendBtn: "#730b02",
+  sendIcon: "#ffffff",
   },
+
 
   {
     name: "Promise",
@@ -148,42 +84,66 @@ export const HEART_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.Promise,
     preview: WALLPAPER_PREVIEWS.Promise,
 
-    bubbleMe: "#f9a8d4",
-    bubbleOther: "#472d38",
+  bubbleMe: "#ff4d6d",
+  bubbleOther: "#141010bf",
 
-    background: "#140d10",
-    header: "#20161b",
-    inputBg: "#2d2027",
+  background: "#090304",
+  header: "#12060730",
+  inputBg: "#1d0b0d",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#fff5f5",
 
-    headerText: "#fdf2f8",
+  headerText: "#ffd4dc",
 
-    sendBtn: "#f9a8d4",
-    sendIcon: "#000000",
-  },
+  sendBtn: "#ff4d6d",
+  sendIcon: "#ffffff",
+},
+
 
   {
     name: "Red Velvet",
     category: "Hearts",
 
-    wallpaper: WALLPAPERS.RedVelvet,
-    preview: WALLPAPER_PREVIEWS.RedVelvet,
+    wallpaper: WALLPAPERS.RedNotes,
+    preview: WALLPAPER_PREVIEWS.RedNotes,
 
-    bubbleMe: "#dc2626",
-    bubbleOther: "#2f1010",
+    bubbleMe: "#d91c3c",
+  bubbleOther: "#24090d",
 
-    background: "#0d0303",
-    header: "#150606",
-    inputBg: "#220d0d",
+  background: "#000000",
+  header: "#000000",
+  inputBg: "#19080a",
+
+  textMe: "#ffffff",
+  textOther: "#fff5f5",
+
+  headerText: "#ffccd5",
+
+  sendBtn: "#e11d48",
+  sendIcon: "#ffffff",
+  },
+
+    {
+    name: "Sweet Hearts",
+    category: "Hearts",
+
+    wallpaper: WALLPAPERS.SweetHearts,
+    preview: WALLPAPER_PREVIEWS.SweetHearts,
+
+    bubbleMe: "#ff5d8f",
+    bubbleOther: "#341722",
+
+    background: "#0f0608",
+    header: "#13010735",
+    inputBg: "#251218",
 
     textMe: "#ffffff",
     textOther: "#ffffff",
 
-    headerText: "#fee2e2",
+    headerText: "#ffe4e6",
 
-    sendBtn: "#ef4444",
+    sendBtn: "#ff5d8f",
     sendIcon: "#ffffff",
   },
 ];

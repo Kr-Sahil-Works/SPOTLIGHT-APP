@@ -3,28 +3,6 @@ import { WALLPAPER_PREVIEWS } from "./wallpaperPreviews";
 import { WALLPAPERS } from "./wallpapers";
 
 export const DREAMSCAPE_THEMES: ChatTheme[] = [
-  {
-    name: "Boy On Boat",
-    category: "Dreamscape",
-
-    wallpaper: WALLPAPERS.BoyOnBoat,
-    preview: WALLPAPER_PREVIEWS.BoyOnBoat,
-
-    bubbleMe: "#1063a7",
-    bubbleOther: "#021529",
-
-    background: "#0b0614",
-    header: "#000000",
-    inputBg: "#1d1330",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ede9fe",
-
-    sendBtn: "#106bb6",
-    sendIcon: "#ffffff",
-  },
 
   {
     name: "Twilight Bridge",
@@ -52,7 +30,7 @@ export const DREAMSCAPE_THEMES: ChatTheme[] = [
    
   {
     name: "Candy Clouds",
-    category: "Featured",
+    category: "Dreamscape",
 
     wallpaper: WALLPAPERS.CandyClouds,
     preview: WALLPAPER_PREVIEWS.CandyClouds,
@@ -75,7 +53,7 @@ sendIcon: "#ffffff",
 
   {
     name: "Clouds",
-    category: "Featured",
+    category: "Dreamscape",
 
     wallpaper: WALLPAPERS.Clouds,
     preview: WALLPAPER_PREVIEWS.Clouds,
@@ -96,32 +74,10 @@ sendIcon: "#ffffff",
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Dream Window",
-    category: "Dreamscape",
-
-    wallpaper: WALLPAPERS.DreamWindow,
-    preview: WALLPAPER_PREVIEWS.DreamWindow,
-
-    bubbleMe: "#11124d",
-    bubbleOther: "#17192f",
-
-    background: "#05060f",
-    header: "#0c1020",
-    inputBg: "#131a2d",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#e0e7ff",
-
-    sendBtn: "#292b6d",
-    sendIcon: "#ffffff",
-  },
-
+  
     {
     name: "Dreamy",
-    category: "Featured",
+    category: "Dreamscape",
 
     wallpaper: WALLPAPERS.Dreamy,
     preview: WALLPAPER_PREVIEWS.Dreamy,
@@ -144,7 +100,7 @@ sendIcon: "#ffffff",
 
     {
     name: "Fallen Stars",
-    category: "Featured",
+    category: "Dreamscape",
 
     wallpaper: WALLPAPERS.FallenStar,
     preview: WALLPAPER_PREVIEWS.FallenStar,
@@ -153,7 +109,7 @@ bubbleMe: "#ff539b",
 bubbleOther: "#261722",
 
 background: "#090507",
-header: "#120b1037",
+header: "#000000",
 inputBg: "#1c1318",
 
 textMe: "#ffffff",
@@ -167,27 +123,29 @@ sendIcon: "#ffffff",
 
 
 {
-    name: "Into Clouds",
-    category: "Dreamscape",
+  name: "Into Clouds",
+  category: "Dreamscape",
 
-    wallpaper: WALLPAPERS.IntoClouds,
-    preview: WALLPAPER_PREVIEWS.IntoClouds,
+  wallpaper: WALLPAPERS.IntoClouds,
+  preview: WALLPAPER_PREVIEWS.IntoClouds,
 
-    bubbleMe: "#290052",
-    bubbleOther: "#521048",
 
-    background: "#040b10",
-    header: "#00000018",
-    inputBg: "#112130",
+  bubbleMe: "#ffffff30",
+  bubbleOther: "#ffffff15",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  background: "#000000",
+  header: "#00000010",
+  inputBg: "#111111",
 
-    headerText: "#e0f2fe",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    sendBtn: "#1b0037",
-    sendIcon: "#ffffff",
-  },
+  headerText: "#fbcfe8",
+
+  sendBtn: "#ee138b",
+  sendIcon: "#ffffff",
+
+},
 
   {
     name: "Lantern Glow",
@@ -197,10 +155,10 @@ sendIcon: "#ffffff",
     preview: WALLPAPER_PREVIEWS.LampLight,
 
     bubbleMe: "#f59e0b",
-    bubbleOther: "#2e220d",
+    bubbleOther: "#110c05",
 
-    background: "#0d0902",
-    header: "#020003",
+    background: "#000000",
+    header: "#000000",
     inputBg: "#251a08",
 
     textMe: "#ffffff",
@@ -212,74 +170,30 @@ sendIcon: "#ffffff",
     sendIcon: "#000000",
   },
 
-  {
-    name: "Painted Sky",
-    category: "Dreamscape",
+{
+  name: "Roadside Dream",
+  category: "Dreamscape",
 
-    wallpaper: WALLPAPERS.PaintedSky,
-    preview: WALLPAPER_PREVIEWS.PaintedSky,
-
-    bubbleMe: "#440083",
-    bubbleOther: "#241338",
-
-    background: "#0c0614",
-    header: "#0d001f",
-    inputBg: "#211133",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#f3e8ff",
-
-    sendBtn: "#440083",
-    sendIcon: "#ffffff",
-  },
-
-  {
-    name: "Pink Waves",
-    category: "Dreamscape",
-
-    wallpaper: WALLPAPERS.PinkWaves,
-    preview: WALLPAPER_PREVIEWS.PinkWaves,
-
-    bubbleMe: "#fb7185",
-    bubbleOther: "#30141d87",
-
-    background: "#0d0608",
-    header: "#000000",
-    inputBg: "#251118",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#ffe4e6",
-
-    sendBtn: "#fb7185",
-    sendIcon: "#ffffff",
-  },
+  wallpaper: WALLPAPERS.RoadsideDream,
+  preview: WALLPAPER_PREVIEWS.RoadsideDream,
 
 
 
-    {
-    name: "Roadside Dream",
-    category: "Dreamscape",
+  bubbleMe: "#ffffff18",
+  bubbleOther: "#00000030",
 
-    wallpaper: WALLPAPERS.RoadsideDream,
-    preview: WALLPAPER_PREVIEWS.RoadsideDream,
+  background: "#000000",
+  header: "#00000015",
+  inputBg: "#111111",
 
-    bubbleMe: "#a4076d",
-    bubbleOther: "#462d4a",
+  textMe: "#ffffff",
+  textOther: "#ffffff",
 
-    background: "#100804",
-    header: "#0000004a",
-    inputBg: "#2a170b",
+  headerText: "#f9a8d4",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  sendBtn: "#4d0f37",
+  sendIcon: "#ffffff",
 
-    headerText: "#fed7aa",
 
-    sendBtn: "#0a0107",
-    sendIcon: "#ffffff",
-  },
+}
 ];

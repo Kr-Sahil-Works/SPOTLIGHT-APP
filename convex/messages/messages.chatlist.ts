@@ -35,7 +35,7 @@ const lastMessages = await ctx.db
     q.eq("conversationId", conv._id)
   )
   .order("desc")
-  .take(30);
+  .take(10);
 
 const unreadCount = lastMessages.filter(
   (m) =>
@@ -56,7 +56,7 @@ const unreadCount = lastMessages.filter(
   !!user.lastActiveAt &&
 Date.now() -
   (user.lastActiveAt || 0) <
-  15000,
+  70000,
         showOnline: user.showOnline,
       });
     }

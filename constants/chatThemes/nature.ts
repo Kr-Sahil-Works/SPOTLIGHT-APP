@@ -36,8 +36,8 @@ export const NATURE_THEMES: ChatTheme[] = [
     bubbleMe: "#3b82f6",
     bubbleOther: "#162338",
 
-    background: "#030712",
-    header: "#08111f",
+    background: "#000000",
+    header: "#000000d4",
     inputBg: "#111d30",
 
     textMe: "#ffffff",
@@ -47,29 +47,6 @@ export const NATURE_THEMES: ChatTheme[] = [
 
     sendBtn: "#3b82f6",
     sendIcon: "#ffffff",
-  },
-
-  {
-    name: "Evening",
-    category: "Nature",
-
-    wallpaper: WALLPAPERS.Evening,
-    preview: WALLPAPER_PREVIEWS.Evening,
-
-    bubbleMe: "#f59e0b",
-    bubbleOther: "#2a1d0b",
-
-    background: "#0d0802",
-    header: "#161005",
-    inputBg: "#24190b",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#fde68a",
-
-    sendBtn: "#f59e0b",
-    sendIcon: "#000000",
   },
 
   {
@@ -83,7 +60,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     bubbleOther: "#24310f",
 
     background: "#060a03",
-    header: "#0d1407",
+    header: "#1a370037",
     inputBg: "#17220d",
 
     textMe: "#ffffff",
@@ -92,7 +69,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     headerText: "#ecfccb",
 
     sendBtn: "#84cc16",
-    sendIcon: "#000000",
+    sendIcon: "#e4e4e4",
   },
 
   {
@@ -118,51 +95,30 @@ export const NATURE_THEMES: ChatTheme[] = [
     sendIcon: "#000000",
   },
 
-  {
-    name: "Scene",
-    category: "Nature",
+{
+  name: "Scene",
+  category: "Nature",
 
-    wallpaper: WALLPAPERS.Scene,
-    preview: WALLPAPER_PREVIEWS.Scene,
+  wallpaper: WALLPAPERS.Scene,
+  preview: WALLPAPER_PREVIEWS.Scene,
 
-    bubbleMe: "#22c55e",
-    bubbleOther: "#14261a",
+bubbleMe: "#16aec9",
+bubbleOther: "#091930",
 
-    background: "#040805",
-    header: "#08120c",
-    inputBg: "#112017",
+background: "#03090B",
+header: "#021c2862",
+inputBg: "#0F1E24",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+headerText: "#CFFAFE",
 
-    headerText: "#dcfce7",
+sendBtn: "#22D3EE",
+sendIcon: "#000000",
 
-    sendBtn: "#22c55e",
-    sendIcon: "#000000",
-  },
+  textMe: "#FFFFFF",
+  textOther: "#FFFFFF",
 
-  {
-    name: "Train",
-    category: "Nature",
 
-    wallpaper: WALLPAPERS.Train,
-    preview: WALLPAPER_PREVIEWS.Train,
-
-    bubbleMe: "#ef4444",
-    bubbleOther: "#2d1414",
-
-    background: "#0d0505",
-    header: "#170808",
-    inputBg: "#241111",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#fecaca",
-
-    sendBtn: "#ef4444",
-    sendIcon: "#ffffff",
-  },
+},
 
   {
     name: "Valley View",

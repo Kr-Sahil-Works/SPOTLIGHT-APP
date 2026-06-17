@@ -11,11 +11,11 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
   wallpaper: WALLPAPERS.Away,
   preview: WALLPAPER_PREVIEWS.Away,
 
-  bubbleMe: "#7c6cff",
+  bubbleMe: "#6450fa",
   bubbleOther: "#1d2740",
 
   background: "#07101d",
-  header: "#0c1626",
+  header: "#000000dc",
   inputBg: "#152338",
 
   textMe: "#ffffff",
@@ -29,7 +29,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
 
   {
     name: "Blue Moon",
-    category: "Nature",
+    category: "Landscapes",
 
     wallpaper: WALLPAPERS.BlueMoon,
     preview: WALLPAPER_PREVIEWS.BlueMoon,
@@ -38,7 +38,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     bubbleOther: "#162338",
 
     background: "#030712",
-    header: "#08111f",
+    header: "#000000",
     inputBg: "#111d30",
 
     textMe: "#ffffff",
@@ -46,32 +46,8 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
 
     headerText: "#dbeafe",
 
-    sendBtn: "#3b82f6",
+    sendBtn: "#18458d",
     sendIcon: "#ffffff",
-  },
-
-
-  {
-    name: "Forest House",
-    category: "Landscapes",
-
-    wallpaper: WALLPAPERS.ForestHouse,
-    preview: WALLPAPER_PREVIEWS.ForestHouse,
-
-    bubbleMe: "#22c55e",
-    bubbleOther: "#16261b",
-
-    background: "#040806",
-    header: "#08120c",
-    inputBg: "#112018",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#dcfce7",
-
-    sendBtn: "#22c55e",
-    sendIcon: "#000000",
   },
 
   {
@@ -82,10 +58,10 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     preview: WALLPAPER_PREVIEWS.Home,
 
     bubbleMe: "#f59e0b",
-    bubbleOther: "#2a1d0b",
+    bubbleOther: "#1f170b",
 
     background: "#0d0802",
-    header: "#161005",
+    header: "#00000054",
     inputBg: "#24190b",
 
     textMe: "#ffffff",
@@ -143,30 +119,6 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-
-    {
-    name: "Trace",
-    category: "Landscapes",
-
-    wallpaper: WALLPAPERS.Trace,
-    preview: WALLPAPER_PREVIEWS.Trace,
-
-    bubbleMe: "#0ea5e9",
-    bubbleOther: "#112a38",
-
-    background: "#040b10",
-    header: "#081722",
-    inputBg: "#102432",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#e0f2fe",
-
-    sendBtn: "#0ea5e9",
-    sendIcon: "#ffffff",
-  },
-  
   {
     name: "Valley",
     category: "Landscapes",
@@ -175,10 +127,10 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     preview: WALLPAPER_PREVIEWS.Valley,
 
     bubbleMe: "#14b8a6",
-    bubbleOther: "#12302b",
+    bubbleOther: "#122320",
 
-    background: "#04100d",
-    header: "#071916",
+    background: "#000000",
+    header: "#000000",
     inputBg: "#0f2621",
 
     textMe: "#ffffff",

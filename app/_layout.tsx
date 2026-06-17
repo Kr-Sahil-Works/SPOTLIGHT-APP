@@ -84,7 +84,9 @@ const interval =
   setInterval(() => {
     if (
       !isLoaded ||
-      !isSignedIn
+      !isSignedIn ||
+      AppState.currentState !==
+        "active"
     ) {
       return;
     }
@@ -92,7 +94,7 @@ const interval =
     setOnline({
       isOnline: true,
     }).catch(() => {});
-  }, 10000);
+  }, 60000);
 
     return () => {
 

@@ -6,14 +6,14 @@ export const SOLID_THEMES: ChatTheme[] = [
 
     category: "Solid",
 
-    bubbleMe: "#22c55e",
-    bubbleOther: "#1f2937",
+    bubbleMe: "#018d0d",
+    bubbleOther: "#1b2012",
 
-    background: "#0a0f0c",
-    header: "#111827",
+    background: "#000000",
+    header: "#000000",
     inputBg: "#111827",
 
-    textMe: "#000000",
+    textMe: "#ffffff",
     textOther: "#ffffff",
 
     headerText: "#ffffff",

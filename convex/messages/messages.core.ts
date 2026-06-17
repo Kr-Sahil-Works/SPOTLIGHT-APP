@@ -333,16 +333,40 @@ export const getMessages = query({
       await q.take(limit);
 
 
-      const enriched = await Promise.all(
-  messages.map(async (m) => {
-    const sender = await ctx.db.get(
-      m.senderId
-    );
+    const senderIds = [
+  ...new Set(
+    messages.map((m) => m.senderId)
+  ),
+];
 
-    return {
-      ...m,
-      senderImage: sender?.image || "",
-    };
+const senders = await Promise.all(
+  senderIds.map((id) =>
+    ctx.db.get(id)
+  )
+);
+
+const senderMap = new Map(
+  senders
+    .filter(
+      (
+        u
+      ): u is NonNullable<
+        typeof senders[number]
+      > => !!u
+    )
+    .map((u) => [
+      u._id,
+      u,
+    ])
+);
+
+const enriched = messages.map(
+  (m) => ({
+    ...m,
+    senderImage:
+      senderMap.get(
+        m.senderId
+      )?.image || "",
   })
 );
 

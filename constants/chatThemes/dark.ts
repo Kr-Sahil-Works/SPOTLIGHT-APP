@@ -28,29 +28,6 @@ export const DARK_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-  {
-    name: "Dark Sky",
-    category: "Dark",
-
-    wallpaper: WALLPAPERS.DarkSky,
-    preview: WALLPAPER_PREVIEWS.DarkSky,
-
-    bubbleMe: "#2563eb",
-    bubbleOther: "#111827",
-
-    background: "#000000",
-    header: "#020617",
-    inputBg: "#0f172a",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#dbeafe",
-
-    sendBtn: "#3b82f6",
-    sendIcon: "#ffffff",
-  },
-
  {
     name: "Heart Outline",
       category: "Dark",
@@ -84,7 +61,7 @@ export const DARK_THEMES: ChatTheme[] = [
     bubbleOther: "#111827",
 
     background: "#000000",
-    header: "#020617",
+    header: "#00020c",
     inputBg: "#0f172a",
 
     textMe: "#ffffff",
@@ -96,53 +73,29 @@ export const DARK_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
-    {
-    name: "Night Flower",
-    category: "Dark",
+{
+  name: "Night Flower",
+  category: "Dark",
 
-    wallpaper: WALLPAPERS.NightFlower,
-    preview: WALLPAPER_PREVIEWS.NightFlower,
+  wallpaper: WALLPAPERS.NightFlower,
+  preview: WALLPAPER_PREVIEWS.NightFlower,
 
-    bubbleMe: "#a855f7",
-    bubbleOther: "#1f1530",
+  bubbleMe: "#ce106f",
+  bubbleOther: "#ffffff10",
 
-    background: "#000000",
-    header: "#120b1f",
-    inputBg: "#1d1230",
+  background: "#000000",
+  header: "#000000",
+  inputBg: "#0d0d0d",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  textMe: "#ffffff",
+  textOther: "#fafafa",
 
-    headerText: "#f3e8ff",
+  headerText: "#f3f4f6",
 
-    sendBtn: "#a855f7",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#ec4899",
+  sendIcon: "#fffbfb",
 
-
-  {
-    name: "Petals",
-    category: "Dark",
-
-    wallpaper: WALLPAPERS.Petals,
-    preview: WALLPAPER_PREVIEWS.Petals,
-
-    bubbleMe: "#94a3b8",
-    bubbleOther: "#1e293b",
-
-    background: "#000000",
-    header: "#0f172a",
-    inputBg: "#172033",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#e2e8f0",
-
-    sendBtn: "#94a3b8",
-    sendIcon: "#000000",
-  },
-
+},
   
   {
     name: "Rose",
@@ -167,49 +120,28 @@ export const DARK_THEMES: ChatTheme[] = [
     sendIcon: "#ffffff",
   },
 
- {
-    name: "Social",
-      category: "Dark",
-    wallpaper: WALLPAPERS.Social,
-    preview: WALLPAPER_PREVIEWS.Social,
+{
+  name: "Space",
+  category: "Dark",
 
-    bubbleMe: "#64748b",
-    bubbleOther: "#1a2230",
+  wallpaper: WALLPAPERS.Space,
+  preview: WALLPAPER_PREVIEWS.Space,
 
-    background: "#030712",
-    header: "#0c1320",
-    inputBg: "#151d2b",
+  bubbleMe: "#4f46e5",
+  bubbleOther: "#111827",
 
-    textMe: "#ffffff",
-    textOther: "#ffffff",
+  background: "#000000",
+  header: "#000000",
+  inputBg: "#0f172a",
 
-    headerText: "#cbd5e1",
+  textMe: "#ffffff",
+  textOther: "#f8fafc",
 
-    sendBtn: "#64748b",
-    sendIcon: "#ffffff",
-  },
+  headerText: "#c7d2fe",
 
-  {
-    name: "Space",
-      category: "Dark",
-    wallpaper: WALLPAPERS.Space,
-    preview: WALLPAPER_PREVIEWS.Space,
-
-    bubbleMe: "#4548f1",
-    bubbleOther: "#13162a",
-
-    background: "#020617",
-    header: "#000000",
-    inputBg: "#10182f",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#c7d2fe",
-
-    sendBtn: "#181e55",
-    sendIcon: "#ffffff",
-  },
+  sendBtn: "#6366f1",
+  sendIcon: "#ffffff",
+},
 
   {
     name: "Stars",
@@ -232,30 +164,6 @@ export const DARK_THEMES: ChatTheme[] = [
     sendBtn: "#cba200",
     sendIcon: "#000000",
   },
-
-
-    {
-    name: "Ghost",
-      category: "Dark",
-    wallpaper: WALLPAPERS.TinyGhost,
-    preview: WALLPAPER_PREVIEWS.TinyGhost,
-
-    bubbleMe: "#94a3b8",
-    bubbleOther: "#1e293b",
-
-    background: "#020617",
-    header: "#0f172a",
-    inputBg: "#172033",
-
-    textMe: "#ffffff",
-    textOther: "#ffffff",
-
-    headerText: "#e2e8f0",
-
-    sendBtn: "#94a3b8",
-    sendIcon: "#000000",
-  },
-
 
  {
     name: "White Petals",
