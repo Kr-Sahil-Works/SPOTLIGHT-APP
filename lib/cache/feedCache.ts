@@ -6,7 +6,7 @@ const FEED_KEY = "feed_posts";
 export const saveFeedCache = (posts: unknown[]) => {
   storage.set(
     FEED_KEY,
-    JSON.stringify(posts.slice(0, 12))
+    JSON.stringify(posts.slice(0, 22))
   );
 };
 

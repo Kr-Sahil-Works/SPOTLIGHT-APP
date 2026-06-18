@@ -95,7 +95,7 @@ useEffect(() => {
   const [cachedPosts, setCachedPosts] = useState<any[]>([]);
 
 
-  useEffect(() => {
+useEffect(() => {
   const cached =
     getFeedCache();
 
@@ -103,9 +103,9 @@ useEffect(() => {
     Array.isArray(cached) &&
     cached.length > 0
   ) {
-    setCachedPosts(
-      cached
-    );
+    setCachedPosts(cached);
+
+    setFeedReady(true);
   }
 }, []);
 
@@ -114,6 +114,9 @@ useEffect(() => {
 
   const initializedRef =
   useRef(false);
+
+  const [feedReady, setFeedReady] =
+  useState(false);
 
 useEffect(() => {
   if (!posts?.length) {
@@ -142,14 +145,15 @@ if (
         Math.random() -
         0.5
     );
+setFeedPosts([
+  ...shuffledTop,
+  ...rest,
+]);
 
-  setFeedPosts([
-    ...shuffledTop,
-    ...rest,
-  ]);
+initializedRef.current =
+  true;
 
-  initializedRef.current =
-    true;
+setFeedReady(true);
 }
 }, [posts]);
 
@@ -160,7 +164,6 @@ useEffect(() => {
   ) {
     return;
   }
-
   setFeedPosts(
     current =>
       current.map(
@@ -181,7 +184,6 @@ const finalPosts =
       ? feedPosts
       : posts
     : cachedPosts;
-
 
   const unreadCount =
     useQuery(api.notifications.getUnreadCount, isSignedIn ? {} : "skip") ?? 0;
@@ -327,15 +329,14 @@ useEffect(() => {
   }
 
 
-  const storiesHeader = useMemo(
-  () => (
+const storiesHeader = useMemo(() => {
+  return (
     <StoriesSection
       refreshKey={storiesRefreshKey}
       setSwipeEnabled={setSwipeEnabled}
     />
-  ),
-  [storiesRefreshKey]
-);
+  );
+}, [storiesRefreshKey]);
 
   return (
     <>
@@ -409,7 +410,9 @@ useEffect(() => {
       </View>
 
       {/* 🔥 CONTENT */}
-{posts === undefined && cachedPosts.length === 0 ? (
+{!feedReady ? (
+  <FeedSkeleton />
+) : showRefreshSkeleton ? (
   <FeedSkeleton />
 ) : showRefreshSkeleton ? (
   <FeedSkeleton />

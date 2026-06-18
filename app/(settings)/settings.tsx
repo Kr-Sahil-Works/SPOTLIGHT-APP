@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "convex/react";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Animated,
   Linking,
@@ -18,6 +18,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+
+
+import { Image } from "expo-image";
 
 
 /* ================= TYPES ================= */
@@ -49,6 +52,8 @@ const isAllowed =
   title === "Logout" ||
   // title === "Backup chats" ||
   // title === "Export data" ||
+  title === "Notifications" ||
+title === "Photos & Media" ||
   title === "Account settings";
 
 const canUse =
@@ -163,7 +168,28 @@ export default function Settings() {
   useNetwork();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const progressAnim =
+  useRef(
+    new Animated.Value(0)
+  ).current;
+  
+  const redirectTimeoutRef =
+  useRef<any>(null);
+
+const [
+  permissionModal,
+  setPermissionModal,
+] = useState<{
+  visible: boolean;
+  type:
+    | "notification"
+    | "media"
+    | null;
+}>({
+  visible: false,
+  type: null,
+});
 
   const [camera, setCamera] = useState(false);
   const [moveScreen, setMoveScreen] = useState(false);
@@ -363,10 +389,8 @@ onPress={() =>
   isOnline={isOnline} icon="image-outline" title="Images" />
           <Item
   isOnline={isOnline} icon="phone-portrait-outline" title="Display" />
-        </Section>
 
-        <Section title="Data">
-<Item
+  <Item
   isOnline={isOnline}
   icon="cloud-upload-outline"
   title="Backup chats"
@@ -394,7 +418,77 @@ onPress={() =>
 />
         </Section>
 
+        <Section title="Permissions">
+
+<Item
+  isOnline={true}
+  icon="images-outline"
+  title="Photos & Media"
+onPress={() => {
+progressAnim.setValue(0);
+
+setPermissionModal({
+  type: "media",
+  visible: true,
+});
+
+Animated.timing(
+  progressAnim,
+  {
+    toValue: 1,
+    duration: 8000,
+    useNativeDriver: false,
+  }
+).start();
+
+redirectTimeoutRef.current =
+  setTimeout(() => {
+    setPermissionModal({
+      type: "media",
+      visible: false,
+    });
+
+    Linking.openSettings();
+  }, 8000);
+}}
+/>
+  <Item
+  isOnline={true}
+  icon="notifications-outline"
+  title="Notifications"
+ onPress={() => {
+progressAnim.setValue(0);
+
+setPermissionModal({
+  type: "notification",
+  visible: true,
+});
+
+Animated.timing(
+  progressAnim,
+  {
+    toValue: 1,
+    duration: 8000,
+    useNativeDriver: false,
+  }
+).start();
+
+redirectTimeoutRef.current =
+  setTimeout(() => {
+    setPermissionModal({
+      type: "notification",
+      visible: false,
+    });
+
+    Linking.openSettings();
+  }, 8000);
+}}
+/>
+
+        </Section>
+
         <Section title="Account">
+
           <Item
   isOnline={isOnline}
   icon="person-outline"
@@ -779,6 +873,175 @@ onPress={() =>
           </View>
         </View>
       </Modal>
+
+      <Modal
+  visible={
+    permissionModal.visible
+  }
+  transparent
+  animationType="fade"
+>
+  <View
+    style={{
+      flex: 1,
+      backgroundColor:
+        "rgba(0,0,0,0.92)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    }}
+  >
+    <View
+      style={{
+        width: "92%",
+        backgroundColor:
+          "#050505",
+        borderRadius: 28,
+        padding: 14,
+
+        borderWidth: 1,
+        borderColor:
+          "rgba(34,197,94,0.15)",
+
+        overflow: "hidden",
+      }}
+    >
+      <Image
+        source={
+          permissionModal.type ===
+          "notification"
+            ? require(
+                "@/assets/images/help/notification.webp"
+              )
+            : require(
+                "@/assets/images/help/media.webp"
+              )
+        }
+        contentFit="contain"
+        style={{
+          width: "100%",
+          height: 420,
+          borderRadius: 18,
+        }}
+      />
+
+      <Text
+        style={{
+          color: "#fff",
+          fontSize: 22,
+          fontWeight: "700",
+          textAlign: "center",
+          marginTop: 14,
+        }}
+      >
+        {permissionModal.type ===
+        "notification"
+          ? "Enable Notifications"
+          : "Enable Photos & Videos"}
+      </Text>
+
+      <Text
+        style={{
+          color: "#a3a3a3",
+          textAlign: "center",
+          marginTop: 6,
+          fontSize: 14,
+          lineHeight: 20,
+        }}
+      >
+        You'll be redirected to
+        Android Settings in a
+        moment.
+      </Text>
+
+<View
+  style={{
+    marginTop: 18,
+  }}
+>
+  <View
+    style={{
+      height: 5,
+      backgroundColor:
+        "rgba(255,255,255,0.08)",
+      borderRadius: 999,
+      overflow: "hidden",
+    }}
+  >
+    <Animated.View
+      style={{
+        height: "100%",
+        width:
+          progressAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [
+              "0%",
+              "100%",
+            ],
+          }),
+        backgroundColor:
+          "#22C55E",
+        borderRadius: 999,
+      }}
+    />
+  </View>
+
+  <View
+    style={{
+      flexDirection: "row",
+      justifyContent:
+        "space-between",
+      alignItems: "center",
+      marginTop: 12,
+    }}
+  >
+    <Text
+      style={{
+        color: "#22C55E",
+        fontSize: 12,
+        fontWeight: "600",
+      }}
+    >
+      Opening Settings...
+    </Text>
+
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => {
+        clearTimeout(
+          redirectTimeoutRef.current
+        );
+
+        progressAnim.stopAnimation();
+
+        setPermissionModal({
+          visible: false,
+          type: null,
+        });
+      }}
+      style={{
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor:
+          "rgba(255,255,255,0.08)",
+        justifyContent:
+          "center",
+        alignItems:
+          "center",
+      }}
+    >
+      <Ionicons
+        name="close-sharp"
+        size={22}
+        color="#ffffff"
+      />
+    </TouchableOpacity>
+  </View>
+</View>
+    </View>
+  </View>
+</Modal>
     </View>
   );
 }

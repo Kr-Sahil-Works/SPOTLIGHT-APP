@@ -8,7 +8,7 @@ export const saveBookmarksCache =
     storage.set(
       KEY,
       JSON.stringify(
-        posts.slice(0, 10)
+        posts.slice(0, 20)
       )
     );
   };

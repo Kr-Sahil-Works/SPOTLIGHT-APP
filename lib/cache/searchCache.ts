@@ -9,7 +9,7 @@ export const saveSearchCache = (
   storage.set(
     SEARCH_KEY,
     JSON.stringify(
-      searches.slice(0, 20)
+      searches.slice(0, 10)
     )
   );
 };
