@@ -39,9 +39,7 @@ const useGreenNotes =
   selectedTheme ===
     "spotlight-green" ||
   selectedTheme ===
-    "aurora" ||
-  selectedTheme ===
-    "soundwave";
+    "aurora" 
 
 
 return (

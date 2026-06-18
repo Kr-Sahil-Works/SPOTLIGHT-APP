@@ -47,28 +47,6 @@ export default function AccountScreen() {
 
  const dbUser = useQuery(api.users.index.getCurrentUser);
 
-const stats = useQuery(
-  api.users.index.getUserStats,
-  dbUser?._id ? { userId: dbUser._id } : "skip"
-);
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowAnim, {
-          toValue: 0,
-          duration: 1800,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
-
   const showToast = (msg: string) => {
     setToast(msg);
 
@@ -86,6 +64,136 @@ const stats = useQuery(
       }, 1800);
     });
   };
+
+const words = [
+  "Thank You ",
+  "So Much 🥺",
+  "For Your Support",
+  "Spotlight",
+  "Fast ⚡",
+  "Free 🌍",
+  "For Everyone",
+  "Built With Love",
+  "By- Sahil :) ",
+];
+
+const [displayText, setDisplayText] =
+  useState("");
+
+const [wordIndex, setWordIndex] =
+  useState(0);
+
+const [showCursor, setShowCursor] =
+  useState(true);
+
+useEffect(() => {
+  const cursor = setInterval(() => {
+    setShowCursor(
+      (prev) => !prev
+    );
+  }, 500);
+
+  return () =>
+    clearInterval(cursor);
+}, []);
+
+const hasFinishedRef =
+  useRef(false);
+
+useEffect(() => {
+  if (
+    hasFinishedRef.current
+  ) {
+    return;
+  }
+
+  const currentWord =
+    words[wordIndex];
+
+  let typingTimeout: any;
+  let deletingTimeout: any;
+
+  let i = 0;
+
+  const type = () => {
+    if (
+      i <= currentWord.length
+    ) {
+      setDisplayText(
+        currentWord.slice(
+          0,
+          i
+        )
+      );
+
+      i++;
+
+      typingTimeout =
+        setTimeout(
+          type,
+          80
+        );
+    } else {
+      setTimeout(() => {
+       if (
+  wordIndex ===
+  words.length - 1
+) {
+  hasFinishedRef.current =
+    true;
+
+  setShowCursor(false);
+
+  return;
+}
+        remove(
+          currentWord.length
+        );
+      }, 1200);
+    }
+  };
+
+  const remove = (
+    length: number
+  ) => {
+    if (length >= 0) {
+      setDisplayText(
+        currentWord.slice(
+          0,
+          length
+        )
+      );
+
+      deletingTimeout =
+        setTimeout(
+          () =>
+            remove(
+              length - 1
+            ),
+          25
+        );
+    } else {
+      setWordIndex(
+        (prev) =>
+          prev + 1
+      );
+    }
+  };
+
+  type();
+
+  return () => {
+    clearTimeout(
+      typingTimeout
+    );
+
+    clearTimeout(
+      deletingTimeout
+    );
+  };
+}, [wordIndex]);
+
+
 
   if (!user || dbUser === undefined || dbUser === null)  {
     return (
@@ -114,7 +222,9 @@ Profile
   </Text>
 </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <ScrollView 
+  showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ padding: 16 }}>
         {/* PROFILE */}
         <BlurView intensity={25} tint="dark" style={styles.glassCard}>
           <View style={styles.avatarWrapper}>
@@ -145,7 +255,6 @@ Profile
   }
   style={styles.avatar}
 contentFit="cover"
-  fadeDuration={0}
 />
           </View>
 
@@ -168,7 +277,7 @@ contentFit="cover"
         </BlurView>
 
         {/* ACTIVITY */}
-        <BlurView intensity={25} tint="dark" style={styles.glassCard}>
+        {/* <BlurView intensity={25} tint="dark" style={styles.glassCard}>
           <Text style={styles.cardTitle}>Activity</Text>
 
           <View style={styles.modularGrid}>
@@ -179,7 +288,87 @@ contentFit="cover"
 <ModBox title="Comments" value={stats?.comments ?? 0} icon="chatbubble" />
 <ModBox title="Messages" value={stats?.messages ?? 0} icon="mail" />
           </View>
-        </BlurView>
+        </BlurView> */}
+
+<BlurView
+  intensity={25}
+  tint="dark"
+  style={{
+    marginTop: 40,
+    borderRadius: 22,
+    padding: 20,
+    marginBottom: 14,
+    backgroundColor:
+      "rgba(255,255,255,0.02)",
+    borderWidth: 1,
+    borderColor:
+      "rgba(255,255,255,0.06)",
+  }}
+>
+<Text
+  style={{
+    color: "#22C55E",
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 10,
+  }}
+>
+  {displayText}
+  <Text
+    style={{
+      opacity:
+        showCursor
+          ? 1
+          : 0,
+    }}
+  >
+    |
+  </Text>
+  {" 💚"}
+</Text>
+
+  <Text
+    style={{
+      color: "#d7d7d7",
+      lineHeight: 22,
+      fontSize: 14,
+    }}
+  >
+    Thank you for being a part of
+    Spotlight. Every message,
+    reaction, post, and connection
+    is special and means a lot to me.
+
+    {"\n\n"}
+
+    Spotlight was built with 
+    passion, and countless late 
+    nights and hours of
+    coding. Your support, feedback,
+    and presence mean more than
+    you know ❤️
+  </Text>
+
+  <View
+    style={{
+      height: 1,
+      backgroundColor:
+        "rgba(255,255,255,0.06)",
+      marginVertical: 14,
+    }}
+  />
+
+  <Text
+    style={{
+      color: "#707070",
+      fontSize: 12,
+      marginTop: 14,
+      textAlign: "center",
+    }}
+  >
+| Meaningful conversations | Real connections | Lasting memories |
+  </Text>
+</BlurView>
 
         {/* RESTRICTED */}
         <View style={styles.dangerCard}>
@@ -284,7 +473,7 @@ headerText: {
   color: "#22C55E",
   fontSize: 18,
   fontWeight: "700",
-  marginRight: 2,
+  marginRight: 8,
 },
 
   glassCard: {
@@ -332,6 +521,7 @@ borderColor: "rgba(255,255,255,0.06)",
   },
 
   memberCard: {
+    marginTop:40,
     borderRadius: 22,
     paddingVertical: 20,
     marginBottom: 14,
@@ -378,6 +568,7 @@ modValue: {
 },
 
   dangerCard: {
+    marginTop:600,
     padding: 14,
     borderRadius: 20,
     backgroundColor: "rgba(239,68,68,0.05)",

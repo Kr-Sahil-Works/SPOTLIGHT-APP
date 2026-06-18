@@ -47,8 +47,8 @@ const isAllowed =
   title === "Developer's Github" ||
   title === "Documentation" ||
   title === "Logout" ||
-  title === "Backup chats" ||
-  title === "Export data" ||
+  // title === "Backup chats" ||
+  // title === "Export data" ||
   title === "Account settings";
 
 const canUse =

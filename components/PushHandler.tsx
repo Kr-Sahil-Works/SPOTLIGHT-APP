@@ -33,13 +33,9 @@ export default function PushHandler() {
     "expo";
 
   useEffect(() => {
-    if (isExpoGo) {
-      console.log(
-        "🚫 Push disabled in Expo Go"
-      );
-
-      return;
-    }
+  if (isExpoGo) {
+  return;
+}
 
     let sub: any;
 
@@ -227,10 +223,7 @@ if (
             }
           );
       } catch (e) {
-        console.log(
-          "Push setup error:",
-          e
-        );
+       console.error(e);
       }
     })();
 

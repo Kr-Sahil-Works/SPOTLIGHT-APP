@@ -57,17 +57,18 @@ export const CHAT_LIST_THEMES: ChatListTheme[] = [
   id: "sakura",
   name: "Sakura",
 
-  background: "#140a11",
+    background: "#120611",
 
-  searchBg: "#21111b",
+  searchBg: "#1c0c1b",
 
-  cardBg: "#341a2b",
+  cardBg: "#2a1328",
 
-  cardBorder: "#fb718544",
+  cardBorder: "#ff4fa344",
 
-  glow: "#fb7185",
+  glow: "#ff4fa3",
 
-  headerColor: "#fb7185",
+  headerColor: "#ff4fa3",
+  
 },
   
 
@@ -269,20 +270,21 @@ export const CHAT_LIST_THEMES: ChatListTheme[] = [
 },
 
 {
-  id: "Music",
+  id: "music",
   name: "Music",
 
-  background: "#120000",
+  background: "#0f0713",
 
-  searchBg: "#230101",
+  searchBg: "#180b20",
 
-  cardBg: "#230101",
+  cardBg: "#241033",
 
-  cardBorder: "#ff6b3544",
+  cardBorder: "#ff3d8144",
 
-  glow: "#ff6b35",
+  glow: "#ff3d81",
 
-  headerColor: "#ff6b35",
+  headerColor: "#ff3d81",
+
 },
 
 {
@@ -306,17 +308,15 @@ export const CHAT_LIST_THEMES: ChatListTheme[] = [
   id: "soundwave",
   name: "Soundwave",
 
-  background: "#041006",
+  background: "#0f0b18",
+  searchBg: "#181127",
+  cardBg: "#23193b",
 
-  searchBg: "#0a1b0d",
+  cardBorder: "#c4b5fd44",
 
-  cardBg: "#102715",
+  glow: "#c4b5fd",
 
-  cardBorder: "#1ed76044",
-
-  glow: "#1ed760",
-
-  headerColor: "#1ed760",
-},
+  headerColor: "#c4b5fd",
+}
 
 ];

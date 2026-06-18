@@ -283,11 +283,11 @@ useEffect(() => {
     return;
   }
 
-lastMessageIdRef.current =
-  latestId;
+  lastMessageIdRef.current =
+    latestId;
 
-onNewMessage();
-}, [messages.length]);
+  onNewMessage();
+}, [messages, onNewMessage]);
 
 
   const editMessage =

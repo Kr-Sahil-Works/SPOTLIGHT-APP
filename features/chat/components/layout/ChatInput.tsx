@@ -241,7 +241,6 @@ const handleTyping = (value: string) => {
               style={{
                 color:
                   theme.headerText,
-
                 fontSize: 16,
                 paddingVertical: 8,
               }}
