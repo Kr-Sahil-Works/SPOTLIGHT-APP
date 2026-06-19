@@ -12,11 +12,6 @@ export type Reaction = {
   userImage?: string;
 };
 
-export type TapState = {
-  count: number;
-  timer: ReturnType<typeof setTimeout> | null;
-};
-
 export type Message = {
   _id: Id<"messages">;          // ✅ FIXED
   text: string;

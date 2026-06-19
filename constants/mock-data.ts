@@ -37,14 +37,14 @@ export const STORIES = [
   },
   {
     id: "6",
-    username: "Sam",
+    username: "Nobi",
     avatar: require("@/assets/images/story/story6.webp"),
     story: require("@/assets/images/story/storyb6.webp"),
     hasStory: true,
   },
   {
     id: "7",
-    username: "Music",
+    username: "Nanny",
     avatar: require("@/assets/images/story/story7.webp"),
     story: require("@/assets/images/story/storyb7.webp"),
     hasStory: true,
