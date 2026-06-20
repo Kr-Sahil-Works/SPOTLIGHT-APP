@@ -12,15 +12,6 @@ import { ReactNode } from "react";
 const publishableKey =
   process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
-  console.log(
-  "CLERK KEY =",
-  publishableKey
-);
-console.log(
-  "CLERK KEY =",
-  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
-);
-
   const convex = new ConvexReactClient(
   process.env.EXPO_PUBLIC_CONVEX_URL!
 );
