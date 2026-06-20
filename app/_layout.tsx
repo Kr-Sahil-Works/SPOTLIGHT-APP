@@ -1,25 +1,25 @@
-import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 
-import PushHandler from "@/components/PushHandler";
 import {
   AppToastProvider,
 } from "@/components/common/AppToast";
-import OfflineBanner from "@/components/common/OfflineBanner";
 import useNetwork from "@/hooks/useNetwork";
 
 import { api } from "@/convex/_generated/api";
+import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useMutation, useQuery } from "convex/react";
 import { AppState, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import OfflineBanner from "@/components/common/OfflineBanner";
+import PushHandler from "@/components/PushHandler";
 import {
   SafeAreaProvider,
   SafeAreaView,
 } from "react-native-safe-area-context";
-
 
 SplashScreen.preventAutoHideAsync();
 
@@ -47,29 +47,22 @@ function OnlineWrapper({
     )
       return;
 
-const handleState =
-  async (state: string) => {
-    try {
-      if (
-        !isLoaded ||
-        !isSignedIn
-      ) {
-        return;
-      }
+    const handleState =
+      async (state: string) => {
+        try {
+          if (
+            !isLoaded ||
+            !isSignedIn
+          ) {
+            return;
+          }
 
-   if (
-  !isLoaded ||
-  !isSignedIn
-) {
-  return;
-}
-
-await setOnline({
-  isOnline:
-    state === "active",
-});
-    } catch {}
-  };
+          await setOnline({
+            isOnline:
+              state === "active",
+          });
+        } catch {}
+      };
 
     const sub =
       AppState.addEventListener(
@@ -80,26 +73,26 @@ await setOnline({
     handleState(
       AppState.currentState
     );
-const interval =
-  setInterval(() => {
-    if (
-      !isLoaded ||
-      !isSignedIn ||
-      AppState.currentState !==
-        "active"
-    ) {
-      return;
-    }
 
-    setOnline({
-      isOnline: true,
-    }).catch(() => {});
-  }, 60000);
+    const interval =
+      setInterval(() => {
+        if (
+          !isLoaded ||
+          !isSignedIn ||
+          AppState.currentState !==
+            "active"
+        ) {
+          return;
+        }
+
+        setOnline({
+          isOnline: true,
+        }).catch(() => {});
+      }, 60000);
 
     return () => {
-
       clearInterval(interval);
-      
+
       sub.remove();
 
       try {
@@ -127,105 +120,132 @@ const interval =
 /* =========================
    ✅ APP CONTENT
 ========================= */
-function AppContent({ onLayoutRootView }: any) {
+function AppContent() {
   const isOnline =
-  useNetwork();
-  const { user } = useUser();
+    useNetwork();
+
+  const { user } =
+    useUser();
+
   const {
-  isLoaded,
-  isSignedIn,
-  signOut,
-} = useAuth();
+    isSignedIn,
+  } = useAuth();
 
-  const createUser = useMutation(
-    api.users.index.createOrUpdateUser
-  );
+  const createUser =
+    useMutation(
+      api.users.index
+        .createOrUpdateUser
+    );
 
-  const currentUser = useQuery(
-  api.users.index.getCurrentUser
+  const currentUser =
+    useQuery(
+      api.users.index
+        .getCurrentUser
+    );
+
+  useEffect(() => {
+    if (
+      !user ||
+      !isSignedIn
+    )
+      return;
+
+    createUser({
+      clerkId: user.id,
+      email:
+        user
+          .primaryEmailAddress
+          ?.emailAddress || "",
+      fullname:
+        `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+        "User",
+      image:
+        user.imageUrl || "",
+    });
+  }, [
+    user?.id,
+    isSignedIn,
+  ]);
+
+ return (
+  <OnlineWrapper>
+  <>
+  {isSignedIn && (
+    <PushHandler />
+  )}
+
+  {!isOnline && (
+    <OfflineBanner />
+  )}
+
+  <Stack
+    screenOptions={{
+      headerShown: false,
+      animation: "fade",
+      animationDuration: 180,
+      gestureEnabled: true,
+      contentStyle: {
+        backgroundColor: "#000",
+      },
+    }}
+  />
+</>
+  </OnlineWrapper>
 );
-
-
-
-useEffect(() => {
-  if (!user || !isSignedIn) return;
-
-  createUser({
-    clerkId: user.id,
-    email: user.primaryEmailAddress?.emailAddress || "",
-    fullname:
-      `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
-      "User",
-    image: user.imageUrl || "",
-  });
-}, [user?.id, isSignedIn]);
-
- 
-
-  return (
-    <OnlineWrapper>
-      <SafeAreaProvider>
-        <SafeAreaView
-          edges={["top", "left", "right"]}
-          style={{ flex: 1, backgroundColor: "#000" }}
-          onLayout={onLayoutRootView}
-        >
-          {isSignedIn && <PushHandler />}
-
-{!isOnline && (
-  <OfflineBanner />
-)}
-
-          <Stack
-           screenOptions={{
-  headerShown: false,
-
-  animation: "fade",
-
-  animationDuration: 180,
-
-  gestureEnabled: true,
-
-  contentStyle: {
-    backgroundColor: "#000",
-  },
-}}
-          />
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </OnlineWrapper>
-  );
 }
 
 /* =========================
    ✅ ROOT
 ========================= */
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    "JetBrainsMono-Medium": require("../assets/fonts/JetBrainsMono-Medium.ttf"),
-  });
+  const [fontsLoaded] =
+    useFonts({
+      "JetBrainsMono-Medium":
+        require("../assets/fonts/JetBrainsMono-Medium.ttf"),
+    });
 
-  const onLayoutRootView = useCallback(async () => {
+  useEffect(() => {
     if (fontsLoaded) {
-      await SplashScreen.hideAsync();
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: "#000" }} />;
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor:
+            "#000",
+        }}
+      />
+    );
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-    <ClerkAndConvexProvider>
-  <AppToastProvider>
-    <AppContent
-      onLayoutRootView={
-        onLayoutRootView
-      }
-    />
-  </AppToastProvider>
-</ClerkAndConvexProvider>
+    <GestureHandlerRootView
+      style={{ flex: 1 }}
+    >
+      <ClerkAndConvexProvider>
+        <AppToastProvider>
+          <SafeAreaProvider>
+            <SafeAreaView
+              edges={[
+                "top",
+                "left",
+                "right",
+              ]}
+              style={{
+                flex: 1,
+                backgroundColor:
+                  "#000",
+              }}
+            >
+              <AppContent />
+            </SafeAreaView>
+          </SafeAreaProvider>
+        </AppToastProvider>
+      </ClerkAndConvexProvider>
     </GestureHandlerRootView>
   );
 }

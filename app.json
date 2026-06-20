@@ -23,7 +23,6 @@
     "android": {
       "package": "com.spotlight.chat",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 1,
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "READ_MEDIA_IMAGES"
