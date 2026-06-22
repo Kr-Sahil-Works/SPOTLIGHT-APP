@@ -9,7 +9,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
-import { Redirect } from "expo-router";
 import React, { memo, useEffect, useRef, useState } from "react";
 import { Animated, Dimensions, Platform, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -61,7 +60,11 @@ chats: [
 };
 
 function TabsLayout() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const {
+  isLoaded,
+  isSignedIn,
+  userId,
+} = useAuth();
 
   const currentUser = useQuery(
   api.users.index.getCurrentUser
@@ -83,16 +86,8 @@ useEffect(() => {
     setSwipeEnabled] =
     useState(true);
 
-    if (!isLoaded) {
+if (!isLoaded || !userId) {
   return null;
-}
-
-if (!isSignedIn) {
-  return (
-    <Redirect
-      href="/(auth)/login"
-    />
-  );
 }
 
 return (

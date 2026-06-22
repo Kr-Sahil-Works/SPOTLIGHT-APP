@@ -1,7 +1,8 @@
 import GreenLoader from "@/components/loaders/GreenLoader";
 import { COLORS } from "@/constants/theme";
+import useNetwork from "@/hooks/useNetwork";
 import { styles } from "@/styles/auth.styles";
-import { useSSO } from "@clerk/clerk-expo";
+import { useAuth, useSSO } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
 import * as AuthSession from "expo-auth-session";
 import * as Haptics from "expo-haptics";
@@ -10,16 +11,49 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Pressable, Text, View } from "react-native";
+import { Animated, AppState, Pressable, Text, View } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
 
+  const isOnline = useNetwork();
+
   const { startSSOFlow } = useSSO();
 
-  const [loading,setLoading] = useState(false);
+  const [loading, setLoading] =
+  useState(false);
 
+const loginStartedRef =
+  useRef(false);
+
+  const appState = useRef(
+  AppState.currentState
+);
+
+useEffect(() => {
+  const sub =
+    AppState.addEventListener(
+      "change",
+      (nextState) => {
+        if (
+          appState.current !==
+            "active" &&
+          nextState ===
+            "active"
+        ) {
+          setLoading(false);
+          resetMorph();
+        }
+
+        appState.current =
+          nextState;
+      }
+    );
+
+  return () =>
+    sub.remove();
+}, []);
 
   const images = [
   require("../../assets/images/loginpage/login1.webp"),
@@ -44,6 +78,11 @@ useEffect(() => {
   const sweep = useRef(new Animated.Value(-250)).current;
 
 const router = useRouter();
+
+const {
+  isLoaded,
+  isSignedIn,
+} = useAuth();
 
   const pressIn = () => {
     Animated.spring(pressScale,{
@@ -101,8 +140,11 @@ const handleGoogleSignIn = async () => {
   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
   runSweep();
-  startMorph();
-  setLoading(true);
+startMorph();
+
+loginStartedRef.current = true;
+
+setLoading(true);
 
   try {
 
@@ -118,17 +160,21 @@ const {
 });
 
 if (setActive && createdSessionId) {
-  await setActive({ session: createdSessionId });
+  await setActive({
+  session: createdSessionId,
+});
+
+loginStartedRef.current =
+  false;
 resetMorph();
 setLoading(false);
-  // small delay avoids race condition
-  setTimeout(() => {
-    router.replace("/(tabs)");
-  }, 100);
 
   return;
 }
   } catch (error: any) {
+
+  loginStartedRef.current =
+    false;
     console.error("OAuth error:", error);
     resetMorph();
     setLoading(false);
@@ -162,21 +208,18 @@ setLoading(false);
         <Text style={styles.tagline}>don't miss anything</Text>
       </View>
 
-      <View style={styles.illustrationContainer}>
 <View style={styles.illustrationContainer}>
 
 <Image
-  key={currentImage}
   source={images[currentImage]}
   style={styles.illustration}
   contentFit="contain"
   cachePolicy="memory-disk"
   allowDownscaling
-  transition={500}
+  transition={1200}
 />
 
 </View>
-      </View>
 
       <View style={styles.loginSection}>
 
@@ -193,14 +236,19 @@ setLoading(false);
             onPress={handleGoogleSignIn}
             onPressIn={pressIn}
             onPressOut={pressOut}
-            disabled={loading}
+            disabled={
+  loading ||
+  !isOnline
+}
             android_ripple={{color:"rgba(255,255,255,0.25)"}}
             style={[
               styles.googleButton,
+              !isOnline && {
+                opacity: 0.5,
+              },
               {justifyContent:"center",alignItems:"center",overflow:"hidden"}
             ]}
           >
-
             <Animated.View
               style={{
                 position:"absolute",
@@ -245,12 +293,51 @@ setLoading(false);
             </Animated.View>
 
           </Pressable>
-
+        {!isOnline && (
+  <Text
+    style={{
+      color: "#888",
+      textAlign: "center",
+      marginTop: 10,
+      fontSize: 12,
+    }}
+  >
+    Internet connection required to sign in
+  </Text>
+)}
         </Animated.View>
 
-        <Text style={styles.termsText}>
-          By continuing, you agree to our Terms and Privacy Policy
-        </Text>
+   <Text style={styles.termsText}>
+  By continuing, you agree to our{" "}
+
+  <Text
+    style={{
+      color: "#22c55e",
+      textDecorationLine: "underline",
+      fontWeight: "700",
+    }}
+    onPress={() =>
+      router.push("/policy/terms-and-conditions")
+    }
+  >
+    Terms
+  </Text>
+
+  {" "}and{" "}
+
+  <Text
+    style={{
+      color: "#22c55e",
+      textDecorationLine: "underline",
+      fontWeight: "700",
+    }}
+    onPress={() =>
+      router.push("/policy/privacy-policy")
+    }
+  >
+    Privacy Policy
+  </Text>
+</Text>
 
       </View>
 

@@ -23,6 +23,7 @@ import type * as notifications from "../notifications.js";
 import type * as posts_index from "../posts/index.js";
 import type * as security from "../security.js";
 import type * as social_index from "../social/index.js";
+import type * as treeGame from "../treeGame.js";
 import type * as users_index from "../users/index.js";
 import type * as users_webhook from "../users/webhook.js";
 
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   "posts/index": typeof posts_index;
   security: typeof security;
   "social/index": typeof social_index;
+  treeGame: typeof treeGame;
   "users/index": typeof users_index;
   "users/webhook": typeof users_webhook;
 }>;

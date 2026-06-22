@@ -11,7 +11,7 @@ import { api } from "@/convex/_generated/api";
 import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useMutation, useQuery } from "convex/react";
-import { AppState, View } from "react-native";
+import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import OfflineBanner from "@/components/common/OfflineBanner";
@@ -210,17 +210,16 @@ export default function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor:
-            "#000",
-        }}
-      />
-    );
-  }
+if (!fontsLoaded) {
+  return (
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#000",
+      }}
+    />
+  );
+}
 
   return (
     <GestureHandlerRootView

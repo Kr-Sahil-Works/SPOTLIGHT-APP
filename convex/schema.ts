@@ -379,4 +379,15 @@ pinnedAt: v.optional(
   })
     .index("by_conversation", ["conversationId"])
     .index("by_user_conversation", ["conversationId", "userId"]),
+
+
+    treeScores: defineTable({
+  userId: v.string(),
+  fullname: v.string(),
+  image: v.optional(v.string()),
+  score: v.number(),
+})
+.index("by_score", ["score"])
+.index("by_user", ["userId"]),
 });
+

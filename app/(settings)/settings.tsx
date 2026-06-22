@@ -49,16 +49,19 @@ const Item = ({
 const isAllowed =
   title === "Developer's Github" ||
   title === "Documentation" ||
+  title === "Privacy Policy" ||
+  title === "Terms & Conditions" ||
+  title === "Contact Developer" ||
   title === "Logout" ||
-  // title === "Backup chats" ||
-  // title === "Export data" ||
   title === "Notifications" ||
-title === "Photos & Media" ||
+  title === "Photos & Media" ||
   title === "Account settings";
 
 const canUse =
-  isOnline &&
-  isAllowed;
+  title === "Privacy Policy" ||
+  title === "Terms & Conditions" ||
+  title === "Contact Developer" ||
+  (isOnline && isAllowed);
 
 const handlePress = () => {
   if (!canUse) return;
@@ -85,7 +88,7 @@ const handlePress = () => {
         padding: 16,
         borderRadius: 16,
         backgroundColor: isAllowed
-  ? "rgba(34,197,94,0.08)"   // subtle green glass
+  ? "rgba(34,197,94,0.08)" 
   : "rgba(34,197,94,0.03)",
 
 borderWidth: 1,
@@ -221,6 +224,19 @@ const verifyDeveloperCode =
     api.security.verifyDeveloperCode
   );
 
+  const [unlockingTree, setUnlockingTree] =
+  useState(false);
+
+const tunnelScale =
+  useRef(
+    new Animated.Value(0)
+  ).current;
+
+const tunnelOpacity =
+  useRef(
+    new Animated.Value(0)
+  ).current;
+
 
   const { showToast } =
   useAppToast();
@@ -292,8 +308,126 @@ const verifyDeveloperCode =
 
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
+
+
+         <View
+  style={{
+    alignItems: "center",
+    marginBottom: 24,
+  }}
+>
+  <TouchableOpacity
+    activeOpacity={0.9}
+onPress={async () => {
+  const nextTap =
+    tapCount + 1;
+
+  setTapCount(nextTap);
+
+  if (nextTap >= 7) {
+    setTapCount(0);
+
+await Haptics.impactAsync(
+  Haptics.ImpactFeedbackStyle.Medium
+);
+
+setTimeout(() => {
+  Haptics.impactAsync(
+    Haptics.ImpactFeedbackStyle.Heavy
+  );
+}, 120);
+
+setTimeout(() => {
+  Haptics.notificationAsync(
+    Haptics.NotificationFeedbackType.Success
+  );
+}, 250);
+
+  setUnlockingTree(true);
+
+Animated.parallel([
+  Animated.timing(
+    tunnelScale,
+    {
+      toValue: 25,
+      duration: 1400,
+      useNativeDriver: true,
+    }
+  ),
+
+  Animated.timing(
+    tunnelOpacity,
+    {
+      toValue: 1,
+      duration: 250,
+      useNativeDriver: true,
+    }
+  ),
+]).start();
+
+setTimeout(() => {
+  router.push(
+    "/(tools)/tree-game"
+  );
+
+  setTimeout(() => {
+    setUnlockingTree(false);
+
+    tunnelScale.setValue(0);
+    tunnelOpacity.setValue(0);
+  }, 300);
+}, 1400);
+
+    setTimeout(() => {
+      router.push(
+        "/(tools)/tree-game"
+      );
+    }, 1200);
+  }
+}}
+  >
+    <Image
+      source={require("@/assets/images/icon.png")}
+      contentFit="contain"
+      style={{
+        width: 90,
+        height: 90,
+      }}
+    />
+  </TouchableOpacity>
+
+  <Text
+    style={{
+      color: "#eafff3",
+      fontSize: 22,
+      fontWeight: "800",
+      marginTop: 8,
+    }}
+  >
+    Spotlight
+  </Text>
+
+  {/* WATERMARK */}
+  <Text
+    style={{
+      color: "#858484",
+
+      marginTop: 18,
+
+      fontSize: 12,
+
+      letterSpacing: 2,
+
+      fontWeight: "700",
+    }}
+  >
+    SPOTLIGHT V.1.0.0
+  </Text>
+</View>
+
+
         <Section title="Support">
-          <Item
+<Item
   isOnline={isOnline}
   icon="document-text"
   title="Documentation"
@@ -303,19 +437,20 @@ const verifyDeveloperCode =
     )
   }
 />
-          <Item
+
+<Item
   isOnline={isOnline}
-  icon="code"
+  icon="logo-github"
   title="Developer's Github"
-onPress={() =>
-  router.push("/(app)/webview?url=https://github.com/Kr-Sahil-Works")
-}
+  onPress={() =>
+    router.push(
+      "/(app)/webview?url=https://github.com/Kr-Sahil-Works"
+    )
+  }
 />
-
-
-
-
         </Section>
+
+
 {showDevSection && (
   <Section title="Dev settings">
     <TouchableOpacity
@@ -486,7 +621,26 @@ redirectTimeoutRef.current =
 />
 
         </Section>
+        <Section title="Trust & Safety">
+  <Item
+    isOnline={true}
+    icon="shield-checkmark"
+    title="Privacy Policy"
+    onPress={() =>
+      router.push("/policy/privacy-policy")
+    }
+  />
 
+  <Item
+    isOnline={true}
+    icon="document-text"
+    title="Terms & Conditions"
+    onPress={() =>
+      router.push("/policy/terms-and-conditions")
+    }
+  />
+
+</Section>
         <Section title="Account">
 
           <Item
@@ -503,43 +657,27 @@ redirectTimeoutRef.current =
             onPress={() => setShowLogoutModal(true)}
           />
         </Section>
-
-
-        <View
-  style={{
-    marginTop: 400,
-    alignItems: "center",
-  }}
->
-  {/* CONNECT BUTTON */}
-  <TouchableOpacity
+    <TouchableOpacity
     activeOpacity={0.9}
     onPress={async () => {
       Animated.sequence([
-        Animated.spring(
-          scaleAnim,
-          {
-            toValue: 0.96,
-            useNativeDriver: true,
-          }
-        ),
+        Animated.spring(scaleAnim, {
+          toValue: 0.96,
+          useNativeDriver: true,
+        }),
 
-        Animated.spring(
-          scaleAnim,
-          {
-            toValue: 1,
-            friction: 3,
-            tension: 120,
-            useNativeDriver: true,
-          }
-        ),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 3,
+          tension: 120,
+          useNativeDriver: true,
+        }),
       ]).start();
 
-      const phone =
-        "+919608540597";
+      const phone = "+919608540597";
 
       const whatsappUrl =
-`whatsapp://send?phone=${phone}`;
+        `whatsapp://send?phone=${phone}`;
 
       const dialerUrl =
         `tel:${phone}`;
@@ -561,6 +699,7 @@ redirectTimeoutRef.current =
     }}
     style={{
       width: "100%",
+      marginBottom: 10,
     }}
   >
     <Animated.View
@@ -575,8 +714,7 @@ redirectTimeoutRef.current =
 
         alignItems: "center",
 
-        justifyContent:
-          "center",
+        justifyContent: "center",
 
         backgroundColor:
           "rgba(0,255,120,0.08)",
@@ -586,9 +724,9 @@ redirectTimeoutRef.current =
         borderColor:
           "rgba(0,255,120,0.14)",
 
-        borderRadius: 18,
+        borderRadius: 16, // match settings cards
 
-        paddingVertical: 15,
+        paddingVertical: 16,
       }}
     >
       <Ionicons
@@ -600,37 +738,68 @@ redirectTimeoutRef.current =
       <Text
         style={{
           color: "#eafff3",
-
           marginLeft: 10,
-
           fontWeight: "700",
-
           fontSize: 15,
         }}
       >
-        Connect Developer
+        Contact Developer
       </Text>
     </Animated.View>
   </TouchableOpacity>
 
-  {/* WATERMARK */}
-  <Text
+        <View
+  style={{
+    // marginTop: 4000,
+    alignItems: "center",
+  }}
+>
+</View>
+
+
+      </ScrollView>
+
+      {unlockingTree && (
+  <Animated.View
+    pointerEvents="none"
     style={{
-      color: "#2d2d2d",
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
 
-      marginTop: 18,
+      justifyContent: "center",
+      alignItems: "center",
 
-      fontSize: 12,
+      backgroundColor: "rgba(0,0,0,0.92)",
 
-      letterSpacing: 2,
+      opacity:
+        tunnelOpacity,
 
-      fontWeight: "700",
+      zIndex: 99999,
     }}
   >
-    SPOTLIGHT V.1.7
-  </Text>
-</View>
-      </ScrollView>
+    <Animated.View
+      style={{
+        width: 18,
+        height: 18,
+
+        borderRadius: 999,
+
+        backgroundColor:
+          "#7CFF4F",
+
+        transform: [
+          {
+            scale:
+              tunnelScale,
+          },
+        ],
+      }}
+    />
+  </Animated.View>
+)}
 
       {/* DEV SECRET MODAL */}
 <Modal

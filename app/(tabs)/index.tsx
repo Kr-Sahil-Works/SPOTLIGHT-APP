@@ -324,9 +324,9 @@ useEffect(() => {
 }, [onRefresh]);
 
 
-  if (!isSignedIn) {
-    return <View style={{ flex: 1, backgroundColor: "#000" }} />;
-  }
+if (!isSignedIn) {
+  return <FeedSkeleton />;
+}
 
 
 const storiesHeader = useMemo(() => {
