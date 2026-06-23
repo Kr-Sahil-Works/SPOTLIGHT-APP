@@ -350,36 +350,78 @@ if (!selectedImage) {
     <View style={[styles.container, { backgroundColor: "#000" }]}>
       
       {/* HEADER */}
-      <View
-        style={{
-          height: 70,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: "rgba(255,255,255,0.05)",
-        }}
-      >
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={26} color={COLORS.white} />
-        </TouchableOpacity>
+<View
+  style={{
+    height: 70,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor:
+      "rgba(255,255,255,0.05)",
+  }}
+>
+  {/* LEFT */}
+
+  <View
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      flex: 1,
+    }}
+  >
 
 
+    <Text
+      style={{
+        fontSize: 20,
+        fontWeight: "700",
+        color: COLORS.primary,
+        letterSpacing: 1,
+        marginLeft:8,
+      }}
+    >
+      New Post
+    </Text>
+        <Ionicons
+      name="duplicate-outline"
+      size={22}
+      color={COLORS.primary}
+      style={{
+        marginLeft: 8,
+      }}
+    />
+  </View>
 
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: "700",
-            color: COLORS.primary,
-            letterSpacing: 1,
-          }}
-        >
-          New Post
-        </Text>
+  {/* RIGHT */}
 
-        <View style={{ width: 26 }} />
-      </View>
+  <TouchableOpacity
+    onPress={() =>
+      router.back()
+    }
+    style={{
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+
+      backgroundColor:
+        "rgba(34,197,94,0.12)",
+
+      justifyContent:
+        "center",
+
+      alignItems:
+        "center",
+    }}
+  >
+    <Ionicons
+      name="chevron-back"
+      size={24}
+      color="#22c55e"
+    />
+  </TouchableOpacity>
+</View>
 
            {hasReachedPostLimit && (
   <View
@@ -743,7 +785,8 @@ width: "92%",
           </TouchableOpacity>
         </View>
 
-        <ScrollView
+      <ScrollView
+  showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
           bounces={false}
           keyboardShouldPersistTaps="handled"

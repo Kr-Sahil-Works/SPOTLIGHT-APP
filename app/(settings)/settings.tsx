@@ -307,7 +307,9 @@ const tunnelOpacity =
 
 
 
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
+     <ScrollView
+  showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ padding: 16 }}>
 
 
          <View

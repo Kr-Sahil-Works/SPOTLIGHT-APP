@@ -1,5 +1,5 @@
 export {
-    clearChat, createConversation, deleteChat, setPinnedMessage, toggleHidden, toggleMute,
+    clearChat, createConversation, deleteChat, saveContactNumber, setContactNumber, setPinnedMessage, toggleHidden, toggleMute,
     togglePin
 } from "./conversations.mutations";
 

@@ -11,38 +11,58 @@ import {
   View
 } from "react-native";
 
+import { useAppToast } from "@/components/common/AppToast";
+import ContactNumberModal from "@/components/modals/ContactNumberModal";
 import useUser from "@/features/chat/hooks/useUser";
 import useNetwork from "@/hooks/useNetwork";
 import { useState } from "react";
 import CallOptionsModal from "../modals/CallOptionsModal";
 
+
 type Props = {
   userId: Id<"users">;
   onOpenTheme: () => void;
   theme: ChatTheme;
-
+conversationId?: any;
   pinnedMessages?: any[];
 
 onPinPress?: () => void;
 
 onUnpin?: () => void;
+
+conversation?: any;
+
+currentUserId?: any;
+
 };
 
 export default function ChatHeader({
   userId,
   onOpenTheme,
-theme,
-onUnpin,
-pinnedMessages = [],
+  theme,
+  onUnpin,
+  pinnedMessages = [],
+  onPinPress,
 
-onPinPress,
+  conversation,
+  currentUserId,
+  conversationId,
 }: Props) {
   const router = useRouter();
+
+  const { showToast } =
+  useAppToast();
+  
 const isOnline =
   useNetwork();
   const { user } = useUser(userId);
 
   const [showCallModal, setShowCallModal] = useState(false);
+
+  const [
+  showNumberModal,
+  setShowNumberModal,
+] = useState(false);
 
   const [
   showPinActions,
@@ -59,16 +79,63 @@ const [
   setShowPinInfo,
 ] = useState(false);
 
-const openWhatsApp = async () => {
-  try {
-    await Linking.openURL(
-      "https://wa.me/919999999999"
-    );
-  } catch (e) {
-    await Linking.openURL(
-      "market://details?id=com.whatsapp"
-    );
+const getTargetNumber = () => {
+
+  if (
+    !conversation?.contactNumbers
+      ?.length
+  ) {
+    return null;
   }
+
+  const otherUserNumber =
+    conversation.contactNumbers.find(
+      (c: any) =>
+        String(c.userId) !==
+        String(currentUserId)
+    )?.phone;
+
+  if (otherUserNumber) {
+    return otherUserNumber;
+  }
+
+  // TEMP FALLBACK
+  return conversation
+    .contactNumbers[0]?.phone;
+};
+
+const openWhatsApp = async () => {
+  const targetNumber =
+    getTargetNumber();
+
+if (!targetNumber) {
+  router.push({
+    pathname:
+      "/chat/profile/[userId]",
+    params: {
+      userId,
+      conversationId,
+      openContact: "true",
+    },
+  });
+
+  return;
+}
+
+const phone =
+  targetNumber.startsWith(
+    "91"
+  )
+    ? targetNumber
+    : `91${targetNumber}`;
+
+const appUrl =
+  `https://wa.me/${phone}`;
+
+  const playStore =
+    "market://details?id=com.whatsapp";
+
+await Linking.openURL(appUrl);
 };
 
 const openInstagram = async () => {
@@ -78,7 +145,8 @@ const openInstagram = async () => {
   const playStore =
     "market://details?id=com.instagram.android";
 
-  const supported = await Linking.canOpenURL(appUrl);
+  const supported =
+    await Linking.canOpenURL(appUrl);
 
   if (supported) {
     await Linking.openURL(appUrl);
@@ -88,22 +156,52 @@ const openInstagram = async () => {
 };
 
 const openTelegram = async () => {
-  const appUrl = "tg://msg";
+  const targetNumber =
+    getTargetNumber();
 
-  const playStore =
-    "market://details?id=org.telegram.messenger";
+if (!targetNumber) {
+  router.push({
+    pathname:
+      "/chat/profile/[userId]",
+    params: {
+      userId,
+      conversationId,
+      openContact: "true",
+    },
+  });
+showToast(
+  "Telegram requires username"
+);
+  return;
+}
 
-  const supported = await Linking.canOpenURL(appUrl);
+  const appUrl =
+    `https://t.me/+91${targetNumber}`;
 
-  if (supported) {
-    await Linking.openURL(appUrl);
-  } else {
-    await Linking.openURL(playStore);
-  }
+  await Linking.openURL(appUrl);
 };
 
 const openCallApp = async () => {
-  await Linking.openURL("content://contacts/people/");
+  const targetNumber =
+    getTargetNumber();
+
+ if (!targetNumber) {
+  router.push({
+    pathname:
+      "/chat/profile/[userId]",
+    params: {
+      userId,
+      conversationId,
+      openContact: "true",
+    },
+  });
+
+  return;
+}
+
+  await Linking.openURL(
+    `tel:${targetNumber}`
+  );
 };
 
 
@@ -158,9 +256,13 @@ return (
   activeOpacity={0.8}
   disabled={!isOnline}
   onPress={() =>
-    router.push(
-      `/chat/profile/${userId}`
-    )
+   router.push({
+  pathname: "/chat/profile/[userId]",
+  params: {
+    userId,
+    conversationId,
+  },
+})
   }
   style={{
     flexDirection: "row",
@@ -566,9 +668,48 @@ onPress={() => {
     </Text>
   </TouchableOpacity>
 )}
-    <CallOptionsModal
+   <CallOptionsModal
   visible={showCallModal}
-  onClose={() => setShowCallModal(false)}
+  onClose={() =>
+    setShowCallModal(false)
+  }
+
+  onWhatsApp={openWhatsApp}
+
+  onInstagram={openInstagram}
+
+  onTelegram={openTelegram}
+
+  onCall={openCallApp}
+/>
+
+<ContactNumberModal
+  visible={
+    showNumberModal
+  }
+  onClose={() =>
+    setShowNumberModal(
+      false
+    )
+  }
+  initialValue=""
+  onSave={async (
+    phone
+  ) => {
+    router.push({
+      pathname:
+        "/chat/profile/[userId]",
+
+      params: {
+        userId,
+        conversationId,
+      },
+    });
+
+    setShowNumberModal(
+      false
+    );
+  }}
 />
   </>
 );

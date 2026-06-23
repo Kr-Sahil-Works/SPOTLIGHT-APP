@@ -1,7 +1,7 @@
 import { Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ScrollView,
   Text,
@@ -9,21 +9,68 @@ import {
   View,
 } from "react-native";
 
+import ContactNumberModal from "@/components/modals/ContactNumberModal";
+import { api } from "@/convex/_generated/api";
 import useUser from "@/features/chat/hooks/useUser";
+import { useMutation, useQuery } from "convex/react";
+import { useEffect, useState } from "react";
 
 type Props = {
   userId: Id<"users">;
+  conversationId: Id<"conversations">;
+
   onOpenTheme?: () => void;
 };
 
 
 export default function ChatProfileScreen({
   userId,
+  conversationId,
   onOpenTheme,
-}: Props) {
+}: Props){
   const router = useRouter();
 
   const { user } = useUser(userId);
+
+  const { openContact } =
+  useLocalSearchParams();
+
+  useEffect(() => {
+  if (
+    openContact ===
+    "true"
+  ) {
+    setShowContactModal(
+      true
+    );
+  }
+}, [openContact]);
+
+  const currentUser =
+  useQuery(
+    api.users.index
+      .getCurrentUser
+  );
+
+const conversation =
+  useQuery(
+    api.conversations.index
+      .getConversation,
+    {
+      conversationId,
+    }
+  );
+
+const saveContactNumber =
+  useMutation(
+    api.conversations.index
+      .saveContactNumber
+  );
+
+  const [
+  showContactModal,
+  setShowContactModal,
+] = useState(false);
 
   return (
     <View
@@ -240,11 +287,33 @@ export default function ChatProfileScreen({
           paddingBottom: 50,
         }}
       >
-        <MenuItem
-          icon="timer-outline"
-          title="Disappearing messages"
-          subtitle="Off"
-        />
+<TouchableOpacity
+  onPress={() =>
+    setShowContactModal(
+      true
+    )
+  }
+>
+  <MenuItem
+    icon="call-outline"
+    title="Contact Number"
+    subtitle={
+      conversation
+        ?.contactNumbers?.find(
+          (
+            c: any
+          ) =>
+            String(
+              c.userId
+            ) ===
+            String(
+              currentUser?._id
+            )
+        )?.phone ||
+      "WhatsApp, Telegram & Calls"
+    }
+  />
+</TouchableOpacity>
 
         <MenuItem
           icon="lock-closed-outline"
@@ -261,6 +330,54 @@ export default function ChatProfileScreen({
           title="Create a group chat"
         />
       </ScrollView>
+
+      <ContactNumberModal
+  visible={
+    showContactModal
+  }
+  onClose={() =>
+    setShowContactModal(
+      false
+    )
+  }
+  onRemove={async () => {
+  await saveContactNumber({
+    conversationId,
+    phone: "",
+  });
+
+  setShowContactModal(
+    false
+  );
+}}
+  initialValue={
+    conversation
+      ?.contactNumbers?.find(
+        (c: any) =>
+          String(
+            c.userId
+          ) ===
+          String(
+            currentUser?._id
+          )
+      )?.phone || ""
+  }
+  onSave={async (
+    phone
+  ) => {
+    await saveContactNumber(
+      {
+        conversationId,
+        phone,
+      }
+    );
+
+    setShowContactModal(
+      false
+    );
+  }}
+/>
+
     </View>
   );
 }
@@ -325,7 +442,11 @@ function MenuItem({
         flexDirection: "row",
         alignItems: "center",
         marginBottom: 34,
-        opacity: 0.45,
+        opacity:
+  title ===
+  "Contact Number"
+    ? 1
+    : 0.45,
       }}
     >
       <Ionicons
@@ -360,6 +481,8 @@ function MenuItem({
             {subtitle}
           </Text>
         )}
+
+
       </View>
     </TouchableOpacity>
   );

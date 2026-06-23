@@ -31,6 +31,9 @@ import {
   Alert,
   Animated,
   FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  LayoutAnimation,
   Modal,
   Platform,
   Text,
@@ -112,6 +115,34 @@ useEffect(() => {
 }, [liveCollections]);
 
 
+useEffect(() => {
+
+  const show =
+    Keyboard.addListener(
+      "keyboardDidShow",
+      () =>
+        setKeyboardVisible(
+          true
+        )
+    );
+
+  const hide =
+    Keyboard.addListener(
+      "keyboardDidHide",
+      () =>
+        setKeyboardVisible(
+          false
+        )
+    );
+
+  return () => {
+    show.remove();
+    hide.remove();
+  };
+
+}, []);
+
+
   const createCollection = useMutation(
     api.collections.createCollection
   );
@@ -140,6 +171,12 @@ useEffect(() => {
 
   const [newCollectionName, setNewCollectionName] =
     useState("");
+
+    const [
+  keyboardVisible,
+  setKeyboardVisible,
+] = useState(false);
+
 
     const [toast, setToast] = useState({
   visible: false,
@@ -578,7 +615,7 @@ const addToExistingCollection = async (
               setShowCollectionModal(true)
             }
             style={{
-              backgroundColor: "#00ff88",
+              backgroundColor: "#0f854e",
               paddingHorizontal: 18,
               paddingVertical: 10,
               borderRadius: 18,
@@ -586,7 +623,7 @@ const addToExistingCollection = async (
           >
             <Text
               style={{
-                color: "#000",
+                color: "#cac2c2",
                 fontWeight: "700",
               }}
             >
@@ -598,11 +635,21 @@ const addToExistingCollection = async (
 
       {/* ========================= */}
       {/* COLLECTION MODAL */}
-      <Modal
-        visible={showCollectionModal}
-        transparent
-        animationType="slide"
-      >
+<Modal
+  visible={showCollectionModal}
+  transparent
+  animationType="fade"
+>
+  <KeyboardAvoidingView
+    style={{
+      flex: 1,
+    }}
+    behavior={
+      Platform.OS === "ios"
+        ? "padding"
+        : "padding"
+    }
+  >
         <View
           style={{
             flex: 1,
@@ -633,24 +680,57 @@ const addToExistingCollection = async (
             </Text>
 
             {/* CREATE */}
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 10,
-                marginBottom: 24,
-              }}
-            >
+          <View
+  style={{
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 24,
+
+    marginTop:
+      keyboardVisible
+        ? -10
+        : 0,
+
+        position:
+  keyboardVisible
+    ? "absolute"
+    : "relative",
+
+top:
+  keyboardVisible
+    ? 20
+    : undefined,
+
+left:
+  keyboardVisible
+    ? 20
+    : undefined,
+
+right:
+  keyboardVisible
+    ? 20
+    : undefined,
+
+zIndex: 999,
+  }}
+>
               <TextInput
                 value={newCollectionName}
                 underlineColorAndroid="transparent"
-                onChangeText={
-                  setNewCollectionName
-                }
+             onChangeText={(text) => {
+  LayoutAnimation.configureNext(
+    LayoutAnimation.Presets.easeInEaseOut
+  );
+
+  setNewCollectionName(text);
+}}
                 placeholder="New collection..."
                 placeholderTextColor="#666"
                 style={{
                   flex: 1,
-                  backgroundColor: "#1b1b1b",
+                  backgroundColor: "#161616",
+borderWidth: 1,
+borderColor: "rgba(34,197,94,0.15)",
                   color: "#fff",
                   borderRadius: 16,
                   paddingHorizontal: 16,
@@ -666,8 +746,8 @@ const addToExistingCollection = async (
     createNewCollection
   }
   style={{
-    backgroundColor:
-      "#00ff88",
+   backgroundColor:
+  "#166534",
     paddingHorizontal: 18,
     borderRadius: 16,
     justifyContent: "center",
@@ -677,63 +757,79 @@ const addToExistingCollection = async (
         : 0.4,
   }}
 >
-                <Ionicons
-                  name="add"
-                  size={24}
-                  color="#000"
-                />
+            {newCollectionName.trim() ? (
+  <Text
+    style={{
+      color: "#bcdcc8",
+      fontWeight: "800",
+      fontSize: 14,
+    }}
+  >
+    Create
+  </Text>
+) : (
+  <Ionicons
+    name="add"
+    size={22}
+    color="#9dd6b2"
+  />
+)}
               </TouchableOpacity>
             </View>
 
             {/* COLLECTION LIST */}
-            <FlatList
-              data={collections}
-              keyExtractor={(item) =>
-                item._id
-              }
-              renderItem={({ item }) => (
-               <TouchableOpacity
-  disabled={
-    !isOnline
+          <FlatList
+  data={collections}
+  keyExtractor={(item) =>
+    item._id
   }
-  onPress={() =>
-    addToExistingCollection(
-                      item._id
-                    )
-                  }
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingVertical: 16,
-                    borderBottomWidth: 1,
-                    borderBottomColor:
-                      "rgba(255,255,255,0.05)",
+  style={{
+    maxHeight: 140,
+  }}
+  showsVerticalScrollIndicator={
+    false
+  }
+  renderItem={({ item }) => (
+    <TouchableOpacity
+      disabled={!isOnline}
+      onPress={() =>
+        addToExistingCollection(
+          item._id
+        )
+      }
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor:
+          "rgba(255,255,255,0.05)",
 
-                      opacity:
-  isOnline
-    ? 1
-    : 0.4,
-                  }}
-                >
-                  <Ionicons
-                    name="folder-outline"
-                    size={22}
-                    color="#00ff88"
-                  />
+        opacity:
+          isOnline
+            ? 1
+            : 0.4,
+      }}
+    >
+      <Ionicons
+        name="folder-outline"
+        size={22}
+        color="#22c55e"
+      />
 
-                  <Text
-                    style={{
-                      color: "#fff",
-                      marginLeft: 14,
-                      fontSize: 16,
-                      fontWeight: "600",
-                    }}
-                  >
-                    {item.name}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            />
+      <Text
+        style={{
+          color: "#fff",
+          marginLeft: 14,
+          fontSize: 16,
+          fontWeight: "600",
+        }}
+      >
+        {item.name}
+      </Text>
+    </TouchableOpacity>
+  )}
+/>
 
             {/* CLOSE */}
             <TouchableOpacity
@@ -756,7 +852,8 @@ const addToExistingCollection = async (
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
+</KeyboardAvoidingView>
+</Modal>
 
 
       {/* CUSTOM TOAST */}
@@ -912,8 +1009,9 @@ function NoBookmarksFound({
         >
           <Text
             style={{
-              color: "#000",
-              fontWeight: "600",
+              color: "#fff",
+fontWeight: "800",
+fontSize: 15,
             }}
           >
             Explore Posts

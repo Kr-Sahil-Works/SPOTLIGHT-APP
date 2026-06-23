@@ -5,8 +5,10 @@ import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 
 export default function ChatProfilePage() {
-  const { userId } =
-    useLocalSearchParams();
+const {
+  userId,
+  conversationId,
+} = useLocalSearchParams();
 
   const { applyTheme } =
     useTheme();
@@ -33,12 +35,15 @@ export default function ChatProfilePage() {
 
   return (
     <>
-      <ChatProfileScreen
-        userId={userId as any}
-        onOpenTheme={() =>
-          setThemeOpen(true)
-        }
-      />
+    <ChatProfileScreen
+  userId={userId as any}
+  conversationId={
+    conversationId as any
+  }
+  onOpenTheme={() =>
+    setThemeOpen(true)
+  }
+/>
 
       <ThemeModal
         profileMode

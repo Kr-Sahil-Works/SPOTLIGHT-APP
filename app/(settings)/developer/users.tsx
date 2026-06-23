@@ -225,7 +225,8 @@ const filteredUsers =
       </View>
 
       {/* USERS */}
-      <ScrollView
+     <ScrollView
+  showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           padding: 16,
           paddingBottom: 120,

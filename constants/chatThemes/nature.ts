@@ -10,11 +10,11 @@ export const NATURE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.AboveTrees,
     preview: WALLPAPER_PREVIEWS.AboveTrees,
 
-    bubbleMe: "#22c55e",
+    bubbleMe: "#1b9d4b",
     bubbleOther: "#14261a",
 
     background: "#040805",
-    header: "#08120c",
+    header: "#0000008e",
     inputBg: "#112017",
 
     textMe: "#ffffff",
@@ -33,11 +33,11 @@ export const NATURE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.BlueNight,
     preview: WALLPAPER_PREVIEWS.BlueNight,
 
-    bubbleMe: "#3b82f6",
+    bubbleMe: "#214278",
     bubbleOther: "#162338",
 
     background: "#000000",
-    header: "#000000d4",
+    header: "#14263933",
     inputBg: "#111d30",
 
     textMe: "#ffffff",
@@ -45,7 +45,7 @@ export const NATURE_THEMES: ChatTheme[] = [
 
     headerText: "#dbeafe",
 
-    sendBtn: "#3b82f6",
+    sendBtn: "#2d5ba3",
     sendIcon: "#ffffff",
   },
 
@@ -56,11 +56,11 @@ export const NATURE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.FarmHouse,
     preview: WALLPAPER_PREVIEWS.FarmHouse,
 
-    bubbleMe: "#84cc16",
+    bubbleMe: "#6eaa14",
     bubbleOther: "#24310f",
 
     background: "#060a03",
-    header: "#1a370037",
+    header: "#00000037",
     inputBg: "#17220d",
 
     textMe: "#ffffff",
@@ -69,7 +69,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     headerText: "#ecfccb",
 
     sendBtn: "#84cc16",
-    sendIcon: "#e4e4e4",
+    sendIcon: "#e6e4e4",
   },
 
   {
@@ -79,7 +79,7 @@ export const NATURE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.GreenNight,
     preview: WALLPAPER_PREVIEWS.GreenNight,
 
-    bubbleMe: "#16a34a",
+    bubbleMe: "#139944",
     bubbleOther: "#122517",
 
     background: "#030704",
@@ -102,7 +102,7 @@ export const NATURE_THEMES: ChatTheme[] = [
   wallpaper: WALLPAPERS.Scene,
   preview: WALLPAPER_PREVIEWS.Scene,
 
-bubbleMe: "#16aec9",
+bubbleMe: "#159bb3",
 bubbleOther: "#091930",
 
 background: "#03090B",
@@ -127,11 +127,11 @@ sendIcon: "#000000",
     wallpaper: WALLPAPERS.ValleyView,
     preview: WALLPAPER_PREVIEWS.ValleyView,
 
-    bubbleMe: "#10b981",
+    bubbleMe: "#0c9b6b",
     bubbleOther: "#123026",
 
     background: "#04100c",
-    header: "#071913",
+    header: "#000000a4",
     inputBg: "#10261d",
 
     textMe: "#ffffff",
@@ -140,6 +140,6 @@ sendIcon: "#000000",
     headerText: "#d1fae5",
 
     sendBtn: "#10b981",
-    sendIcon: "#ffffff",
+    sendIcon: "#f1eded",
   },
 ];

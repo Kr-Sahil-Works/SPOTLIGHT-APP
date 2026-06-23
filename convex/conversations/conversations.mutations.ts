@@ -109,6 +109,61 @@ export const toggleHidden = mutation({
   },
 });
 
+export const saveContactNumber =
+  mutation({
+    args: {
+      conversationId: v.id(
+        "conversations"
+      ),
+
+      phone: v.string(),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      const current =
+        await getAuthenticatedUser(
+          ctx
+        );
+
+      const convo =
+        await ctx.db.get(
+          args.conversationId
+        );
+
+      const existing =
+        convo?.contactNumbers ||
+        [];
+
+      const filtered =
+        existing.filter(
+          (c: any) =>
+            String(
+              c.userId
+            ) !==
+            String(
+              current._id
+            )
+        );
+
+      await ctx.db.patch(
+        args.conversationId,
+        {
+          contactNumbers: [
+            ...filtered,
+            {
+              userId:
+                current._id,
+              phone:
+                args.phone,
+            },
+          ],
+        }
+      );
+    },
+  });
 
 export const setPinnedMessage =
   mutation({
@@ -153,6 +208,66 @@ export const setPinnedMessage =
             args.messageId,
             pinnedBy:
   args.pinnedBy,
+        }
+      );
+    },
+  });
+
+  export const setContactNumber =
+  mutation({
+    args: {
+      conversationId:
+        v.id("conversations"),
+
+      phone:
+        v.string(),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      const current =
+        await getAuthenticatedUser(
+          ctx
+        );
+
+      const conversation =
+        await ctx.db.get(
+          args.conversationId
+        );
+
+      if (!conversation)
+        return;
+
+      const existing =
+        conversation.contactNumbers ??
+        [];
+
+      const filtered =
+        existing.filter(
+          (c) =>
+            String(
+              c.userId
+            ) !==
+            String(
+              current._id
+            )
+        );
+
+      filtered.push({
+        userId:
+          current._id,
+
+        phone:
+          args.phone,
+      });
+
+      await ctx.db.patch(
+        args.conversationId,
+        {
+          contactNumbers:
+            filtered,
         }
       );
     },

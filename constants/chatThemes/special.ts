@@ -11,8 +11,8 @@ export const SPECIAL_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.Eternal,
     preview: WALLPAPER_PREVIEWS.Eternal,
 
-    bubbleMe: "#8b5cf6",
-    bubbleOther: "#24173b",
+    bubbleMe: "#231e2ec9",
+    bubbleOther: "#1c0d03",
 
     background: "#000000",
     header: "#000000",
@@ -23,7 +23,7 @@ export const SPECIAL_THEMES: ChatTheme[] = [
 
     headerText: "#ede9fe",
 
-    sendBtn: "#8b5cf6",
+    sendBtn: "#391b07",
     sendIcon: "#ffffff",
   },
 
@@ -34,11 +34,11 @@ export const SPECIAL_THEMES: ChatTheme[] = [
   wallpaper: WALLPAPERS.Hold,
   preview: WALLPAPER_PREVIEWS.Hold,
 
-  bubbleMe: "#f59e0b",
-  bubbleOther: "#111b1e",
+  bubbleMe: "#c753055b",
+  bubbleOther: "#163944",
 
   background: "#08070b",
-  header: "#000000",
+  header: "#0000008d",
   inputBg: "#191722",
 
   textMe: "#ffffff",
@@ -46,8 +46,8 @@ export const SPECIAL_THEMES: ChatTheme[] = [
 
   headerText: "#fde68a",
 
-  sendBtn: "#f59e0b",
-  sendIcon: "#000000",
+  sendBtn: "#ffa20077",
+  sendIcon: "#d2cdcd",
 },
 
 {
@@ -61,7 +61,7 @@ export const SPECIAL_THEMES: ChatTheme[] = [
   bubbleOther: "#13212b",
 
   background: "#04090d",
-  header: "#09131a",
+  header: "#022e36",
   inputBg: "#10202a",
 
   textMe: "#ffffff",
@@ -129,7 +129,7 @@ export const SPECIAL_THEMES: ChatTheme[] = [
     bubbleOther: "#12302b",
 
     background: "#04100d",
-    header: "#071916",
+    header: "#000000",
     inputBg: "#102622",
 
     textMe: "#ffffff",

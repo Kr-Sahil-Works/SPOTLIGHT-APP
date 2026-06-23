@@ -34,7 +34,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.BlueMoon,
     preview: WALLPAPER_PREVIEWS.BlueMoon,
 
-    bubbleMe: "#3b82f6",
+    bubbleMe: "#27539a",
     bubbleOther: "#162338",
 
     background: "#030712",
@@ -57,7 +57,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.Home,
     preview: WALLPAPER_PREVIEWS.Home,
 
-    bubbleMe: "#f59e0b",
+    bubbleMe: "#c25a06",
     bubbleOther: "#1f170b",
 
     background: "#0d0802",
@@ -69,8 +69,8 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
 
     headerText: "#fde68a",
 
-    sendBtn: "#f59e0b",
-    sendIcon: "#000000",
+    sendBtn: "#c25a06",
+    sendIcon: "#f4eded",
   },
 
   {
@@ -80,11 +80,11 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.Night,
     preview: WALLPAPER_PREVIEWS.Night,
 
-    bubbleMe: "#3b82f6",
+    bubbleMe: "#312383",
     bubbleOther: "#132035",
 
     background: "#030712",
-    header: "#09111f",
+    header: "#030712",
     inputBg: "#111d30",
 
     textMe: "#ffffff",
@@ -103,7 +103,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.PurpleForest,
     preview: WALLPAPER_PREVIEWS.PurpleForest,
 
-    bubbleMe: "#a855f7",
+    bubbleMe: "#3d186f",
     bubbleOther: "#241338",
 
     background: "#0c0614",
@@ -126,11 +126,11 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.Valley,
     preview: WALLPAPER_PREVIEWS.Valley,
 
-    bubbleMe: "#14b8a6",
+    bubbleMe: "#520c10",
     bubbleOther: "#122320",
 
     background: "#000000",
-    header: "#000000",
+    header: "#0000004b",
     inputBg: "#0f2621",
 
     textMe: "#ffffff",
@@ -138,7 +138,7 @@ export const LANDSCAPE_THEMES: ChatTheme[] = [
 
     headerText: "#ccfbf1",
 
-    sendBtn: "#14b8a6",
+    sendBtn: "#520c10",
     sendIcon: "#ffffff",
   },
 

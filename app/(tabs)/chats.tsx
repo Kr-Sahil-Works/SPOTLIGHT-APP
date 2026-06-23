@@ -111,6 +111,7 @@ const data =
 
 return (
   <>
+
     <LinearGradient
       pointerEvents="none"
       colors={[

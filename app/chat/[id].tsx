@@ -1,6 +1,10 @@
+import {
+  CHAT_THEMES,
+} from "@/constants/chatThemes";
 import useNetwork from "@/hooks/useNetwork";
 import { useIsFocused } from "@react-navigation/native";
 import { Image } from "expo-image";
+import { useKeepAwake } from "expo-keep-awake";
 import { useLocalSearchParams } from "expo-router";
 import {
   Keyboard,
@@ -13,10 +17,6 @@ import {
 import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-
-import {
-  CHAT_THEMES,
-} from "@/constants/chatThemes";
 
 import {
   Id,
@@ -86,6 +86,9 @@ import { Ionicons } from "@expo/vector-icons";
 import useTheme from "../../features/chat/hooks/useTheme";
 
 export default function ChatScreen() {
+
+  useKeepAwake();
+  
   const {
   isLoaded,
   isSignedIn,
@@ -410,6 +413,17 @@ useEffect(() => {
     () => (
       <>
      <ChatHeader
+conversationId={
+  conversationId
+}
+     conversation={
+  conversation
+}
+
+currentUserId={
+  currentUserId
+}
+
   userId={userId}
 
   onOpenTheme={() =>
@@ -1108,10 +1122,6 @@ onReact={async ({
       <View
   style={{
     flex: 1,
-// paddingBottom:
-//   Platform.OS === "android"
-//     ? 40
-//     : 0,
   }}
 >
 {theme.wallpaper ? (

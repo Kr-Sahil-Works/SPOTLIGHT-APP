@@ -88,7 +88,7 @@ function OnlineWrapper({
         setOnline({
           isOnline: true,
         }).catch(() => {});
-      }, 60000);
+      }, 30000);
 
     return () => {
       clearInterval(interval);

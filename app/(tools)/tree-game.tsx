@@ -42,11 +42,6 @@ const GAME_TIME = 60;
 
 const START_LIVES = 3;
 
-console.log(
-  "START_LIVES",
-  START_LIVES
-);
-
 export default function TreeGame() {
   const router =
     useRouter();
@@ -100,13 +95,6 @@ export default function TreeGame() {
     useState(
       START_LIVES
     );
-
-    useEffect(() => {
-  console.log(
-    "Lives:",
-    lives
-  );
-}, [lives]);
 
   const [timeLeft,
     setTimeLeft] =
@@ -316,11 +304,6 @@ const finishGame =
     setGameOver(
       true
     );
-
-    
-      console.log(
-  "GAME OVER"
-);
       setGameOver(
         true
       );
@@ -379,13 +362,6 @@ const handleMiss = (
   id: number
 ) => {
 
-  console.log(
-  "MISS",
-  id,
-  "LIVES BEFORE",
-  lives
-);
-
   setLeafs(prev => {
 
     const exists =
@@ -433,10 +409,6 @@ setLives(current => {
 const handleCatch = (
   id: number
 ) => {
-console.log(
-  "CATCH",
-  id
-);
 setLeafs(
   (
     prev: {

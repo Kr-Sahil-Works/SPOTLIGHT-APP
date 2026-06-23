@@ -84,8 +84,8 @@ export const HEART_THEMES: ChatTheme[] = [
     wallpaper: WALLPAPERS.Promise,
     preview: WALLPAPER_PREVIEWS.Promise,
 
-  bubbleMe: "#ff4d6d",
-  bubbleOther: "#141010bf",
+  bubbleMe: "#d6435e",
+  bubbleOther: "#111010db",
 
   background: "#090304",
   header: "#12060730",

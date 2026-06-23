@@ -132,7 +132,7 @@ sendIcon: "#ffffff",
     bubbleOther: "#0001024d",
 
     background: "#05060f",
-    header: "#000a3250",
+    header: "#000000",
     inputBg: "#131a2d",
 
     textMe: "#ffffff",
@@ -150,11 +150,11 @@ sendIcon: "#ffffff",
     wallpaper: WALLPAPERS.Lake,
     preview: WALLPAPER_PREVIEWS.Lake,
 
-  bubbleMe: "#a455ee",
+  bubbleMe: "#780edb",
 bubbleOther: "#2a1d42",
 
 background: "#12081e",
-header: "#1a0f2b",
+header: "#000000",
 inputBg: "#241437",
 
 textMe: "#ffffff",
@@ -196,7 +196,7 @@ sendIcon: "#ffffff",
   wallpaper: WALLPAPERS.PickMoon,
   preview: WALLPAPER_PREVIEWS.PickMoon,
 
-bubbleMe: "#520063ef",
+bubbleMe: "#0f0630ef",
 bubbleOther: "#0808081f",
 sendBtn: "#ffffff47",
 
@@ -293,7 +293,7 @@ inputBg: "rgba(255,255,255,0.12)",
 sendBtn: "#df1379",
 
   background: "#08080839",
-  header: "#0a0a0a52",
+  header: "#000000",
   
   textMe: "#ffffff",
   textOther: "#ffffff",

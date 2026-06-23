@@ -8,14 +8,17 @@ import {
 } from "@/lib/cache/notificationCache";
 import { styles } from "@/styles/notifications.styles";
 import { Ionicons } from "@expo/vector-icons";
+import { FlashList } from "@shopify/flash-list";
 import { useMutation, useQuery } from "convex/react";
-import { useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import {
   useEffect,
   useRef,
   useState,
 } from "react";
-import { Animated, Easing, FlatList, Text, TouchableOpacity, View } from "react-native";
+
+
+import { Animated, Easing, Text, TouchableOpacity, View } from "react-native";
 
 export default function Notifications() {
 const notifications = useQuery(api.notifications.getNotifications);
@@ -69,20 +72,80 @@ if (
   );
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <Ionicons name="notifications" size={22} color={COLORS.primary} />
-      </View>
+<View
+  style={[
+    styles.header,
+    {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+  ]}
+>
+  <View
+    style={{
+      flexDirection: "row",
+      alignItems: "center",
+      flex: 1,
+    }}
+  >
+    <Ionicons
+      name="notifications"
+      size={22}
+      color={COLORS.primary}
+      style={{
+        marginRight: 8,
+      }}
+    />
 
-<FlatList
- data={finalNotifications}
-    renderItem={({ item }) => (
-  <Notification notification={item} />
-)}
-        keyExtractor={(item) => item._id}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContainer}
-      />
+    <Text style={styles.headerTitle}>
+      Notifications
+    </Text>
+  </View>
+
+  <TouchableOpacity
+    onPress={() =>
+      router.back()
+    }
+    style={{
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+
+      backgroundColor:
+        "rgba(34,197,94,0.12)",
+
+      justifyContent:
+        "center",
+
+      alignItems:
+        "center",
+    }}
+  >
+<Ionicons
+  name="chevron-back"
+  size={24}
+  color="#22c55e"
+/>
+  </TouchableOpacity>
+</View>
+
+<FlashList
+  data={finalNotifications}
+  renderItem={({ item }) => (
+    <Notification
+      notification={item}
+    />
+  )}
+  keyExtractor={(item) =>
+    item._id
+  }
+  showsVerticalScrollIndicator={
+    false
+  }
+  contentContainerStyle={
+    styles.listContainer
+  }
+/>
     </View>
   );
 }

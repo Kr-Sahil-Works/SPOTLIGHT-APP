@@ -5,7 +5,9 @@ import {
   getNotesCache,
   saveNotesCache,
 } from "@/lib/cache/notesCache";
+import { storage } from "@/lib/mmkv";
 import { Ionicons } from "@expo/vector-icons";
+import { FlashList } from "@shopify/flash-list";
 import { useMutation, useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
 import * as Clipboard from "expo-clipboard";
@@ -15,7 +17,6 @@ import {
   ActivityIndicator,
   Animated,
   Dimensions,
-  FlatList,
   KeyboardAvoidingView,
   Text,
   TextInput,
@@ -25,6 +26,48 @@ import {
 } from "react-native";
 
 const { height } = Dimensions.get("window");
+
+const NOTE_COLORS = [
+  "#082F2A", // Forest Temple 🌲
+
+  "#1B1538", // Midnight Galaxy 🌌
+
+  "#122C3F", // Deep Ocean 🌊
+
+  "#341826", // Crimson Velvet 🌹
+
+  "#3A2B12", // Ancient Gold 🏺
+
+  "#173A34", // Emerald Cave 💎
+
+  "#2B1A4A", // Arcane Purple 🔮
+
+  "#4A2314", // Volcanic Ember 🌋
+
+  "#163949", // Frozen Lake ❄️
+
+  "#431A3B", // Neon Orchid 🌺
+
+  "#2A4013", // Jungle Moss 🍃
+
+  "#17345C", // Sapphire Night ⭐
+
+  "#51261A", // Desert Sunset 🏜️
+
+  "#0F4047", // Mystic Lagoon 🐚
+
+  "#36144D", // Cosmic Portal ✨
+
+  "#442C14", // Treasure Chest 🏆
+
+  "#1E4A3C", // Hidden Island 🏝️
+
+  "#541E2F", // Vampire Castle 🦇
+
+  "#234A58", // Arctic Aurora 🌠
+
+  "#2C2C2C", // Shadow Realm ⚫
+];
 
 export default function Notes() {
   const isOnline =
@@ -46,6 +89,16 @@ const [
 const notes =
   liveNotes ??
   cachedNotes;
+
+const [
+  stackedView,
+  setStackedView,
+] = useState(
+  storage.getString(
+    "notes-stacked-view"
+  ) === "true"
+);
+
 
   useEffect(() => {
   if (
@@ -84,6 +137,21 @@ const [pinned, setPinned] = useState<Id<"notes">[]>([]);
   const translateY = useRef(new Animated.Value(height)).current;
   const toastAnim = useRef(new Animated.Value(0)).current;
   const [toastMsg, setToastMsg] = useState("");
+
+  useEffect(() => {
+  const saved =
+    storage.getString(
+      "notes-stacked-view"
+    );
+
+  if (
+    saved !== undefined
+  ) {
+    setStackedView(
+      saved === "true"
+    );
+  }
+}, []);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -186,110 +254,341 @@ const openSheet = (note?: any) => {
 )}
   return (
     
-    <View style={{ flex: 1, backgroundColor: "#000", padding: 16 }}>
+    <View style={{ flex: 1, backgroundColor: "#000", paddingHorizontal: 16,
+paddingTop: 16, }}>
 
-    <View
+<View
   style={{
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 6,
+
+    marginBottom: 14,
+
+    paddingBottom: 10,
+
+    borderBottomWidth: 1,
+
+    borderBottomColor:
+      "rgba(255,255,255,0.05)",
   }}
 >
-  {/* LEFT - Notes */}
-  <Text
-    style={{
-      color: "#22c55e",
-      fontSize: 18,
-      fontWeight: "600",
-    }}
-  >
-    Notes
-  </Text>
-
-  {/* RIGHT - Back Arrow */}
-  <TouchableOpacity
-    onPress={() => router.replace("/(tabs)/chats")}
-    style={{
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-    }}
-  >
-    <Ionicons name="chevron-back" size={22} color="#22c55e" />
+  {/* LEFT */}
+  <View>
     <Text
       style={{
-        color: "#22c55e",
-        fontSize: 16,
-        fontWeight: "500",
+        color: "#069241",
+
+        fontSize: 22,
+
+        fontWeight: "900",
       }}
     >
-      Back
+     Notes
     </Text>
+
+    <Text
+      style={{
+        color: "#8b8b8b",
+
+        fontSize: 12,
+
+        marginTop: 2,
+      }}
+    >
+      Thoughts • Ideas • Reminders
+    </Text>
+  </View>
+
+  {/* RIGHT */}
+<View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  }}
+>
+  <TouchableOpacity
+  onPress={() => {
+  const next =
+    !stackedView;
+
+  setStackedView(
+    next
+  );
+
+  storage.set(
+    "notes-stacked-view",
+    String(next)
+  );
+}}
+    style={{
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+
+      backgroundColor:
+        "rgba(34,197,94,0.08)",
+
+      justifyContent:
+        "center",
+
+      alignItems:
+        "center",
+    }}
+  >
+    <Ionicons
+      name={
+        stackedView
+          ? "layers"
+          : "layers-outline"
+      }
+      size={18}
+      color="#22c55e"
+    />
   </TouchableOpacity>
+
+  <TouchableOpacity
+    onPress={() =>
+      router.replace(
+        "/(tabs)/chats"
+      )
+    }
+    style={{
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+
+      backgroundColor:
+        "rgba(34,197,94,0.08)",
+
+      justifyContent:
+        "center",
+
+      alignItems:
+        "center",
+    }}
+  >
+    <Ionicons
+      name="chevron-forward"
+      size={22}
+      color="#22c55e"
+    />
+  </TouchableOpacity>
+</View>
 </View>
 
       {/* SEARCH (GLASS) */}
       <BlurView intensity={25} tint="dark" style={{
-        marginTop: 12,
-        borderRadius: 30,
-        marginBottom:20,
-        overflow: "hidden",
-      }}>
-        <View style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 14,
-          height: 44,
-          backgroundColor: "rgba(255,255,255,0.06)",
-        }}>
-          <Ionicons name="search" size={18} color="#aaa" />
+  marginTop: 12,
+
+  marginBottom: 20,
+
+  borderRadius: 28,
+
+  overflow: "hidden",
+
+  borderWidth: 1,
+
+  borderColor:
+    "rgba(34,197,94,0.12)",
+}}>
+      <View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+
+    height: 44,
+
+    borderRadius: 28,
+
+    backgroundColor:
+      "rgba(34,197,94,0.08)",
+
+    paddingHorizontal: 14,
+  }}
+>
+         <Ionicons
+  name="search"
+  size={20}
+  color="#22c55e"
+/>
           <TextInput
-            placeholder="Search"
+            placeholder="Search notes..."
             placeholderTextColor="#888"
             underlineColorAndroid="transparent"
             value={search}
             onChangeText={setSearch}
             style={{ color: "#fff", marginLeft: 10, flex: 1 }}
           />
+
+          {search.length > 0 && (
+  <TouchableOpacity
+    onPress={() =>
+      setSearch("")
+    }
+  >
+    <Ionicons
+      name="close-circle"
+      size={18}
+      color="#666"
+    />
+  </TouchableOpacity>
+)}
         </View>
       </BlurView>
 
       {/* LIST */}
-      <FlatList
+  <FlashList
         data={filtered}
+drawDistance={600}
+removeClippedSubviews
+showsVerticalScrollIndicator={false}
         keyExtractor={(i) => String(i._id)}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const isPinned = pinned.includes(item._id);
 
           return (
-           <TouchableOpacity
+      <TouchableOpacity
   activeOpacity={0.9}
   onLongPress={() => confirmDelete(item._id)}
   style={{
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 20,
-    marginTop: 12,
+    backgroundColor:
+      NOTE_COLORS[
+        index %
+        NOTE_COLORS.length
+      ],
+
+    borderRadius: 28,
+
+  marginTop:
+  index === 0
+    ? 12
+    : stackedView
+    ? -14
+    : 12,
+
     marginBottom: 4,
-    padding: 16,
+
+ zIndex:
+  stackedView
+    ? filtered.length -
+      index
+    : 1,
+
+    padding: 22,
+
+    minHeight: 160,
+
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+
+    borderColor:
+      "rgba(255,255,255,0.08)",
+
+    shadowColor: "#000",
+
+    shadowOpacity: 0.35,
+
+    shadowRadius: 12,
+
+    elevation: 8,
+
+ transform: stackedView
+  ? [
+      {
+        rotate:
+          index === 0
+            ? "0deg"
+            : index % 2 === 0
+            ? "-1deg"
+            : "1deg",
+      },
+      {
+        scale:
+          index === 0
+            ? 1
+            : 0.99,
+      },
+    ]
+  : [],
   }}
 >
-  <Text style={{ color: "#fff", fontSize: 15 }}>
-    {item.content}
-  </Text>
+ <View
+  style={{
+    position: "absolute",
+    top: 16,
+    right: 16,
+  }}
+>
+  <Ionicons
+    name={
+      isPinned
+        ? "bookmark"
+        : "bookmark-outline"
+    }
+    size={18}
+    color="#facc15"
+  />
+</View>
+
+<Text
+  style={{
+    color: "#cbd5e1",
+    fontSize: 12,
+    marginBottom: 12,
+  }}
+>
+  {`${new Date(
+  item.updatedAt
+).toLocaleDateString(
+  "en-IN",
+  {
+    day: "numeric",
+    month: "long",
+  }
+)} • ${new Date(
+  item.updatedAt
+).toLocaleTimeString(
+  "en-IN",
+  {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }
+)}`}
+</Text>
+
+<Text
+  style={{
+    color: "#fff",
+    fontSize: 18,
+fontWeight: "600",
+    lineHeight: 24,
+    paddingRight: 28,
+  }}
+>
+  {item.content}
+</Text>
 
   {/* ACTIONS */}
   <View
-    style={{
-      flexDirection: "row",
-      position: "absolute",
-      bottom: 10,
-      right: 10,
-      gap: 10,
-    }}
-  >
+  style={{
+    flexDirection: "row",
+
+    marginTop: 20,
+
+    paddingTop: 14,
+
+    borderTopWidth: 1,
+
+    borderTopColor:
+      "rgba(255,255,255,0.08)",
+
+    justifyContent:
+      "center",
+      gap:80,
+  }}
+>
     <TouchableOpacity
       onPress={async () => {
         await Clipboard.setStringAsync(item.content);
@@ -297,7 +596,30 @@ const openSheet = (note?: any) => {
       }}
       style={actionBtn("#4ade80")}
     >
-      <Ionicons name="copy-outline" size={20} color="#4ade80" />
+ <View
+  style={{
+    alignItems: "center",
+  }}
+>
+  <Text
+    style={{
+      fontSize: 16,
+    }}
+  >
+    📋
+  </Text>
+
+  <Text
+    style={{
+      color: "#4ade80",
+      fontWeight: "700",
+      marginTop: 4,
+      textAlign: "center",
+    }}
+  >
+    Copy
+  </Text>
+</View>
     </TouchableOpacity>
 
     <TouchableOpacity
@@ -321,11 +643,30 @@ style={[
   },
 ]}
     >
-      <Ionicons
-        name={isPinned ? "bookmark" : "bookmark-outline"}
-        size={20}
-        color="#facc15"
-      />
+   <View
+  style={{
+    alignItems: "center",
+  }}
+>
+  <Text
+    style={{
+      fontSize: 16,
+    }}
+  >
+    📌
+  </Text>
+
+  <Text
+    style={{
+      color: "#facc15",
+      fontWeight: "700",
+      marginTop: 4,
+      textAlign: "center",
+    }}
+  >
+    Pin
+  </Text>
+</View>
     </TouchableOpacity>
 
  <TouchableOpacity
@@ -341,7 +682,30 @@ style={[
         },
       ]}
 >
-      <Ionicons name="create-outline" size={20} color="#60a5fa" />
+    <View
+  style={{
+    alignItems: "center",
+  }}
+>
+  <Text
+    style={{
+      fontSize: 16,
+    }}
+  >
+    ✏️
+  </Text>
+
+  <Text
+    style={{
+      color: "#60a5fa",
+      fontWeight: "700",
+      marginTop: 4,
+      textAlign: "center",
+    }}
+  >
+    Edit
+  </Text>
+</View>
     </TouchableOpacity>
   </View>
 </TouchableOpacity>
@@ -362,19 +726,51 @@ showToast(
 
   openSheet();
 }}
-        style={{
-          position: "absolute",
-          bottom: 30,
-          right: 20,
-          backgroundColor: "#22c55e",
-          width: 60,
-          height: 60,
-          borderRadius: 30,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+      style={{
+  position: "absolute",
+
+  bottom: 46,
+
+  right: 22,
+
+  width: 58,
+
+  height: 58,
+
+  borderRadius: 34,
+
+  alignItems: "center",
+
+  justifyContent: "center",
+
+backgroundColor:
+  "rgba(34,197,94,0.18)",
+
+borderWidth: 1,
+
+borderColor:
+  "rgba(34,197,94,0.25)",
+
+  shadowColor: "#57750c",
+
+  shadowOpacity: 0.45,
+
+  shadowRadius: 16,
+
+  elevation: 14,
+}}
       >
-        <Ionicons name="add" size={28} color="#000" />
+      <View
+  style={{
+    alignItems: "center",
+  }}
+>
+<Ionicons
+  name="create-outline"
+  size={24}
+  color="#22c55e"
+/>
+</View>
       </TouchableOpacity>
 
       {/* SHEET */}

@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useRef } from "react";
 import {
+  Animated,
   Linking,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -25,6 +26,11 @@ export default function LegalScreen({
   sections,
 }: Props) {
   const router = useRouter();
+
+  const scrollY =
+  useRef(
+    new Animated.Value(0)
+  ).current;
 
   return (
     <View
@@ -73,12 +79,73 @@ marginBottom: 10,
         >
           {title}
         </Text>
+
+    <View
+  style={{
+    flex: 1,
+
+    height: 4,
+
+    marginLeft: 16,
+
+    borderRadius: 999,
+
+    overflow: "hidden",
+
+    backgroundColor:
+      "rgba(34,197,94,0.10)",
+  }}
+>
+  <Animated.View
+    style={{
+      height: "100%",
+
+      borderRadius: 999,
+
+      backgroundColor:
+        "#22c55e",
+
+      width:
+        scrollY.interpolate({
+          inputRange: [
+            0,
+            1500,
+          ],
+
+          outputRange: [
+            "0%",
+            "100%",
+          ],
+
+          extrapolate:
+            "clamp",
+        }),
+    }}
+  />
+</View>
       </View>
 
-      <ScrollView
+     <Animated.ScrollView
+     onScroll={Animated.event(
+  [
+    {
+      nativeEvent: {
+        contentOffset: {
+          y: scrollY,
+        },
+      },
+    },
+  ],
+  {
+    useNativeDriver:
+      false,
+  }
+)}
+scrollEventThrottle={16}
+  showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: 120,
+          paddingBottom: 20,
         }}
       >
         <View
@@ -259,7 +326,7 @@ fontSize: 14,
 </View>
         </View>
         
-      </ScrollView>
+    </Animated.ScrollView>
     </View>
     
   );

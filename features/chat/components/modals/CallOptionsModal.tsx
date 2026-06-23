@@ -1,77 +1,32 @@
 import { Ionicons } from "@expo/vector-icons";
 
 import {
-    Linking,
-    Modal,
-    Pressable,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
+
+  onWhatsApp: () => void;
+  onInstagram: () => void;
+  onTelegram: () => void;
+  onCall: () => void;
 };
 
 export default function CallOptionsModal({
   visible,
   onClose,
+
+  onWhatsApp,
+  onInstagram,
+  onTelegram,
+  onCall,
 }: Props) {
-  const openWhatsApp = async () => {
-    const appUrl = "whatsapp://app";
-
-    const playStore =
-      "market://details?id=com.whatsapp";
-
-    const supported =
-      await Linking.canOpenURL(appUrl);
-
-    if (supported) {
-      await Linking.openURL(appUrl);
-    } else {
-      await Linking.openURL(playStore);
-    }
-  };
-
-  const openInstagram = async () => {
-    const appUrl =
-      "instagram://direct/inbox";
-
-    const playStore =
-      "market://details?id=com.instagram.android";
-
-    const supported =
-      await Linking.canOpenURL(appUrl);
-
-    if (supported) {
-      await Linking.openURL(appUrl);
-    } else {
-      await Linking.openURL(playStore);
-    }
-  };
-
-  const openTelegram = async () => {
-    const appUrl = "tg://msg";
-
-    const playStore =
-      "market://details?id=org.telegram.messenger";
-
-    const supported =
-      await Linking.canOpenURL(appUrl);
-
-    if (supported) {
-      await Linking.openURL(appUrl);
-    } else {
-      await Linking.openURL(playStore);
-    }
-  };
-
-  const openCallApp = async () => {
-    await Linking.openURL(
-      "content://contacts/people/"
-    );
-  };
 
   return (
     <Modal
@@ -112,7 +67,7 @@ export default function CallOptionsModal({
             onPress={() => {
               onClose();
 
-              openWhatsApp();
+              onWhatsApp();
             }}
             style={{
               flexDirection: "row",
@@ -145,7 +100,7 @@ export default function CallOptionsModal({
             onPress={() => {
               onClose();
 
-              openInstagram();
+              onInstagram();
             }}
             style={{
               flexDirection: "row",
@@ -178,7 +133,7 @@ export default function CallOptionsModal({
             onPress={() => {
               onClose();
 
-              openTelegram();
+              onTelegram();
             }}
             style={{
               flexDirection: "row",
@@ -211,7 +166,7 @@ export default function CallOptionsModal({
             onPress={() => {
               onClose();
 
-              openCallApp();
+              onCall();
             }}
             style={{
               flexDirection: "row",

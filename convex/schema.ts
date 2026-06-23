@@ -283,6 +283,14 @@ pinnedAt:
   customName: v.optional(v.string()),
   customImage: v.optional(v.string()),
 
+    contactNumbers: v.optional(
+  v.array(
+    v.object({
+      userId: v.id("users"),
+      phone: v.string(),
+    })
+  )
+),
   updatedAt: v.optional(v.number()),
 })
 .index("by_participants", ["participants"])
