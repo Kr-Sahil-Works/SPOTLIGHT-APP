@@ -161,7 +161,7 @@ const handleTyping = (value: string) => {
 
   paddingBottom:
     isOnline
-      ? 10
+      ? 0
       : 35,
 
   backgroundColor:

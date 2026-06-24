@@ -68,11 +68,6 @@ const [likesPostId,
 
   const { showToast } =
   useAppToast();
-    
-  const [
-  showLikes,
-  setShowLikes,
-] = useState(false);
 
   useEffect(() => {
   setLoaded(false);
@@ -470,11 +465,11 @@ const handleDelete =
       {/* INFO */}
       <View style={styles.postInfo}>
      <TouchableOpacity
-  onPress={() =>
-    setShowLikes(
-      true
-    )
-  }
+ onPress={() =>
+  setLikesPostId(
+    post._id
+  )
+}
 >
   <Text
     style={

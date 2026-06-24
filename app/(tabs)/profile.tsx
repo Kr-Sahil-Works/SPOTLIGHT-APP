@@ -98,6 +98,15 @@ const [editedProfile, setEditedProfile] = useState({
   const menuAnim = useRef(new Animated.Value(0)).current;
 
   const [showSecure, setShowSecure] = useState(false);
+  const particleScale =
+  useRef(
+    new Animated.Value(0)
+  ).current;
+
+const particleOpacity =
+  useRef(
+    new Animated.Value(0)
+  ).current;
   const secureAnim = useRef(new Animated.Value(0)).current;
   const pressScale = useRef(new Animated.Value(1)).current;
   const tickScale = useRef(new Animated.Value(0)).current;
@@ -330,25 +339,20 @@ setImageVersion(Date.now());
   return (
     <View style={styles.container}>
       {/* HEADER */}
-      <ProfileHeader
-        username={currentUser.username}
-        showSecure={showSecure}
-        setShowSecure={setShowSecure}
-        pressScale={pressScale}
-        tickScale={tickScale}
-        secureAnim={secureAnim}
-        menuAnim={menuAnim}
-        menuOpen={menuOpen}
-        setMenuOpen={setMenuOpen}
-        router={router}
-      />
-
-      {/* OVERLAY */}
-      <SecureOverlay
-        showSecure={showSecure}
-        secureAnim={secureAnim}
-        tickScale={tickScale}
-      />
+<ProfileHeader
+  username={currentUser.username}
+  showSecure={showSecure}
+  setShowSecure={setShowSecure}
+  pressScale={pressScale}
+  tickScale={tickScale}
+  secureAnim={secureAnim}
+  particleScale={particleScale}
+  particleOpacity={particleOpacity}
+  menuAnim={menuAnim}
+  menuOpen={menuOpen}
+  setMenuOpen={setMenuOpen}
+  router={router}
+/>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* PROFILE INFO */}
@@ -440,6 +444,15 @@ setImageVersion(Date.now());
   setHasLocalChanges={
   setHasLocalChanges
 }
+/>
+
+   {/* OVERLAY */}
+    <SecureOverlay
+  showSecure={showSecure}
+  secureAnim={secureAnim}
+  tickScale={tickScale}
+  particleScale={particleScale}
+  particleOpacity={particleOpacity}
 />
     </View>
   );

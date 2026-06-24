@@ -2,14 +2,14 @@ import { api } from "@/convex/_generated/api";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "convex/react";
 import {
-    useLocalSearchParams,
-    useRouter,
+  useLocalSearchParams,
+  useRouter,
 } from "expo-router";
 import {
-    ActivityIndicator,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -118,6 +118,8 @@ export default function UserPostsPage() {
 
       <FlashList
         data={posts}
+        showsVerticalScrollIndicator={false}
+showsHorizontalScrollIndicator={false}
         initialScrollIndex={
           startIndex
         }

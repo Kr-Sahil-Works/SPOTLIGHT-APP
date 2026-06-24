@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 
 import {
   ActivityIndicator,
@@ -24,8 +24,6 @@ saving,
 setHasLocalChanges,
 }: any) {
   const scrollRef = React.useRef<any>(null);
-  const [activeTab, setActiveTab] =
-    useState<"info" | "extra">("info");
 
   const hasChanges = useMemo(() => {
     return (
@@ -70,9 +68,17 @@ setHasLocalChanges,
               backgroundColor: "#090909",
               borderRadius: 30,
               padding: 18,
-              borderWidth: 1,
-              borderColor:
-                "rgba(34,197,94,0.14)",
+       borderWidth: 1.2,
+
+borderColor:
+  "rgba(34,197,94,0.22)",
+
+shadowColor:
+  "#22c55e",
+
+shadowOpacity: 0.08,
+
+shadowRadius: 20,
             }}
           >
             {/* HEADER */}
@@ -118,128 +124,178 @@ setHasLocalChanges,
               </Text>
             </View>
 
-            {/* PROFILE IMAGE */}
-            <View
-              style={{
-                alignItems: "center",
-                marginBottom: 28,
-              }}
-            >
-              <View
-                style={{
-                  width: 128,
-                  height: 128,
-                  borderRadius: 999,
-                  padding: 4,
-                  backgroundColor:
-                    "rgba(34,197,94,0.18)",
-                }}
-              >
-               <Image
-  source={
-    profile?.image?.trim()
-      ? { uri: profile.image }
-      : require("@/assets/images/icons/iconbg.webp")
-  }
-  contentFit="cover"
-  cachePolicy="memory-disk"
-  transition={120}
+{/* PROFILE HEADER IMAGE */}
+<View
   style={{
-    width: "100%",
-    height: "100%",
-    borderRadius: 999,
-    backgroundColor: "#111",
+    height: 230,
+
+    marginHorizontal: -18,
+    marginTop: -18,
+    marginBottom: 40,
+
+    overflow: "hidden",
+  }}
+>
+  <Image
+    source={require(
+      "@/assets/images/profilepage/profileeditbg.webp"
+    )}
+    contentFit="cover"
+    cachePolicy="memory-disk"
+    transition={120}
+    style={{
+      width: "100%",
+      height: "100%",
+    }}
+  />
+
+  <View
+  style={{
+    position: "absolute",
+    bottom: 18,
+    left: -30,
+    right: -30,
+    height: 90,
+
+    borderTopWidth: 4,
+    borderColor: "#22c55e",
+
+    borderTopLeftRadius: 999,
+    borderTopRightRadius: 999,
+
+    backgroundColor: "transparent",
   }}
 />
-              </View>
 
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={onChangePhoto}
-                style={{
-                  marginTop: 14,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#4ade80",
-                    fontWeight: "700",
-                    fontSize: 15,
-                  }}
-                >
-                  Change profile photo
-                </Text>
-              </TouchableOpacity>
-            </View>
+  {/* DARK OVERLAY */}
+  <View
+    pointerEvents="none"
+    style={{
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
 
-            {/* CONNECTED TABS */}
-            <View
-              style={{
-                flexDirection: "row",
-                backgroundColor: "#0f0f0f",
-                borderRadius: 18,
-                padding: 4,
-                marginBottom: 26,
-              }}
-            >
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() =>
-                  setActiveTab("info")
-                }
-                style={{
-                  flex: 1,
-                  paddingVertical: 14,
-                  borderRadius: 14,
-                  alignItems: "center",
-                  backgroundColor:
-                    activeTab === "info"
-                      ? "#166534"
-                      : "transparent",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "700",
-                  }}
-                >
-                  Info
-                </Text>
-              </TouchableOpacity>
+      backgroundColor:
+        "rgba(0,0,0,0.18)",
+    }}
+  />
 
-              <TouchableOpacity
-                activeOpacity={1}
-                disabled
-                style={{
-                  flex: 1,
-                  paddingVertical: 14,
-                  borderRadius: 14,
-                  alignItems: "center",
-                  backgroundColor:
-                    activeTab === "extra"
-                      ? "#166534"
-                      : "transparent",
-                  opacity: 0.45,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "700",
-                  }}
-                >
-                  Extra
-                </Text>
-              </TouchableOpacity>
-            </View>
+  {/* PROFILE IMAGE */}
+  <View
+    style={{
+      position: "absolute",
 
-            {/* INFO */}
-            {activeTab === "info" && (
-              <>
+      bottom: 15,
+
+      left: 0,
+      right: 0,
+
+      alignItems: "center",
+    }}
+  >
+    <View
+      style={{
+        width: 122,
+        height: 122,
+
+        borderRadius: 999,
+
+        padding: 4,
+
+        backgroundColor:
+          "#22c55e",
+
+        shadowColor:
+          "#22c55e",
+
+        shadowOpacity: 0.35,
+
+        shadowRadius: 18,
+
+        elevation: 14,
+      }}
+    >
+      <Image
+        source={
+          profile?.image?.trim()
+            ? {
+                uri:
+                  profile.image,
+              }
+            : require(
+                "@/assets/images/icons/iconbg.webp"
+              )
+        }
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        transition={120}
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: 999,
+        }}
+      />
+    </View>
+
+   <TouchableOpacity
+  onPress={onChangePhoto}
+  activeOpacity={0.8}
+  style={{
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  }}
+>
+  <Text
+    style={{
+      color: "#22c55e",
+      fontWeight: "700",
+      fontSize: 15,
+    }}
+  >
+    Change Photo
+  </Text>
+
+  <Ionicons
+    name="create-outline"
+    size={14}
+    color="#22c55e"
+    style={{
+      marginLeft: 6,
+    }}
+  />
+</TouchableOpacity>
+  </View>
+</View>
+<View
+  style={{
+    marginTop: 24,
+
+    backgroundColor: "#050505",
+
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+
+    paddingTop: 28,
+    paddingHorizontal: 18,
+    paddingBottom: 24,
+
+    borderWidth: 1,
+
+    borderColor:
+      "rgba(255,255,255,0.04)",
+  }}
+>
+        
                 {/* USERNAME */}
                 <View
                   style={{
+                    marginTop:10,
                     marginBottom: 18,
                   }}
                 >
@@ -360,28 +416,66 @@ setHasLocalChanges,
                       paddingHorizontal: 16,
                       paddingTop: 16,
                       minHeight: 120,
-maxHeight: 160,
+                      maxHeight: 160,
                       color: "#fff",
                       textAlignVertical: "top",
                       fontSize: 15,
                     }}
                   />
                 </View>
-              </>
-            )}
+         
+          
+         
+            {/* SAVE */}
+            <TouchableOpacity
+              disabled={!hasChanges || saving}
+              activeOpacity={0.9}
+              onPress={onSave}
+              style={{
+                marginTop: 30,
+                backgroundColor:
+                  !hasChanges || saving
+                    ? "#1a1a1a"
+                    : "#09873a",
+                borderRadius: 20,
+                paddingVertical: 17,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity:
+                  !hasChanges || saving
+                    ? 0.6
+                    : 1,
+              }}
+            >
+              {saving ? (
+                <ActivityIndicator
+                  color="#fff"
+                />
+              ) : (
+                <Text
+                  style={{
+           color: "#fdfdfd",
 
-            {/* DISABLED EXTRA SETTINGS */}
-            {activeTab === "extra" && (
-              <View
+fontSize: 16,
+fontWeight: "800",
+                  }}
+                >
+                  Save Changes
+                </Text>
+              )}
+            </TouchableOpacity>
+             </View>
+               <View
                 style={{
                   opacity: 0.45,
                   gap: 14,
+                  marginTop:40,
                 }}
               >
                 {[
                   "Private account",
                   "Show activity",
-                  "Allow messages",
+                  "AutoTimer messages",
                   "Online status",
                 ].map((item) => (
                   <View
@@ -414,48 +508,10 @@ maxHeight: 160,
                   </View>
                 ))}
               </View>
-            )}
-
-            {/* SAVE */}
-            <TouchableOpacity
-              disabled={!hasChanges || saving}
-              activeOpacity={0.9}
-              onPress={onSave}
-              style={{
-                marginTop: 30,
-                backgroundColor:
-                  !hasChanges || saving
-                    ? "#1a1a1a"
-                    : "#166534",
-                borderRadius: 20,
-                paddingVertical: 17,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity:
-                  !hasChanges || saving
-                    ? 0.6
-                    : 1,
-              }}
-            >
-              {saving ? (
-                <ActivityIndicator
-                  color="#fff"
-                />
-              ) : (
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "700",
-                    fontSize: 16,
-                  }}
-                >
-                  Save Changes
-                </Text>
-              )}
-            </TouchableOpacity>
           </View>
         </ScrollView>
 </View>
     </Modal>
+    
   );
 }

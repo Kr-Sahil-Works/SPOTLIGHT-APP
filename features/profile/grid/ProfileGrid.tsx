@@ -22,6 +22,8 @@ export default function ProfileGrid({
         data={posts || []}
         numColumns={3}
         scrollEnabled={false}
+        showsVerticalScrollIndicator={false}
+showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item._id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity

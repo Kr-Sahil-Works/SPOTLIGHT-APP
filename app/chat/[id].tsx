@@ -1095,22 +1095,30 @@ onReact={async ({
   </View>
 )}
 
-            <ChatInput
-              text={text}
-              userId={userId}
-             setText={(value) => {
-  setText(value);
+          <View
+  style={{
+    paddingBottom:
+      Platform.OS === "android"
+        ? Math.max(insets.bottom, 12)
+        : insets.bottom,
+    backgroundColor: "transparent",
+  }}
+>
+  <ChatInput
+    text={text}
+    userId={userId}
+    setText={(value) => {
+      setText(value);
 
-  storage.set(
-    `draft-${userId}`,
-    value
-  );
-}}
-              onSend={
-                handleSend
-              }
-              theme={theme}
-            />
+      storage.set(
+        `draft-${userId}`,
+        value
+      );
+    }}
+    onSend={handleSend}
+    theme={theme}
+  />
+</View>
 
           </View>
           </KeyboardAvoidingView>

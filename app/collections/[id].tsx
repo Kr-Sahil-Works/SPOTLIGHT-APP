@@ -294,6 +294,7 @@ const removeFromCollection =
           <FlatList
             data={posts}
             numColumns={2}
+            showsVerticalScrollIndicator={false}
             style={{
               zIndex: 30,
             }}

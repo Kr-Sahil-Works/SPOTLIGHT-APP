@@ -327,6 +327,8 @@ style={[
               data={posts}
               numColumns={3}
               scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+showsHorizontalScrollIndicator={false}
               renderItem={({ item }) => (
                <TouchableOpacity
   style={styles.gridItem}

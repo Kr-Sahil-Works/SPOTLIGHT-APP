@@ -214,12 +214,13 @@ scrollEventThrottle={16}
       lineHeight: 24,
     }}
   >
-    ✓ No annoying ads{"\n"}
+    ✓ 100% Ads-Free, Forever Zero Ads {"\n"}
+    ✓ 100% All Features, Always Free {"\n"}
     ✓ No selling of user data{"\n"}
     ✓ No third-party data brokers{"\n"}
     ✓ No advertising profiles{"\n"}
-    ✓ Privacy-first development{"\n"}
-    ✓ Built independently with users trust as a priority
+    ✓ Privacy-first Secure Architecture{"\n"}
+    ✓ Built Independently, Funded by Trust & Feedbacks of Users : )
   </Text>
 </View>
 

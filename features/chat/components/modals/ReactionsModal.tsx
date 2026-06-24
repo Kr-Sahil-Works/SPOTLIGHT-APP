@@ -101,6 +101,8 @@ export default function ReactionsModal({
 
           <FlatList
             data={reactions}
+            showsVerticalScrollIndicator={false}
+showsHorizontalScrollIndicator={false}
             keyExtractor={(
               item,
               index

@@ -28,6 +28,18 @@ export default function ProfileInfo({
   const router = useRouter();
 
 const screenWidth = Dimensions.get("window").width;
+
+const [flipped, setFlipped] =
+  useState(false);
+
+const [showBack, setShowBack] =
+  useState(false);
+
+const flipAnim =
+  React.useRef(
+    new Animated.Value(0)
+  ).current;
+
   return (
     <View style={styles.profileInfo}>
       {/* AVATAR + STATS */}
@@ -45,7 +57,9 @@ const screenWidth = Dimensions.get("window").width;
         >
         <TouchableOpacity
   activeOpacity={0.9}
-  onLongPress={() => setShowAvatarModal(true)}
+  onPress={() =>
+  setShowAvatarModal(true)
+}
 >
 <Image
   source={
@@ -73,6 +87,7 @@ const screenWidth = Dimensions.get("window").width;
         >
           {/* POSTS */}
        <TouchableOpacity
+       disabled={!isOnline}
   activeOpacity={0.7}
   onPress={() =>
     router.push({
@@ -103,6 +118,7 @@ const screenWidth = Dimensions.get("window").width;
 
           {/* FOLLOWERS */}
           <TouchableOpacity
+           disabled={!isOnline}
             activeOpacity={0.7}
             onPress={() => onFollowersPress?.()}
             style={[
@@ -125,6 +141,7 @@ const screenWidth = Dimensions.get("window").width;
 
           {/* FOLLOWING */}
           <TouchableOpacity
+           disabled={!isOnline}
             activeOpacity={0.7}
             onPress={() => onFollowingPress?.()}
             style={[
@@ -210,6 +227,7 @@ const screenWidth = Dimensions.get("window").width;
 
   {/* SHARE APP */}
   <TouchableOpacity
+  disabled={!isOnline}
     onPress={onShare}
     style={{
       width: 46,
@@ -236,6 +254,7 @@ const screenWidth = Dimensions.get("window").width;
 
   {/* DISCOVER */}
   <TouchableOpacity
+   disabled={!isOnline}
     onPress={() =>
       router.push(
         "/user/discover"
@@ -274,71 +293,330 @@ const screenWidth = Dimensions.get("window").width;
     onPress={() => setShowAvatarModal(false)}
     style={{
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.92)",
+      backgroundColor: "#000000e6",
       justifyContent: "center",
       alignItems: "center",
     }}
   >
-    {/* CLOSE */}
-    <TouchableOpacity
-      activeOpacity={0.8}
-      onPress={() => setShowAvatarModal(false)}
+
+    {/* IMAGE */}
+<View
+  style={{
+    width: screenWidth * 0.82,
+    height: 360,
+    position: "relative",
+  }}
+>
+
+{/* FRONT CARD */}
+<Animated.View
+  style={{
+    position: "absolute",
+
+    width: "100%",
+    height: "100%",
+
+    backgroundColor: "#0c0c0c",
+
+    borderRadius: 32,
+
+    paddingHorizontal: 24,
+    paddingTop: 22,
+
+    overflow: "hidden",
+
+    borderWidth: 1,
+
+    borderColor:
+      "rgba(34,197,94,0.18)",
+
+    shadowColor: "#22c55e",
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+
+    elevation: 12,
+
+    backfaceVisibility:
+      "hidden",
+
+  transform: [
+  {
+    scale:
+      flipAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [1, 0.96],
+      }),
+  },
+],
+  }}
+>
+  <View
+  style={{
+    position: "absolute",
+    top: 18,
+    right: 18,
+    zIndex: 50,
+  }}
+>
+<TouchableOpacity
+  activeOpacity={0.8}
+onPress={() => {
+  Animated.sequence([
+    Animated.timing(
+      flipAnim,
+      {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }
+    ),
+
+    Animated.timing(
+      flipAnim,
+      {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }
+    ),
+  ]).start();
+
+  setShowBack(
+    !showBack
+  );
+}}
+  style={{
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+
+    backgroundColor:
+      "rgba(34,197,94,0.08)",
+
+    justifyContent:
+      "center",
+
+    alignItems:
+      "center",
+
+    borderWidth: 1,
+
+    borderColor:
+      "rgba(34,197,94,0.14)",
+  }}
+>
+  <Ionicons
+    name="shuffle-outline"
+    size={18}
+    color="#22c55e"
+  />
+</TouchableOpacity>
+</View>
+  {/* SPOTLIGHT */}
+  <Animated.View
+  style={{
+opacity: showBack
+  ? 0
+  : 1,
+
+pointerEvents:
+  showBack
+    ? "none"
+    : "auto",
+  }}
+>
+  
+<View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  }}
+>
+  <Ionicons
+    name="leaf"
+    size={16}
+    color="#22c55e"
+  />
+
+  <Text
+    style={{
+      color: "#22c55e",
+      fontSize: 13,
+      fontWeight: "700",
+      letterSpacing: 2,
+      marginLeft: 6,
+    }}
+  >
+    SPOTLIGHT
+  </Text>
+</View>
+
+  {/* PROFILE PIC */}
+  <View
+    style={{
+      alignItems: "center",
+    }}
+  >
+    <Image
+      source={
+        user?.image?.trim()
+          ? { uri: user.image }
+          : require("@/assets/images/icons/iconbg.webp")
+      }
+      contentFit="cover"
+      cachePolicy="memory-disk"
+      transition={120}
       style={{
-        position: "absolute",
-        top: 60,
-        right: 24,
-        zIndex: 10,
+        width: 140,
+        height: 140,
+        borderRadius: 999,
+        marginBottom:10,
+
+        borderWidth: 4,
+      borderColor: "#28a054",
+      }}
+    />
+  </View>
+
+  {/* NAME */}
+  <Text
+    style={{
+      color: "#ffffff",
+      fontSize: 28,
+      fontWeight: "700",
+      marginTop: 24,
+    }}
+  >
+    {user?.fullname}
+  </Text>
+
+  {/* USERNAME */}
+  <Text
+    style={{
+      color: "#9ca3af",
+      fontSize: 15,
+      marginTop: 6,
+    }}
+  >
+    @{user?.username}
+  </Text>
+
+  <View
+  style={{
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  }}
+>
+  <Ionicons
+    name="shield-checkmark"
+    size={14}
+    color="#22c55e"
+  />
+
+  <Text
+    style={{
+      color: "#22c55e",
+      fontSize: 12,
+      marginLeft: 6,
+      fontWeight: "600",
+    }}
+  >
+    Spotlight Member
+  </Text>
+</View>
+</Animated.View>
+
+<Animated.View
+  style={{
+    position: "absolute",
+    top: 0,
+    bottom:0,
+    left: 0,
+    right: 0,
+
+  opacity: showBack
+  ? 1
+  : 0,
+
+pointerEvents:
+  showBack
+    ? "auto"
+    : "none",
+  }}
+>
+  <View
+    style={{
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: 320,
+    }}
+  >
+    <Animated.View
+      style={{
+        width: 160,
+        height: 160,
+        borderRadius: 18,
+
+        borderWidth: 2,
+        borderColor:
+          "#22c55e",
+
+        justifyContent:
+          "center",
+
+        alignItems:
+          "center",
+
+        backgroundColor:
+          "#111",
       }}
     >
       <Ionicons
-        name="close"
-        size={30}
-        color={COLORS.white}
+        name="qr-code"
+        size={90}
+        color="#22c55e"
       />
-    </TouchableOpacity>
-
-    {/* IMAGE */}
-    <Animated.View
-      style={{
-        width: screenWidth * 0.82,
-        height: screenWidth * 0.82,
-        borderRadius: 999,
-        overflow: "hidden",
-        borderWidth: 1.5,
-        borderColor: "rgba(255,255,255,0.12)",
-        shadowColor: COLORS.primary,
-        shadowOpacity: 0.4,
-        shadowRadius: 24,
-      }}
-    >
-   <Image
-  source={
-    user?.image?.trim()
-      ? { uri: user.image }
-      : require("@/assets/images/icons/iconbg.webp")
-  }
-  contentFit="cover"
-  cachePolicy="memory-disk"
-  allowDownscaling
-  transition={120}
-  style={{
-    width: "100%",
-    height: "100%",
-  }}
-/>
     </Animated.View>
 
-    {/* NAME */}
     <Text
       style={{
-        color: COLORS.white,
-        fontSize: 20,
+        color: "#fff",
+        fontSize: 18,
         fontWeight: "700",
-        marginTop: 24,
+        marginTop: 22,
       }}
     >
-      {user?.fullname}
+      QR Profile
     </Text>
+
+    <Text
+      style={{
+        color: "#9ca3af",
+        marginTop: 8,
+        textAlign: "center",
+      }}
+    >
+      Coming Soon
+    </Text>
+
+    <Text
+      style={{
+        color: "#6b7280",
+        marginTop: 12,
+        fontSize: 12,
+        textAlign: "center",
+      }}
+    >
+      Share your Spotlight profile
+      instantly using a QR code
+    </Text>
+  </View>
+</Animated.View>
+</Animated.View>
+</View>
   </Pressable>
 </Modal>
     </View>

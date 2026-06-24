@@ -67,7 +67,11 @@ const [
   // ✅ FIXED QUERY
 const posts = useQuery(
   api.posts.index.getFeedPosts,
-  isSignedIn ? {} : "skip"
+  isSignedIn
+    ? {
+        limit: 60,
+      }
+    : "skip"
 );
 
 useEffect(() => {
@@ -119,9 +123,14 @@ useEffect(() => {
   useState(false);
 
 useEffect(() => {
-  if (!posts?.length) {
-    return;
-  }
+if (posts === undefined) {
+  return;
+}
+
+if (posts.length === 0) {
+  setFeedReady(true);
+  return;
+}
 
   setCachedPosts(posts);
 
@@ -159,31 +168,36 @@ setFeedReady(true);
 
 useEffect(() => {
   if (
-    !posts?.length ||
+    posts === undefined ||
     !initializedRef.current
   ) {
     return;
   }
+
+  if (posts.length === 0) {
+    return;
+  }
+
   setFeedPosts(
     current =>
-      current.map(
+      current.filter(
         item =>
-          posts.find(
+          posts.some(
             p =>
               p._id ===
               item._id
-          ) ?? item
+          )
       )
   );
 }, [posts]);
 
   // ✅ FINAL DATA (NO BLANK STATE)
 const finalPosts =
-  posts && posts.length > 0
-    ? feedPosts.length > 0
-      ? feedPosts
-      : posts
-    : cachedPosts;
+  feedPosts.length > 0
+    ? feedPosts
+    : cachedPosts.length > 0
+      ? cachedPosts
+      : posts ?? [];
 
   const unreadCount =
     useQuery(api.notifications.getUnreadCount, isSignedIn ? {} : "skip") ?? 0;
@@ -414,11 +428,24 @@ const storiesHeader = useMemo(() => {
   <FeedSkeleton />
 ) : showRefreshSkeleton ? (
   <FeedSkeleton />
-) : showRefreshSkeleton ? (
-  <FeedSkeleton />
+) : posts === undefined &&
+    cachedPosts.length > 0 ? (
+  <FlashList
+    ref={listRef}
+    data={cachedPosts}
+    renderItem={renderPost}
+    keyExtractor={(item) =>
+      item._id.toString()
+    }
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{
+      paddingBottom: 80,
+    }}
+    ListHeaderComponent={storiesHeader}
+  />
 ) : finalPosts.length === 0 ? (
   <NoPostsFound />
-) : (
+): (
     
         <FlashList
           ref={listRef}

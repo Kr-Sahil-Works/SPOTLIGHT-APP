@@ -206,20 +206,53 @@ useEffect(() => {
   return (
     <View style={{ flex: 1, backgroundColor: "#020403" }}>
       {/* HEADER */}
-     <View style={styles.header}>
-  <TouchableOpacity onPress={() => router.back()}>
+{/* HEADER */}
+<View
+  style={[
+    styles.header,
+    {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+  ]}
+>
+  <Text
+    style={[
+      styles.headerText,
+      {
+        flex: 1,
+        textAlign: "left",
+      },
+    ]}
+  >
+    Profile
+  </Text>
+
+  <TouchableOpacity
+    activeOpacity={0.7}
+    onPress={() => router.back()}
+    style={{
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+
+      justifyContent: "center",
+      alignItems: "center",
+
+      backgroundColor:
+        "rgba(255,255,255,0.04)",
+
+      borderWidth: 1,
+      borderColor:
+        "rgba(255,255,255,0.06)",
+    }}
+  >
     <Ionicons
       name="arrow-back"
-      size={22}
+      size={20}
       color={IOS_COLORS.headercolor}
     />
   </TouchableOpacity>
-
-  <View style={{ flex: 1 }} />
-
-  <Text style={styles.headerText}>
-Profile
-  </Text>
 </View>
 
       <ScrollView 
@@ -349,26 +382,16 @@ contentFit="cover"
     you know ❤️
   </Text>
 
+</BlurView>
   <View
     style={{
-      height: 1,
+      height: 4,
       backgroundColor:
-        "rgba(255,255,255,0.06)",
+        "rgba(255, 255, 255, 0.12)",
       marginVertical: 14,
+      marginTop:45,
     }}
   />
-
-  <Text
-    style={{
-      color: "#707070",
-      fontSize: 12,
-      marginTop: 14,
-      textAlign: "center",
-    }}
-  >
-| Meaningful conversations | Real connections | Lasting memories |
-  </Text>
-</BlurView>
 
         {/* RESTRICTED */}
         <View style={styles.dangerCard}>

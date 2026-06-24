@@ -84,6 +84,18 @@ const {
   isSignedIn,
 } = useAuth();
 
+useEffect(() => {
+  if (
+    isLoaded &&
+    isSignedIn
+  ) {
+    router.replace("/(tabs)");
+  }
+}, [
+  isLoaded,
+  isSignedIn,
+]);
+
   const pressIn = () => {
     Animated.spring(pressScale,{
       toValue:0.96,
@@ -135,6 +147,16 @@ const {
   };
 
 const handleGoogleSignIn = async () => {
+
+  if (
+    isSignedIn
+  ) {
+    router.replace(
+      "/(tabs)"
+    );
+    return;
+  }
+
   if (loading) return;
 
   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -236,9 +258,10 @@ setLoading(false);
             onPress={handleGoogleSignIn}
             onPressIn={pressIn}
             onPressOut={pressOut}
-            disabled={
+   disabled={
   loading ||
-  !isOnline
+  !isOnline ||
+  isSignedIn
 }
             android_ripple={{color:"rgba(255,255,255,0.25)"}}
             style={[

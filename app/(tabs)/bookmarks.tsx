@@ -459,6 +459,8 @@ const addToExistingCollection = async (
       ) : (
         <FlatList
           data={bookmarkedPosts}
+          showsVerticalScrollIndicator={false}
+showsHorizontalScrollIndicator={false}
           keyExtractor={(item, i) =>
             item?._id?.toString() ||
             i.toString()

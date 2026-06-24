@@ -27,6 +27,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 
+import { triggerFeedRefresh } from "@/lib/feedRefresh";
 import * as ImageManipulator from "expo-image-manipulator";
 
 export default function CreateScreen() {
@@ -191,81 +192,111 @@ setSelectedImage(
 }
 };
 
+const handleShare = async () => {
+  if (isSharing) return;
 
+  if (!isOnline) {
+    appToast({
+      type: "error",
+      message:
+        "Internet connection required",
+    });
 
+    return;
+  }
 
+  if (!selectedImage) return;
 
-  const handleShare = async () => {
-    if (isSharing) return;
-    if (!isOnline) {
+  setIsSharing(true);
+  setBlockingUI(true);
+
+  try {
+    const uploadUrl =
+      await generateUploadUrl();
+
+    const imageResponse =
+      await fetch(
+        selectedImage
+      );
+
+    const blob =
+      await imageResponse.blob();
+
+    const uploadResult =
+      await fetch(
+        uploadUrl,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              blob.type ||
+              "image/jpeg",
+          },
+          body: blob,
+        }
+      );
+
+    if (!uploadResult.ok) {
+      throw new Error(
+        "Upload failed"
+      );
+    }
+
+    const { storageId } =
+      await uploadResult.json();
+
+  const postId =
+  await createPost({
+    caption,
+    storageId,
+  });
+
 appToast({
-  type: "error",
+  type: "success",
   message:
-    "Internet connection required",
+    "Post uploaded successfully",
 });
 
-  return;
-}
-    if (!selectedImage) return;
-setIsSharing(true);
-setBlockingUI(true);
-
-
-    try {
-      setIsSharing(true);
-
-      const uploadUrl = await generateUploadUrl();
-
-      const imageResponse = await fetch(selectedImage);
-      const blob = await imageResponse.blob();
-
-      const uploadResult = await fetch(uploadUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": blob.type || "image/jpeg",
-        },
-        body: blob,
-      });
-
-      if (!uploadResult.ok) throw new Error("Upload failed");
-
-      const { storageId } = await uploadResult.json();
-
-      await createPost({
-  storageId,
-  caption: caption.trim(),
-});
-
-      setSelectedImage(null);
-      setCaption("");
-
-
-
-setShowToast(true);
-
-Animated.timing(toastAnim, {
-  toValue: 1,
-  duration: 250,
-  useNativeDriver: true,
-}).start();
+setSelectedImage(null);
+setCaption("");
 
 setTimeout(() => {
-  setShowToast(false);
-  toastAnim.setValue(0);
+  router.push({
+    pathname: "/post/[id]",
+    params: {
+      id: String(postId),
+    },
+  });
+}, 1800);
 
-  router.replace("/");
-}, 500);
+    triggerFeedRefresh();
+  } catch (error: any) {
+    console.log(
+      "Error sharing post:",
+      error
+    );
 
-
-    } catch (error) {
-      console.log("Error sharing post:", error);
-    } finally {
-  setIsSharing(false);
-  setBlockingUI(false);
-
+    if (
+      error?.message ===
+      "POST_LIMIT_REACHED"
+    ) {
+      appToast({
+        type: "error",
+        message:
+          "Maximum 12 posts allowed",
+      });
+    } else {
+      appToast({
+        type: "error",
+        message:
+          "Failed to upload post",
+      });
     }
-  };
-
+  } finally {
+    setIsSharing(false);
+    setBlockingUI(false);
+  }
+};
 
   const hasReachedPostLimit =
   (currentUser?.posts ?? 0) >= 12;

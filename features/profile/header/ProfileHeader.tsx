@@ -10,11 +10,13 @@ export default function ProfileHeader({
   pressScale,
   tickScale,
   secureAnim,
+  particleScale,
+  particleOpacity,
   menuAnim,
   menuOpen,
   setMenuOpen,
   router,
-}: any) {
+}: any)  {
   return (
     <View
       style={[
@@ -28,64 +30,120 @@ export default function ProfileHeader({
         },
       ]}
     >
-      {/* 🔒 LOCK */}
-      <TouchableOpacity
-        disabled={showSecure}
-        activeOpacity={0.6}
-        onPress={() => {
-          if (showSecure) return;
+ {/* 🔒 LOCK */}
+<TouchableOpacity
+  disabled={showSecure}
+  activeOpacity={0.6}
+onPress={() => {
+  if (showSecure) return;
 
-          setShowSecure(true);
+  setShowSecure(true);
 
-          tickScale.setValue(0);
-          Animated.spring(tickScale, {
-            toValue: 1,
-            friction: 5,
+  tickScale.setValue(0);
+
+  secureAnim.setValue(0);
+
+  particleScale.setValue(0.2);
+  particleOpacity.setValue(0);
+
+  Animated.parallel([
+ Animated.timing(tickScale, {
+  toValue: 1,
+  duration: 650,
+  useNativeDriver: true,
+}),
+
+    Animated.timing(secureAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }),
+
+    Animated.sequence([
+      Animated.delay(700),
+
+      Animated.parallel([
+        Animated.spring(
+          particleScale,
+          {
+            toValue: 1.8,
+            tension: 45,
+            friction: 10,
             useNativeDriver: true,
-          }).start();
+          }
+        ),
 
-          secureAnim.setValue(0);
-          Animated.timing(secureAnim, {
-            toValue: 1,
-            duration: 180,
-            useNativeDriver: true,
-          }).start();
-
-          setTimeout(() => {
-            Animated.timing(secureAnim, {
-              toValue: 0,
-              duration: 180,
+        Animated.sequence([
+          Animated.timing(
+            particleOpacity,
+            {
+              toValue: 1,
+              duration: 220,
               useNativeDriver: true,
-            }).start(() => setShowSecure(false));
-          }, 2000);
-        }}
-        onPressIn={() => {
-          Animated.spring(pressScale, {
-            toValue: 0.92,
-            useNativeDriver: true,
-          }).start();
-        }}
-        onPressOut={() => {
-          Animated.spring(pressScale, {
-            toValue: 1,
-            useNativeDriver: true,
-          }).start();
-        }}
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: 10,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#0000000f",
-          borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.08)",
-        }}
-      >
-        <Animated.View style={{ transform: [{ scale: pressScale }] }}>
-          <Ionicons name="lock-closed-outline" size={20} color="#22c55e" />
-        </Animated.View>
-      </TouchableOpacity>
+            }
+          ),
+
+          Animated.timing(
+            particleOpacity,
+            {
+              toValue: 0,
+              duration: 900,
+              useNativeDriver: true,
+            }
+          ),
+        ]),
+      ]),
+    ]),
+  ]).start();
+
+  setTimeout(() => {
+    Animated.timing(
+      secureAnim,
+      {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }
+    ).start(() =>
+      setShowSecure(false)
+    );
+  }, 2400);
+}}
+  onPressIn={() => {
+    Animated.spring(pressScale, {
+      toValue: 0.92,
+      useNativeDriver: true,
+    }).start();
+  }}
+  onPressOut={() => {
+    Animated.spring(pressScale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  }}
+  style={{
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0000000f",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  }}
+>
+  <Animated.View
+    style={{
+      transform: [{ scale: pressScale }],
+    }}
+  >
+    <Ionicons
+      name="lock-closed-outline"
+      size={20}
+      color="#22c55e"
+    />
+  </Animated.View>
+</TouchableOpacity>
 
       {/* 👤 USERNAME */}
       <Text

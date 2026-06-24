@@ -626,6 +626,8 @@ useEffect(() => {
 ) : (
         <FlatList
           data={collections}
+          showsVerticalScrollIndicator={false}
+showsHorizontalScrollIndicator={false}
           keyExtractor={(item) =>
             item._id
           }

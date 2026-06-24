@@ -73,6 +73,8 @@ const [layout] =
     >
       <FlatList
         data={data}
+        showsVerticalScrollIndicator={false}
+showsHorizontalScrollIndicator={false}
         keyExtractor={(
           item: any
         ) =>

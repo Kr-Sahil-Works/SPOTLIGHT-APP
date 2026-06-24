@@ -1,13 +1,18 @@
 import {
-    useEffect,
-    useRef,
+  useEffect,
+  useRef,
 } from "react";
+
 import {
-    Animated,
-    Pressable,
-    Text,
-    View
+  Animated,
+  Pressable,
+  Text,
+  View,
 } from "react-native";
+
+import {
+  Ionicons,
+} from "@expo/vector-icons";
 
 type Props = {
   visible: boolean;
@@ -20,42 +25,124 @@ export default function OfflineInfoModal({
 }: Props) {
   const translateY =
     useRef(
-      new Animated.Value(250)
+      new Animated.Value(120)
     ).current;
 
-    const progress =
+    const pulse =
   useRef(
     new Animated.Value(0)
   ).current;
 
+const ring =
+  useRef(
+    new Animated.Value(0)
+  ).current;
+
+  const wifiBlink =
+  useRef(
+    new Animated.Value(1)
+  ).current;
+
+
+  const progress =
+    useRef(
+      new Animated.Value(0)
+    ).current;
+
   useEffect(() => {
-    if (!visible) {
-      return;
-    }
+    if (!visible) return;
 
     progress.setValue(0);
 
-Animated.timing(
-  progress,
-  {
-    toValue: 100,
-    duration: 10000,
-    useNativeDriver: false,
-  }
-).start();
+    Animated.parallel([
+      Animated.spring(
+        translateY,
+        {
+          toValue: 0,
+          tension: 90,
+          friction: 10,
+          useNativeDriver: true,
+        }
+      ),
 
-    Animated.spring(
-      translateY,
+      Animated.timing(
+        progress,
+        {
+          toValue: 100,
+          duration: 12000,
+          useNativeDriver: false,
+        }
+      ),
+    ]).start();
+
+    Animated.loop(
+  Animated.sequence([
+    Animated.timing(
+      pulse,
       {
-        toValue: 0,
+        toValue: 1,
+        duration: 1400,
         useNativeDriver: true,
       }
-    ).start();
+    ),
+    Animated.timing(
+      pulse,
+      {
+        toValue: 0,
+        duration: 1400,
+        useNativeDriver: true,
+      }
+    ),
+  ])
+).start();
+
+Animated.loop(
+  Animated.sequence([
+    Animated.timing(
+      ring,
+      {
+        toValue: 1,
+        duration: 1800,
+        useNativeDriver: true,
+      }
+    ),
+    Animated.timing(
+      ring,
+      {
+        toValue: 0,
+        duration: 0,
+        useNativeDriver: true,
+      }
+    ),
+  ])
+).start();
+
+Animated.loop(
+  Animated.sequence([
+    Animated.timing(
+      wifiBlink,
+      {
+        toValue: 0.25,
+        duration: 700,
+        useNativeDriver: true,
+      }
+    ),
+
+    Animated.timing(
+      wifiBlink,
+      {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true,
+      }
+    ),
+  ])
+).start();
 
     const timer =
       setTimeout(() => {
         onClose();
-      }, 10000);
+      }, 12000);
 
     return () =>
       clearTimeout(timer);
@@ -68,8 +155,7 @@ Animated.timing(
     <Pressable
       onPress={onClose}
       style={{
-        position:
-          "absolute",
+        position: "absolute",
         top: 0,
         left: 0,
         right: 0,
@@ -79,12 +165,11 @@ Animated.timing(
     >
       <Animated.View
         style={{
-          position:
-            "absolute",
+          position: "absolute",
 
-          left: 14,
-          right: 14,
-          bottom: 25,
+          left: 16,
+          right: 16,
+          bottom: 24,
 
           transform: [
             {
@@ -92,101 +177,182 @@ Animated.timing(
             },
           ],
 
-       backgroundColor:
-  "#121212",
+          backgroundColor:
+            "#0d0d0d",
 
-borderRadius: 20,
+          borderRadius: 24,
 
-borderWidth: 1,
+          borderWidth: 1,
 
-borderColor:
-  "rgba(255,98,98,0.18)",
+          borderColor:
+            "rgba(255,77,79,0.35)",
 
-padding: 16,
+          padding: 16,
+
+          shadowColor:
+  "#ff4d4f",
+
+shadowOpacity: 0.25,
+
+shadowRadius: 25,
+
+elevation: 16,
         }}
       >
-        <Text
-          style={{
-            color:
-              "#d80000",
-
-            fontSize: 16,
-
-            fontWeight:
-              "700",
-
-            marginBottom: 8,
-          }}
-        >
-          Offline Mode 
-        </Text>
-
-        <Text
-          style={{
-            color:
-              "#d4d4d4",
-
-            lineHeight: 21,
-
-            fontSize: 13,
-          }}
-        >
-          Spotlight supports
-          offline mode for
-          viewing cached
-          content.
-
-          {"\n\n"}
-
-          For the best
-          experience, use a
-          stable internet
-          connection.
-
-          {"\n\n"}
-
-          If a screen appears
-          stuck while offline,
-          or after reconnecting,
-          simply close and
-          reopen the app.
-        </Text>
-
+        {/* TOP */}
         <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+         <Animated.View
   style={{
-    marginTop: 14,
+    position: "absolute",
 
-    height: 3,
+    width: 36,
+    height: 36,
 
-    borderRadius: 99,
+    borderRadius: 999,
 
-    overflow: "hidden",
+    borderWidth: 2,
+    marginLeft: -10,
 
-    backgroundColor:
-      "rgba(255,255,255,0.06)",
+borderColor:
+  "#ff4d4f",
+    opacity:
+      ring.interpolate({
+        inputRange: [0,1],
+        outputRange: [0.8,0],
+      }),
+
+    transform: [
+      {
+        scale:
+          ring.interpolate({
+            inputRange: [0,1],
+            outputRange: [0.8,2],
+          }),
+      },
+    ],
+  }}
+/>
+
+<Animated.View
+  style={{
+    opacity: wifiBlink,
+
+    transform: [
+      {
+        scale:
+          wifiBlink.interpolate({
+            inputRange: [
+              0.25,
+              0.8,
+            ],
+            outputRange: [
+              0.8,
+              0.9,
+            ],
+          }),
+      },
+    ],
   }}
 >
-  <Animated.View
-    style={{
-      height: "100%",
+  <Ionicons
+    name="wifi-outline"
+    size={26}
+    color="#ff4d4f"
+  />
+</Animated.View>
 
-      width:
-        progress.interpolate({
-          inputRange: [
-            0,
-            100,
-          ],
-          outputRange: [
-            "0%",
-            "100%",
-          ],
-        }),
+          <View
+            style={{
+              flex: 1,
+              marginLeft: 12,
+            }}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: "700",
+              }}
+            >
+              Offline Mode
+            </Text>
+
+            <Text
+              style={{
+                color: "#9ca3af",
+                marginTop: 2,
+                fontSize: 13,
+              }}
+            >
+              Viewing cached content
+            </Text>
+          </View>
+        </View>
+
+        {/* INFO */}
+        <View
+          style={{
+            marginTop: 14,
+          }}
+        >
+          <Text
+            style={{
+              color: "#d1d5db",
+              fontSize: 13,
+              lineHeight: 20,
+            }}
+          >
+      Some features may be unavailable
+until your Reconnects to Internet.
+
+{"\n\n"}
+
+If a screen feels freezed,
+close and reopen Spotlight.
+          </Text>
+        </View>
+
+        {/* PROGRESS */}
+        <View
+          style={{
+            marginTop: 14,
+
+            height: 4,
+
+            borderRadius: 999,
+
+            overflow: "hidden",
+
+            backgroundColor:
+              "rgba(255,255,255,0.06)",
+          }}
+        >
+          <Animated.View
+            style={{
+              height: "100%",
+
+              width:
+                progress.interpolate({
+                  inputRange: [
+                    0,
+                    100,
+                  ],
+                  outputRange: [
+                    "0%",
+                    "100%",
+                  ],
+                }),
 
       backgroundColor:
-        "#e60000",
-    }}
-  />
-</View>
+  "#ff4d4f",
+            }}
+          />
+        </View>
       </Animated.View>
     </Pressable>
   );

@@ -9,6 +9,7 @@ import {
   useRouter,
 } from "expo-router";
 import {
+  useEffect,
   useState
 } from "react";
 import {
@@ -25,6 +26,12 @@ export default function PostPage() {
     id,
     openComments,
   } = useLocalSearchParams();
+
+  useEffect(() => {
+  if (openComments === "true") {
+    setCommentsPostId(id);
+  }
+}, [openComments]);
 
   const [commentsPostId,
   setCommentsPostId] =

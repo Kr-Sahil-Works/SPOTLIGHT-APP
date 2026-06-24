@@ -25,6 +25,6 @@ export default function SSOCallback() {
   }
 
   return (
-    <Redirect href="/" />
+<Redirect href="/(tabs)" />
   );
 }
