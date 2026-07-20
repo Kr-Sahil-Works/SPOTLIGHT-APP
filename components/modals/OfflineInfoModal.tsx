@@ -313,7 +313,7 @@ until your Reconnects to Internet.
 {"\n\n"}
 
 If a screen feels freezed,
-close and reopen Spotlight.
+close and reopen MilesSpot.
           </Text>
         </View>
 

@@ -104,7 +104,7 @@ body:
     .slice(0, 140),
 
 subtitle:
-  "Spotlight",
+  "MilesSpot",
 
   data: args.data,
 

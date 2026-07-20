@@ -374,7 +374,7 @@ const storiesHeader = useMemo(() => {
   >
       {/* 🔥 HEADER */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Spotlight</Text>
+        <Text style={styles.headerTitle}>MilesSpot</Text>
 
         {/* ❤️ NOTIFICATIONS */}
         <Animated.View style={{ transform: [{ scale }] }}>

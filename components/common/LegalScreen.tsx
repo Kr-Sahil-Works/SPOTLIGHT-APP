@@ -204,7 +204,7 @@ scrollEventThrottle={16}
       marginBottom: 10,
     }}
   >
-    Spotlight Promise
+    MilesSpot Promise
   </Text>
 
   <Text

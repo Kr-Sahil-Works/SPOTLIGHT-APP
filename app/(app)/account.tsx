@@ -69,7 +69,7 @@ const words = [
   "Thank You ",
   "So Much 🥺",
   "For Your Support",
-  "Spotlight",
+  "MilesSpot",
   "Fast ⚡",
   "Free 🌍",
   "For Everyone",
@@ -368,13 +368,13 @@ contentFit="cover"
     }}
   >
     Thank you for being a part of
-    Spotlight. Every message,
+    MilesSpot. Every message,
     reaction, post, and connection
     is special and means a lot to me.
 
     {"\n\n"}
 
-    Spotlight was built with 
+    MilesSpot was built with 
     passion, and countless late 
     nights and hours of
     coding. Your support, feedback,

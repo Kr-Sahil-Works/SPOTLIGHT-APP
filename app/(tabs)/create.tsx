@@ -503,7 +503,7 @@ width: "92%",
             fontWeight: "600",
           }}
         >
-        Keeping Spotlight Free
+        Keeping MilesSpot Free
         </Text>
       </View>
 
@@ -533,7 +533,7 @@ width: "92%",
       lineHeight: 19,
     }}
   >
-    Spotlight is an independent platform
+    MilesSpot is an independent platform
     designed, built, and maintained by{" "}
     <Text
       style={{
@@ -549,12 +549,12 @@ width: "92%",
 
     Instead of showing ads or
     charging for paid premium features,
-    Spotlight just limits each account
+    MilesSpot just limits each account
     to have 12 active posts.
 
     {"\n\n"}
 
-    This helps keep Spotlight{" "}
+    This helps keep MilesSpot{" "}
     <Text
       style={{
         color: "#AEFF18",

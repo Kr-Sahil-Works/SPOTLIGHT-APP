@@ -176,7 +176,7 @@ const {
 } = await startSSOFlow({
   strategy: "oauth_google",
   redirectUrl: AuthSession.makeRedirectUri({
-    scheme: "spotlightapp",
+    scheme: "milesspot",
     path: "sso-callback",
   }),
 });
@@ -226,7 +226,7 @@ setLoading(false);
         <View style={styles.logoContainer}>
           <Ionicons name="leaf" size={32} color={COLORS.primary}/>
         </View>
-        <Text style={styles.appName}>spotlight</Text>
+        <Text style={styles.appName}>MilesSpot</Text>
         <Text style={styles.tagline}>don't miss anything</Text>
       </View>
 

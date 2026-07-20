@@ -406,7 +406,7 @@ setTimeout(() => {
       marginTop: 8,
     }}
   >
-    Spotlight
+    MilesSpot
   </Text>
 
   {/* WATERMARK */}
@@ -423,7 +423,7 @@ setTimeout(() => {
       fontWeight: "700",
     }}
   >
-    SPOTLIGHT V.1.0.0
+    MilesSpot V.1.0.0
   </Text>
 </View>
 
@@ -435,7 +435,7 @@ setTimeout(() => {
   title="Documentation"
   onPress={() =>
     router.push(
-      "/(app)/webview?url=https://spotlight-docs.onrender.com"
+      "/(app)/webview?url=https://MilesSpot.docs.onrender.com"
     )
   }
 />

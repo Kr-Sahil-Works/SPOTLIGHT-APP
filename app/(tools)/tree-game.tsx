@@ -544,7 +544,7 @@ onPress={() => {
                 "800",
             }}
           >
-             Spotlight Tree  🍃
+             MilesSpot Tree  🍃
           </Text>
 
 

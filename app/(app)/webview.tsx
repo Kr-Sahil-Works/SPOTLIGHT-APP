@@ -21,7 +21,7 @@ export default function WebViewScreen() {
 const isAllowedUrl = (u: string) => {
   return (
     u.startsWith("https://github.com") ||
-    u.startsWith("https://spotlight-docs.onrender.com")
+    u.startsWith("https://MilesSpot.docs.onrender.com")
   );
 };
 

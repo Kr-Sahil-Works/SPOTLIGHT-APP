@@ -412,7 +412,7 @@ onPress={() => {
   />
 </TouchableOpacity>
 </View>
-  {/* SPOTLIGHT */}
+ 
   <Animated.View
   style={{
 opacity: showBack
@@ -448,7 +448,7 @@ pointerEvents:
       marginLeft: 6,
     }}
   >
-    SPOTLIGHT
+    MilesSpot
   </Text>
 </View>
 
@@ -523,7 +523,7 @@ pointerEvents:
       fontWeight: "600",
     }}
   >
-    Spotlight Member
+    MilesSpot Member
   </Text>
 </View>
 </Animated.View>
@@ -610,7 +610,7 @@ pointerEvents:
         textAlign: "center",
       }}
     >
-      Share your Spotlight profile
+      Share your MilesSpot profile
       instantly using a QR code
     </Text>
   </View>

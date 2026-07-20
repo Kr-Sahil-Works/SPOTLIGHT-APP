@@ -165,7 +165,7 @@ Animated.timing(
               "center",
           }}
         >
-          Welcome to Spotlight
+          Welcome to MilesSpot
         </Text>
 
         <Text
@@ -195,7 +195,7 @@ Animated.timing(
     textAlign: "center",
   }}
 >
-  Spotlight is my first
+  MilesSpot is my first
   published app.
   {"\n\n"}
 
@@ -215,7 +215,7 @@ Thank you for being{" "}
 >
   #{userRank ?? "?"}
 </Text>{" "}
-user of Spotlight.
+user of MilesSpot.
 
   {"\n\n"}
 
@@ -226,7 +226,7 @@ user of Spotlight.
   {"\n\n"}
 
   I really hope you enjoy
-  using Spotlight ✨
+  using MilesSpot ✨
 </Text>
 
         <TouchableOpacity

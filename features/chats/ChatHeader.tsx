@@ -132,8 +132,8 @@ return (
   <Image
   source={
     useGreenNotes
-      ? require("@/assets/images/icons/notes.webp")
-      : require("@/assets/images/icons/notetheme.webp")
+      ? require("@/assets/images/icons/chats/notes.webp")
+      : require("@/assets/images/icons/chats/notetheme.webp")
   }
   style={{
     width: 20,
@@ -167,8 +167,8 @@ return (
           <Image
             source={
               useGreenNotes 
-              ?  require("@/assets/images/icons/calc.webp")
-                : require("@/assets/images/icons/calctheme.webp")
+              ?  require("@/assets/images/icons/chats/calc.webp")
+                : require("@/assets/images/icons/chats/calctheme.webp")
               }
             style={{
               width: 20,

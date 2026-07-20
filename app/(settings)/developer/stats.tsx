@@ -359,7 +359,7 @@ export default function StatsPage() {
               fontSize: 12,
             }}
           >
-            Spotlight Internal
+            MilesSpot Internal
             Metrics v1.0
           </Text>
         </View>
