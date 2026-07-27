@@ -38,14 +38,14 @@ const iconMap: Record<
     "home-outline",
   ],
 
-  bookmarks: [
-    "bookmark",
-    "bookmark-outline",
-  ],
+miles: [
+  "trail-sign",
+  "trail-sign-outline",
+],
 
-  create: [
-    "add-circle",
-    "add-circle-outline",
+  spot: [
+    "sparkles-outline",
+    "sparkles-outline",
   ],
 
 chats: [
@@ -107,9 +107,9 @@ return (
   }}
 </Tab.Screen>
 
-<Tab.Screen name="bookmarks">
+<Tab.Screen name="miles">
   {() => {
-    const Screen = require("./bookmarks").default;
+    const Screen = require("./miles").default;
     return <Screen setSwipeEnabled={setSwipeEnabled} />;
   }}
 </Tab.Screen>
@@ -121,9 +121,9 @@ return (
   }}
 </Tab.Screen>
 
-<Tab.Screen name="create">
+<Tab.Screen name="spot">
   {() => {
-    const Screen = require("./create").default;
+    const Screen = require("./spot").default;
     return <Screen setSwipeEnabled={setSwipeEnabled} />;
   }}
 </Tab.Screen>

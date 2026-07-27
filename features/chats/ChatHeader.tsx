@@ -99,7 +99,7 @@ return (
   }}
 >
   <Image
-    source={require("@/assets/images/icons/theme.webp")}
+    source={require("@/assets/images/icons/chats/theme.webp")}
     style={{
       width: 20,
       height: 20,

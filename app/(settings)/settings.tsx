@@ -52,6 +52,8 @@ const isAllowed =
   title === "Privacy Policy" ||
   title === "Terms & Conditions" ||
   title === "Contact Developer" ||
+title === "Customization" ||
+title === "App Icon" ||
   title === "Logout" ||
   title === "Notifications" ||
   title === "Photos & Media" ||
@@ -389,7 +391,7 @@ setTimeout(() => {
 }}
   >
     <Image
-      source={require("@/assets/images/icon.png")}
+      source={require("@/assets/images/icons/app/default-green.png")}
       contentFit="contain"
       style={{
         width: 90,
@@ -423,7 +425,7 @@ setTimeout(() => {
       fontWeight: "700",
     }}
   >
-    MilesSpot V.1.0.0
+    MilesSpot V.1.1.0
   </Text>
 </View>
 
@@ -623,6 +625,17 @@ redirectTimeoutRef.current =
 />
 
         </Section>
+
+        <Section title="Customization">
+  <Item
+    isOnline={true}
+    icon="color-palette-outline"
+    title="App Icon"
+    onPress={() => router.push("../app-icon")}
+  />
+</Section>
+
+
         <Section title="Trust & Safety">
   <Item
     isOnline={true}

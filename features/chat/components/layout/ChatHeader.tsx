@@ -352,7 +352,7 @@ return (
   onPress={onOpenTheme}
 >
   <Image
-    source={require("@/assets/images/icons/theme.webp")}
+    source={require("@/assets/images/icons/chats/theme.webp")}
     style={{
       width: 22,
       height: 22,
