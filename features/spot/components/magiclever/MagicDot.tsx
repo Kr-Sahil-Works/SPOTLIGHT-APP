@@ -32,7 +32,7 @@ export default function MagicDot({
     {
       width: selected ? 34 : 28,
       height: selected ? 34 : 28,
-      opacity: selected ? 1 : 0.65,
+      opacity: selected ? 1 : 0.90,
     },
   ]}
 />

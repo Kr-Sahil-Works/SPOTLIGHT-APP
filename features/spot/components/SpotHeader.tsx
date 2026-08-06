@@ -3,10 +3,12 @@ import { StyleSheet, Text, View } from "react-native";
 export default function SpotHeader() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>MagicSpot</Text>
+      <Text style={styles.title}>Spot</Text>
 
-      <View style={styles.sparkleContainer}>
-        <Text style={styles.sparkle}>✨</Text>
+      <View style={styles.iconContainer}>
+      <Text style={styles.sparkle}>
+        ✦
+      </Text>
       </View>
     </View>
   );
@@ -14,25 +16,24 @@ export default function SpotHeader() {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 22,
-    position: "relative",
     alignSelf: "flex-start",
+    marginBottom: 16,
+    position: "relative",
   },
 
   title: {
-    fontSize: 26,
-    fontWeight: "400",
-    color: "#F1F3F3",
-    letterSpacing: 1.5,
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#c9961f",
+    letterSpacing: 0.3,
   },
 
-  sparkleContainer: {
+  iconContainer: {
     position: "absolute",
-    right: -22,
-    top: -8,
+    top: -3,
+    right: -16,
   },
-
-  sparkle: {
-    fontSize: 18,
+  sparkle : {
+    color:"#d79119"
   },
 });

@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function SpotHeroCard() {
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container}>
       <View style={styles.left}>
         <Image
           source={require("../../../assets/images/spot/moments.png")}
@@ -12,65 +12,74 @@ export default function SpotHeroCard() {
           contentFit="contain"
         />
 
-        <View>
+        <View style={styles.content}>
           <Text style={styles.title}>Moments</Text>
           <Text style={styles.subtitle}>
-            Your shared memories
+            Shared memories
           </Text>
         </View>
       </View>
 
       <Ionicons
         name="chevron-forward"
-        size={24}
-        color="#8A8A8A"
+        size={18}
+        color="#6E6E6E"
       />
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 100,
+    height: 86,
 
-    marginBottom: 20,
+    marginBottom: 18,
 
     paddingHorizontal: 18,
 
-    borderRadius: 28,
+    borderRadius: 22,
 
     backgroundColor: "#171717",
 
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#232323",
   },
 
   left: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
   },
 
   image: {
-    width: 64,
-    height: 64,
+    width: 58,
+    height: 58,
 
-    marginRight: 16,
+    marginRight: 14,
+  },
+
+  content: {
+    justifyContent: "center",
   },
 
   title: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "700",
+    color: "#cdac36",
+    fontSize: 18,
+    fontWeight: "600",
+    letterSpacing: 0.2,
   },
 
   subtitle: {
-    marginTop: 3,
+    marginTop: 2,
 
-    color: "#8F8F8F",
+    color: "#bbb882",
 
-    fontSize: 14,
+    fontSize: 13,
+
     fontWeight: "500",
   },
 });

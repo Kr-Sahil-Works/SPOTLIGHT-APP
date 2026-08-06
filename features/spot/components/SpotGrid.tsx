@@ -27,7 +27,7 @@ export default function SpotGrid() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     marginTop: 4,
   },
 });

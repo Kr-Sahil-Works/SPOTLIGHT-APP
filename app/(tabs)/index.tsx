@@ -517,7 +517,7 @@ const NoPostsFound = () => {
         </Text>
 
         <TouchableOpacity
-          onPress={() => router.push("/(tabs)/create")}
+          onPress={() => router.push("/")}
           style={{
             marginTop: 20,
             paddingHorizontal: 20,
