@@ -16,9 +16,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import createpagebgc from "@/assets/images/games/spy/backgrounds/createpagebgc.webp";
 import notesIcon from "@/assets/images/games/spy/icons/notes.webp";
-import AdvancedOptionsSelector from "@/shared/components/ui/AdvancedOptionsSelector";
-import GameModeSelector from "@/shared/components/ui/GameModeSelector";
-import Toggle from "@/shared/components/ui/Toogle";
+import Toggle from "@/shared/components/ui/Toggle";
+
+import AdvancedOptionsSelector from "@/features/games/spy/create/AdvancedOptionsSelector";
+import GameModeSelector from "@/features/games/spy/create/GameModeSelector";
 
 const modeIcons = {
   spy: require("@/assets/images/games/spy/modes/spy_mode.webp"),
@@ -326,9 +327,10 @@ contentFit="contain"
 
   <View style={styles.buttonGlow} />
 
-  <Pressable
+<Pressable
     style={styles.createButton}
-  >
+    onPress={() => router.push("/games/spy/lobby")}
+>
             <Ionicons
               name="add-circle"
               size={18}
@@ -409,7 +411,7 @@ card: {
   borderRadius: 20,
 
   borderWidth: 1,
-  borderColor: "#b19600",
+  borderColor: "#763b00",
 
   overflow: "hidden",
 

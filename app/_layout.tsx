@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import OfflineBanner from "@/components/common/OfflineBanner";
 import PushHandler from "@/components/PushHandler";
+import { StatusBar } from "expo-status-bar";
 import {
   SafeAreaProvider,
   SafeAreaView,
@@ -227,22 +228,16 @@ if (!fontsLoaded) {
     >
       <ClerkAndConvexProvider>
         <AppToastProvider>
-          <SafeAreaProvider>
-            <SafeAreaView
-              edges={[
-                "top",
-                "left",
-                "right",
-              ]}
-              style={{
-                flex: 1,
-                backgroundColor:
-                  "#000",
-              }}
-            >
-              <AppContent />
-            </SafeAreaView>
-          </SafeAreaProvider>
+       <SafeAreaProvider>
+ 
+    <StatusBar
+      translucent
+      backgroundColor="transparent"
+      style="light"
+    />
+
+    <AppContent />
+</SafeAreaProvider>
         </AppToastProvider>
       </ClerkAndConvexProvider>
     </GestureHandlerRootView>

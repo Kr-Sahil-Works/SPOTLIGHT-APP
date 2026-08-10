@@ -1,4 +1,4 @@
-import Toggle from "@/shared/components/ui/Toogle";
+import Toggle from "@/shared/components/ui/Toggle";
 import { Ionicons } from "@expo/vector-icons";
 
 import {

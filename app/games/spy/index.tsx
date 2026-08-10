@@ -26,7 +26,7 @@ import y2Spy from "@/assets/images/games/spy/cards/y2spy.webp";
 
 import exitIcon from "@/assets/images/games/spy/icons/exit.webp";
 import notesIcon from "@/assets/images/games/spy/icons/notes.webp";
-import JoinRoomModal from "@/shared/components/ui/JoinRoomModal";
+import JoinRoomModal from "@/features/games/spy/components/JoinRoomModal";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function SpyHomeScreen() {
