@@ -9,7 +9,7 @@ import useNetwork from "@/hooks/useNetwork";
 
 import { api } from "@/convex/_generated/api";
 import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
-import { useAuth, useUser } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/expo";
 import { useMutation, useQuery } from "convex/react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";

@@ -6,7 +6,7 @@ import {
   useAppToast,
 } from "@/components/common/AppToast";
 import useNetwork from "@/hooks/useNetwork";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/expo";
 import { useMutation, useQuery } from "convex/react";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";

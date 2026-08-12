@@ -5,7 +5,7 @@ import { useMutation } from "convex/react";
 
 import { useEffect, useRef } from "react";
 
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/expo";
 
 import Constants from "expo-constants";
 

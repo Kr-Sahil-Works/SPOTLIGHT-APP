@@ -12,7 +12,7 @@ import {
   getFeedCache,
   saveFeedCache,
 } from "@/lib/cache/feedCache";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "convex/react";
@@ -27,7 +27,7 @@ import React, {
 
 import WelcomeModal from "@/components/modals/WelcomeModal";
 import { storage } from "@/lib/mmkv";
-import { useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/expo";
 
 import CommentsModal from "@/components/modals/CommentsModal";
 import LikesModal from "@/components/modals/LikesModal";

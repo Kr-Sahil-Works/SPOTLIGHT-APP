@@ -39,7 +39,7 @@ import {
 
 import {
   useAuth,
-} from "@clerk/clerk-expo";
+} from "@clerk/expo";
 
 
 import React, {

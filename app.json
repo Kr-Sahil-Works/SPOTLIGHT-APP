@@ -1,17 +1,18 @@
 {
   "expo": {
     "name": "MilesSpot",
-    "slug": "milesspot",
+    "slug": "SPOTLIGHT-APP",
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icons/app/default-green.png",
     "scheme": "milesspot",
     "userInterfaceStyle": "automatic",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "updates": {
       "enabled": false
     },
-
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -19,7 +20,6 @@
         "NSPhotoLibraryUsageDescription": "Allow access to your photos"
       }
     },
-
     "android": {
       "package": "com.spotlight.chat",
       "versionCode": 2,
@@ -33,14 +33,11 @@
         "backgroundColor": "#0B0F0B"
       }
     },
-
     "web": {
       "output": "static"
     },
-
     "plugins": [
       "expo-router",
-
       [
         "expo-notifications",
         {
@@ -48,61 +45,60 @@
           "color": "#7CFF4F"
         }
       ],
-
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/icons/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-         "backgroundColor": "#0B0F0B",
-"dark": {
-  "backgroundColor": "#0B0F0B"
-}
+          "backgroundColor": "#0B0F0B",
+          "dark": {
+            "backgroundColor": "#0B0F0B"
+          }
         }
       ],
-
-   [
-  "./plugins/dynamic-icons/app.plugin.js",
-  {
-    "icons": {
-      "green": {
-        "image": "./assets/images/icons/app/default-green.png"
-      },
-      "purple": {
-        "image": "./assets/images/icons/app/purple.png"
-      },
-      "blue": {
-        "image": "./assets/images/icons/app/blue.png"
-      },
-      "teal": {
-        "image": "./assets/images/icons/app/teal.png"
-      },
-      "orange": {
-        "image": "./assets/images/icons/app/orange.png"
-      },
-      "memory_map": {
-        "image": "./assets/images/icons/app/memory_map.png"
-      },
-      "memory_timeline": {
-        "image": "./assets/images/icons/app/memory_timeline.png"
-      }
-    }
-  }
-],
-
+      [
+        "./plugins/dynamic-icons/app.plugin.js",
+        {
+          "icons": {
+            "green": {
+              "image": "./assets/images/icons/app/default-green.png"
+            },
+            "purple": {
+              "image": "./assets/images/icons/app/purple.png"
+            },
+            "blue": {
+              "image": "./assets/images/icons/app/blue.png"
+            },
+            "teal": {
+              "image": "./assets/images/icons/app/teal.png"
+            },
+            "orange": {
+              "image": "./assets/images/icons/app/orange.png"
+            },
+            "memory_map": {
+              "image": "./assets/images/icons/app/memory_map.png"
+            },
+            "memory_timeline": {
+              "image": "./assets/images/icons/app/memory_timeline.png"
+            }
+          }
+        }
+      ],
       "expo-secure-store",
       "expo-web-browser",
-      "expo-system-ui"
+      "expo-system-ui",
+    "@clerk/expo",
+"./node_modules/@clerk/expo-google-signin/app.plugin.js"
     ],
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
-
     "extra": {
       "router": {},
+  "EXPO_PUBLIC_CLERK_GOOGLE_WEB_CLIENT_ID": "28205677698-6k5ovhe3ii9kr29f4otlo6j4uluqsvdk.apps.googleusercontent.com",
+  "EXPO_PUBLIC_CLERK_GOOGLE_ANDROID_CLIENT_ID": "28205677698-llun9qp6s3v5fbrsk72sla47feur39qn.apps.googleusercontent.com",
       "eas": {
         "projectId": "59f5a6cf-10ee-4edf-bc4c-346d00c2ef9c"
       }

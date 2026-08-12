@@ -4,7 +4,7 @@ import {
 } from "@/lib/feedRefresh";
 import {
   useAuth
-} from "@clerk/clerk-expo";
+} from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import * as Haptics from "expo-haptics";
@@ -24,8 +24,6 @@ const Tab = createMaterialTopTabNavigator();
 const screenWidth = Dimensions.get("window").width;
 const isTablet =
   screenWidth >= 768;
-
-
 const iconMap: Record<
   string,
   [

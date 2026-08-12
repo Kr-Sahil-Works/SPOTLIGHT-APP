@@ -3,7 +3,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { AppImage } from "@/shared/ui/AppImage";
 import { styles } from "@/styles/feed.styles";
-import { useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
@@ -623,3 +623,4 @@ function MenuBtn({ icon, text, onPress }: any) {
     </TouchableOpacity>
   );
 }
+

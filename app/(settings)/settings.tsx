@@ -1,7 +1,7 @@
 import { useAppToast } from "@/components/common/AppToast";
 import { api } from "@/convex/_generated/api";
 import useNetwork from "@/hooks/useNetwork";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation } from "convex/react";
 import * as Haptics from "expo-haptics";

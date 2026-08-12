@@ -4,7 +4,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import useNetwork from "@/hooks/useNetwork";
 import { AppImage } from "@/shared/ui/AppImage";
 import { styles } from "@/styles/feed.styles";
-import { useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
