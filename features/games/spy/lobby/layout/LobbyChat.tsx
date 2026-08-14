@@ -39,9 +39,9 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 0,
 
-    marginHorizontal: 0,
+    marginHorizontal: 2,
     marginTop: 4,
-    marginBottom: 8,
+    paddingBottom: 8,
 
     borderRadius: 14,
 

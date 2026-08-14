@@ -37,6 +37,7 @@ import ImagePreviewModal from "@/features/profile/modals/ImagePreviewModal";
 /* ✅ HOOKS */
 import { Id } from "@/convex/_generated/dataModel";
 import useProfileTabs from "@/hooks/useProfileTabs";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Profile() {
   const isOnline =
@@ -337,6 +338,10 @@ setImageVersion(Date.now());
   if (loggingOut) return <Loader />;
 
   return (
+      <SafeAreaView
+          style={styles.container}
+          edges={["left", "right","top"]}
+        >
     <View style={styles.container}>
       {/* HEADER */}
 <ProfileHeader
@@ -455,5 +460,6 @@ setImageVersion(Date.now());
   particleOpacity={particleOpacity}
 />
     </View>
+    </SafeAreaView>
   );
 }

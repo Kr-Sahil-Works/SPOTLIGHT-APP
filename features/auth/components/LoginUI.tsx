@@ -1,18 +1,17 @@
 import GreenLoader from "@/components/loaders/GreenLoader";
-import { COLORS } from "@/constants/theme";
-import { styles } from "@/styles/auth.styles";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { router } from "expo-router";
+import { useEffect, useRef } from "react";
 import {
-    Animated,
-    Platform,
-    Pressable,
-    Text,
-    View,
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
 } from "react-native";
 
 type LoginUIProps = {
@@ -22,68 +21,88 @@ type LoginUIProps = {
   onGooglePress: () => void;
 };
 
+const GOLD = "#E2AE28";
+const GOLD_LIGHT = "#F4C95D";
+const GOLD_BORDER = "#F2C84D";
+const BLACK = "#030303";
+
+
+function ShimmerLetter({
+  letter,
+  index,
+}: {
+  letter: string;
+  index: number;
+}) {
+  const shimmer = useRef(
+    new Animated.Value(0)
+  ).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(900 + index * 80),
+
+      Animated.timing(shimmer, {
+        toValue: 1,
+        duration: 450,
+        useNativeDriver: false,
+      }),
+
+      Animated.timing(shimmer, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [index]);
+
+  const color = shimmer.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [
+      GOLD_LIGHT,
+      "#FFF1B0",
+      GOLD_LIGHT,
+    ],
+  });
+
+  return (
+    <Animated.Text
+      style={[
+        styles.appNameLetter,
+        { color },
+      ]}
+    >
+      {letter}
+    </Animated.Text>
+  );
+}
+
+
 export default function LoginUI({
   loading,
   isOnline,
   isSignedIn,
   onGooglePress,
 }: LoginUIProps) {
-  const router = useRouter();
+  const { height } = useWindowDimensions();
 
-  const images = [
-    require("../../../assets/images/loginpage/login1.webp"),
-    require("../../../assets/images/loginpage/login2.webp"),
-    require("../../../assets/images/loginpage/login3.webp"),
-    require("../../../assets/images/loginpage/login4.webp"),
-    require("../../../assets/images/loginpage/login5.webp"),
-  ];
+  const pressScale = useRef(
+    new Animated.Value(1)
+  ).current;
 
-  const [currentImage, setCurrentImage] =
-    useState(0);
+  const morph = useRef(
+    new Animated.Value(0)
+  ).current;
 
-  const pressScale =
-    useRef(new Animated.Value(1)).current;
+  const sweep = useRef(
+    new Animated.Value(-260)
+  ).current;
 
-  const morph =
-    useRef(new Animated.Value(0)).current;
-
-  const sweep =
-    useRef(new Animated.Value(-250)).current;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage(
-        (prev) => (prev + 1) % images.length
-      );
-    }, 4200);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (Platform.OS !== "android") {
-      return;
-    }
-
-    const animation = Animated.timing(
-      sweep,
-      {
-        toValue: 250,
-        duration: 450,
-        useNativeDriver: true,
-      }
-    );
-
-    sweep.setValue(-250);
-    animation.start();
-
-    return () => {
-      animation.stop();
-    };
-  }, []);
-
+  /*
+   * ----------------------------------------
+   * LOADING MORPH
+   * ----------------------------------------
+   */
   useEffect(() => {
     if (loading) {
       Animated.timing(morph, {
@@ -92,10 +111,10 @@ export default function LoginUI({
         useNativeDriver: true,
       }).start();
 
-      sweep.setValue(-250);
+      sweep.setValue(-260);
 
       Animated.timing(sweep, {
-        toValue: 250,
+        toValue: 260,
         duration: 450,
         useNativeDriver: true,
       }).start();
@@ -110,6 +129,11 @@ export default function LoginUI({
     }).start();
   }, [loading]);
 
+  /*
+   * ----------------------------------------
+   * BUTTON PRESS
+   * ----------------------------------------
+   */
   const pressIn = () => {
     Haptics.impactAsync(
       Haptics.ImpactFeedbackStyle.Light
@@ -132,58 +156,131 @@ export default function LoginUI({
     }).start();
   };
 
-  const textOpacity =
-    morph.interpolate({
-      inputRange: [0, 1],
-      outputRange: [1, 0],
-    });
+  /*
+   * ----------------------------------------
+   * LOGIN BUTTON ANIMATION
+   * ----------------------------------------
+   */
+  const textOpacity = morph.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
 
-  const loaderOpacity =
-    morph.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-    });
+  const loaderOpacity = morph.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
 
-  const scaleX =
-    morph.interpolate({
-      inputRange: [0, 1],
-      outputRange: [1, 0.9],
-    });
+  const scaleX = morph.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.9],
+  });
+
+  /*
+   * Responsive sizing
+   */
+  const isSmallScreen = height < 700;
 
   return (
     <View style={styles.container}>
-      <View style={styles.brandSection}>
-        <View style={styles.logoContainer}>
-          <Ionicons
-            name="leaf"
-            size={32}
-            color={COLORS.primary}
-          />
-        </View>
+      {/* ======================================
+          BACKGROUND IMAGE
+          ====================================== */}
 
-        <Text style={styles.appName}>
-          MilesSpot
-        </Text>
+     <Image
+  source={require("../../../assets/images/loginpage/login-background.webp")}
+  style={StyleSheet.absoluteFill}
+  contentFit="cover"
+  cachePolicy="memory-disk"
+  priority="high"
+  allowDownscaling
+/>
+
+      {/* ======================================
+          DARK OVERLAY
+          ====================================== */}
+
+      <LinearGradient
+        colors={[
+          "rgba(0,0,0,0.48)",
+          "rgba(0,0,0,0.12)",
+          "rgba(0,0,0,0.25)",
+          "rgba(0,0,0,0.94)",
+          BLACK,
+        ]}
+        locations={[
+          0,
+          0.25,
+          0.48,
+          0.72,
+          1,
+        ]}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Subtle gold atmospheric tint */}
+      <LinearGradient
+        colors={[
+          "rgba(226,174,40,0.04)",
+          "transparent",
+          "rgba(226,174,40,0.06)",
+        ]}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* ======================================
+          TOP BRAND
+          ====================================== */}
+
+      <View
+        style={[
+          styles.brandSection,
+          {
+            paddingTop: isSmallScreen
+              ? height * 0.07
+              : height * 0.09,
+          },
+        ]}
+      >
+<View style={styles.appName}>
+  {"MilesSpot".split("").map((letter, index) => (
+    <ShimmerLetter
+      key={`${letter}-${index}`}
+      letter={letter}
+      index={index}
+    />
+  ))}
+</View>
 
         <Text style={styles.tagline}>
-          don't miss anything
+          Where every friendship reaches MILES.
         </Text>
       </View>
 
-      <View style={styles.illustrationContainer}>
-        <Image
-          source={images[currentImage]}
-          style={styles.illustration}
-          contentFit="contain"
-          cachePolicy="memory-disk"
-          allowDownscaling
-          transition={1200}
-        />
-      </View>
+      {/* ======================================
+          SPACER
+          ====================================== */}
 
-      <View style={styles.loginSection}>
+      <View style={styles.middle} />
+
+      {/* ======================================
+          LOGIN AREA
+          ====================================== */}
+
+      <View
+        style={[
+          styles.loginSection,
+          {
+            paddingBottom: isSmallScreen
+              ? 24
+              : 34,
+          },
+        ]}
+      >
         <Animated.View
           style={{
+            width: "100%",
+            alignItems: "center",
             transform: [
               {
                 scale: pressScale,
@@ -194,6 +291,8 @@ export default function LoginUI({
             ],
           }}
         >
+          {/* GOOGLE BUTTON */}
+
           <Pressable
             onPress={onGooglePress}
             onPressIn={pressIn}
@@ -204,37 +303,34 @@ export default function LoginUI({
               isSignedIn
             }
             android_ripple={{
-              color:
-                "rgba(255,255,255,0.25)",
+              color: "rgba(255,255,255,0.12)",
             }}
             style={[
               styles.googleButton,
               !isOnline && {
                 opacity: 0.5,
               },
-              {
-                justifyContent: "center",
-                alignItems: "center",
-                overflow: "hidden",
-              },
             ]}
           >
+            {/* Sweep animation */}
+
             <Animated.View
-              style={{
-                position: "absolute",
-                width: 250,
-                height: "100%",
-                transform: [
-                  {
-                    translateX: sweep,
-                  },
-                ],
-              }}
+              pointerEvents="none"
+              style={[
+                styles.sweep,
+                {
+                  transform: [
+                    {
+                      translateX: sweep,
+                    },
+                  ],
+                },
+              ]}
             >
               <LinearGradient
                 colors={[
                   "transparent",
-                  "rgba(255,255,255,0.25)",
+                  "rgba(255,255,255,0.22)",
                   "transparent",
                 ]}
                 start={{
@@ -251,69 +347,61 @@ export default function LoginUI({
               />
             </Animated.View>
 
+            {/* Button text */}
+
             <Animated.View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                opacity: textOpacity,
-              }}
+              style={[
+                styles.buttonContent,
+                {
+                  opacity: textOpacity,
+                },
+              ]}
             >
-              <View
-                style={
-                  styles.googleIconContainer
-                }
-              >
+              <View style={styles.googleIconContainer}>
                 <Ionicons
                   name="logo-google"
-                  size={20}
-                  color={COLORS.surface}
+                  size={19}
+                  color="#1B1A17"
                 />
               </View>
 
-              <Text
-                style={
-                  styles.googleButtonText
-                }
-              >
+              <Text style={styles.googleButtonText}>
                 Continue with Google
               </Text>
             </Animated.View>
 
+            {/* Loader */}
+
             <Animated.View
-              style={{
-                position: "absolute",
-                opacity: loaderOpacity,
-              }}
+              style={[
+                styles.loader,
+                {
+                  opacity: loaderOpacity,
+                },
+              ]}
             >
               <GreenLoader />
             </Animated.View>
           </Pressable>
 
+          {/* Offline message */}
+
           {!isOnline && (
-            <Text
-              style={{
-                color: "#888",
-                textAlign: "center",
-                marginTop: 10,
-                fontSize: 12,
-              }}
-            >
-              Internet connection required
-              {" "}to sign in
+            <Text style={styles.offlineText}>
+              Internet connection required to sign in
             </Text>
           )}
         </Animated.View>
+
+        {/* ======================================
+            TERMS
+            ====================================== */}
 
         <Text style={styles.termsText}>
           By continuing, you agree to our{" "}
 
           <Text
-            style={{
-              color: "#22c55e",
-              textDecorationLine:
-                "underline",
-              fontWeight: "700",
-            }}
+            style={styles.termsLink}
             onPress={() =>
               router.push(
                 "/(settings)/policy/terms-and-conditions"
@@ -326,12 +414,7 @@ export default function LoginUI({
           {" "}and{" "}
 
           <Text
-            style={{
-              color: "#22c55e",
-              textDecorationLine:
-                "underline",
-              fontWeight: "700",
-            }}
+            style={styles.termsLink}
             onPress={() =>
               router.push(
                 "/(settings)/policy/privacy-policy"
@@ -345,3 +428,197 @@ export default function LoginUI({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  /*
+   * ========================================
+   * ROOT
+   * ========================================
+   */
+
+  container: {
+    flex: 1,
+    backgroundColor: BLACK,
+  },
+
+  /*
+   * ========================================
+   * BRAND
+   * ========================================
+   */
+
+  brandSection: {
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+
+appName: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+appNameLetter: {
+  color: GOLD_LIGHT,
+
+  fontSize: 38,
+  lineHeight: 44,
+
+  fontWeight: "900",
+
+  letterSpacing: -1,
+
+  textShadowColor:
+    "rgba(226,174,40,0.25)",
+
+  textShadowOffset: {
+    width: 0,
+    height: 2,
+  },
+
+  textShadowRadius: 8,
+},
+  tagline: {
+    color: "#B1A991",
+
+    fontSize: 12,
+
+    letterSpacing: 1.2,
+
+    marginTop: 4,
+
+    textAlign: "center",
+  },
+
+  /*
+   * ========================================
+   * MIDDLE
+   * ========================================
+   */
+
+  middle: {
+    flex: 1,
+  },
+
+  /*
+   * ========================================
+   * LOGIN
+   * ========================================
+   */
+
+  loginSection: {
+    width: "100%",
+
+    paddingHorizontal: 24,
+
+    alignItems: "center",
+  },
+
+  googleButton: {
+    width: "100%",
+    maxWidth: 330,
+
+    height: 58,
+
+    borderRadius: 30,
+
+    backgroundColor: GOLD,
+
+    borderWidth: 1,
+    borderColor: GOLD_BORDER,
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    overflow: "hidden",
+
+    shadowColor: GOLD,
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+
+    elevation: 7,
+  },
+
+  buttonContent: {
+    flexDirection: "row",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  googleIconContainer: {
+    width: 24,
+    height: 24,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    marginRight: 10,
+  },
+
+  googleButtonText: {
+    color: "#090805",
+
+    fontSize: 16,
+
+    fontWeight: "800",
+
+    letterSpacing: -0.2,
+  },
+
+  sweep: {
+    position: "absolute",
+
+    width: 250,
+    height: "100%",
+  },
+
+  loader: {
+    position: "absolute",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  offlineText: {
+    color: "#8C8575",
+
+    textAlign: "center",
+
+    marginTop: 9,
+
+    fontSize: 12,
+  },
+
+  /*
+   * ========================================
+   * TERMS
+   * ========================================
+   */
+
+  termsText: {
+    color: "#777063",
+
+    textAlign: "center",
+
+    fontSize: 11.5,
+
+    lineHeight: 18,
+
+    maxWidth: 310,
+
+    marginTop: 14,
+  },
+
+  termsLink: {
+    color: "#DDB33A",
+
+    textDecorationLine: "underline",
+
+    fontWeight: "700",
+  },
+});

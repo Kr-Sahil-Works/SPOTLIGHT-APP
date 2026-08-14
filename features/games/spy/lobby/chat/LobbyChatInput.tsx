@@ -20,10 +20,11 @@ export default function LobbyChatInput({
   return (
     <View style={styles.container}>
       <TextInput
-  autoFocus
-  value={value}
-  onChangeText={onChangeText}
-  placeholder="Say something..."
+        autoFocus
+        value={value}
+        onChangeText={onChangeText}
+        maxLength={400}
+        placeholder="Say something..."
         placeholderTextColor="#777"
         style={styles.input}
         returnKeyType="send"
@@ -53,15 +54,17 @@ const styles = StyleSheet.create({
 
     alignItems: "center",
 
-    padding: 12,
+    padding: 10,
 
     borderRadius: 18,
 
-    backgroundColor: "rgba(10,10,14,0.96)",
+    backgroundColor:
+      "rgba(10,10,14,0.96)",
 
     borderWidth: 1,
 
-    borderColor: "rgba(255,255,255,0.08)",
+    borderColor:
+      "rgba(255,255,255,0.08)",
   },
 
   input: {
@@ -81,7 +84,7 @@ const styles = StyleSheet.create({
   },
 
   sendButton: {
-    marginLeft: 10,
+    marginLeft: 8,
 
     width: 42,
 

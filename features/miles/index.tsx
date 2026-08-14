@@ -15,10 +15,6 @@ import { router } from "expo-router";
 
 export default function MilesScreen() {
   return (
-    <SafeAreaView
-      style={styles.safe}
-      edges={["bottom", "left", "right"]}
-    >
       <View style={styles.container}>
         {/* Background */}
         <Image
@@ -28,6 +24,10 @@ export default function MilesScreen() {
         />
 
         {/* Optional dark overlay */}
+            <SafeAreaView
+            style={styles.container}
+            edges={["left", "right","top"]}
+          >
         <View style={styles.overlay} />
 
         <Animated.ScrollView
@@ -50,8 +50,9 @@ export default function MilesScreen() {
             image={require("@/assets/images/miles/blind_cards.png")}
           />
         </Animated.ScrollView>
+         </SafeAreaView>
       </View>
-    </SafeAreaView>
+   
   );
 }
 

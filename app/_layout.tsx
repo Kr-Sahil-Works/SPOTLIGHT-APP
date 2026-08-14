@@ -13,6 +13,8 @@ import { useAuth, useUser } from "@clerk/expo";
 import { useMutation, useQuery } from "convex/react";
 import { AppState } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
+
 
 import OfflineBanner from "@/components/common/OfflineBanner";
 import PushHandler from "@/components/PushHandler";
@@ -223,10 +225,11 @@ if (!fontsLoaded) {
 }
 
   return (
-    <GestureHandlerRootView
-      style={{ flex: 1 }}
-    >
-      <ClerkAndConvexProvider>
+<GestureHandlerRootView
+  style={{ flex: 1 }}
+>
+  <KeyboardProvider>
+    <ClerkAndConvexProvider>
         <AppToastProvider>
        <SafeAreaProvider>
  
@@ -239,7 +242,8 @@ if (!fontsLoaded) {
     <AppContent />
 </SafeAreaProvider>
         </AppToastProvider>
-      </ClerkAndConvexProvider>
-    </GestureHandlerRootView>
+    </ClerkAndConvexProvider>
+  </KeyboardProvider>
+</GestureHandlerRootView>
   );
 }

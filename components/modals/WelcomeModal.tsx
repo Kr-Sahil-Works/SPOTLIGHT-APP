@@ -1,301 +1,289 @@
-import { api } from "@/convex/_generated/api";
 import { storage } from "@/lib/mmkv";
-import { useQuery } from "convex/react";
+import { BlurView } from "expo-blur";
+import { Image } from "expo-image";
 import { useEffect, useRef } from "react";
 import {
   Animated,
   Easing,
-  Text,
-  TouchableOpacity,
+  Pressable,
+  StyleSheet,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 type Props = {
   visible: boolean;
   fullname?: string;
   onClose: () => void;
-};
 
+  blurIntensity?: number;
+  dimOpacity?: number;
+};
 export default function WelcomeModal({
   visible,
-  fullname,
   onClose,
+  blurIntensity = 25,
+  dimOpacity = 0.51,
 }: Props) {
+  const { width, height } = useWindowDimensions();
 
+  const opacity = useRef(
+    new Animated.Value(0)
+  ).current;
 
-  const userRank = useQuery(
-  api.users.index.getUserRank
-);
+  const scale = useRef(
+    new Animated.Value(0.92)
+  ).current;
 
+  const float = useRef(
+    new Animated.Value(0)
+  ).current;
 
-  const opacity =
-    useRef(
-      new Animated.Value(0)
-    ).current;
-
-  const scale =
-    useRef(
-      new Animated.Value(0.9)
-    ).current;
-    const progress =
-  useRef(
+  const rotate = useRef(
     new Animated.Value(0)
   ).current;
 
   useEffect(() => {
     if (!visible) return;
 
-    progress.setValue(0);
+    opacity.setValue(0);
+    scale.setValue(0.92);
+    float.setValue(0);
+    rotate.setValue(0);
 
-Animated.timing(
-  progress,
-  {
-    toValue: 100,
-    duration: 20000,
-    easing: Easing.linear,
-    useNativeDriver: false,
+    const entrance = Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 350,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+
+      Animated.spring(scale, {
+        toValue: 1,
+        damping: 16,
+        stiffness: 140,
+        mass: 0.8,
+        useNativeDriver: true,
+      }),
+    ]);
+
+    const floating = Animated.loop(
+      Animated.sequence([
+        Animated.timing(float, {
+          toValue: 1,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+
+        Animated.timing(float, {
+          toValue: 0,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    const tilting = Animated.loop(
+      Animated.sequence([
+        Animated.timing(rotate, {
+          toValue: 1,
+          duration: 2600,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+
+        Animated.timing(rotate, {
+          toValue: -1,
+          duration: 2600,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+
+        Animated.timing(rotate, {
+          toValue: 0,
+          duration: 2600,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    entrance.start();
+    floating.start();
+    tilting.start();
+
+    const timer = setTimeout(() => {
+      storage.set(
+        "welcome_card_seen",
+        true
+      );
+
+      onClose();
+    }, 22000);
+
+    return () => {
+      clearTimeout(timer);
+
+      floating.stop();
+      tilting.stop();
+
+      float.stopAnimation();
+      rotate.stopAnimation();
+    };
+  }, [visible]);
+
+  if (!visible) {
+    return null;
   }
-).start();
 
-    Animated.parallel([
-      Animated.timing(
-        opacity,
+  const translateY = float.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -8],
+  });
+
+  const rotateZ = rotate.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: [
+      "-0.6deg",
+      "0deg",
+      "0.6deg",
+    ],
+  });
+
+  /*
+   * Keep the card comfortably inside the screen.
+   *
+   * Width is limited by both:
+   * - screen width
+   * - screen height
+   *
+   * This prevents the artwork from becoming
+   * enormous on tall/narrow devices.
+   */
+  const cardWidth = Math.min(
+    width * 0.88,
+    height * 0.58,
+    430
+  );
+
+  const cardHeight =
+    cardWidth * 1.08;
+
+return (
+  <View style={styles.overlay}>
+
+    {/* REAL BACKGROUND BLUR */}
+    <BlurView
+      intensity={blurIntensity}
+      tint="dark"
+      experimentalBlurMethod="dimezisBlurView"
+      style={StyleSheet.absoluteFill}
+    />
+
+    {/* DARKNESS OVER BLUR */}
+    <View
+      pointerEvents="none"
+      style={[
+        StyleSheet.absoluteFill,
         {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }
-      ),
+          backgroundColor: `rgba(0, 0, 0, ${dimOpacity})`,
+        },
+      ]}
+    />
 
-      Animated.spring(
-        scale,
-        {
-          toValue: 1,
-          useNativeDriver: true,
-        }
-      ),
-    ]).start();
-
-    const timer =
-      setTimeout(() => {
+    {/* TAP OUTSIDE TO CLOSE */}
+    <Pressable
+      style={StyleSheet.absoluteFill}
+      onPress={() => {
         storage.set(
           "welcome_card_seen",
           true
         );
 
         onClose();
-      }, 22000);
-
-    return () =>
-      clearTimeout(timer);
-
-}, [visible]);
-
-  if (!visible)
-    return null;
-
-  return (
-    <View
-      style={{
-        position:
-          "absolute",
-
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-
-        backgroundColor:
-          "rgba(0,0,0,0.6)",
-
-        justifyContent:
-          "center",
-
-        alignItems:
-          "center",
-
-        zIndex: 99999,
       }}
+    />
+
+    {/* CENTERED WELCOME CARD */}
+    <View
+      style={styles.centerContainer}
+      pointerEvents="box-none"
     >
       <Animated.View
-        style={{
-          opacity,
+        style={[
+          styles.cardWrapper,
+          {
+            width: cardWidth,
+            height: cardHeight,
 
-          transform: [
-            { scale },
-          ],
+            opacity,
 
-          width: "88%",
-
-          backgroundColor:
-            "#0f0f0f",
-
-          borderRadius: 24,
-
-          borderWidth: 1,
-
-          borderColor:
-            "rgba(255,255,255,0.08)",
-
-          padding: 24,
-        }}
+            transform: [
+              {
+                translateY,
+              },
+              {
+                scale,
+              },
+              {
+                rotateZ,
+              },
+            ],
+          },
+        ]}
       >
-        <Text
-          style={{
-            fontSize: 24,
-
-            marginBottom: 12,
-
-            textAlign:
-              "center",
-          }}
-        >
-          🤗💚
-        </Text>
-
-        <Text
-          style={{
-            color: "#fff",
-
-            fontSize: 22,
-
-            fontWeight: "700",
-
-            textAlign:
-              "center",
-          }}
-        >
-          Welcome to MilesSpot
-        </Text>
-
-        <Text
-          style={{
-            color:
-              "#44d800",
-
-            marginTop: 10,
-
-            fontSize: 16,
-
-            textAlign:
-              "center",
-
-            fontWeight:
-              "600",
-          }}
-        >
-          {fullname}
-        </Text>
-
-       <Text
-  style={{
-    color: "#CFCFCF",
-    marginTop: 18,
-    lineHeight: 22,
-    textAlign: "center",
-  }}
->
-  MilesSpot is my first
-  published app.
-  {"\n\n"}
-
-  Built with passion,
-  curiosity, and countless
-  late nights.
-
-  {"\n\n"}
-
-Thank you for being{" "}
-<Text
-  style={{
-    color: "#00ff6a",
-    fontWeight: "900",
-    fontSize: 17,
-  }}
->
-  #{userRank ?? "?"}
-</Text>{" "}
-user of MilesSpot.
-
-  {"\n\n"}
-
-  Early users like you
-  are helping this app to grow.
-  Everyone using this app means a lot to me.
-
-  {"\n\n"}
-
-  I really hope you enjoy
-  using MilesSpot ✨
-</Text>
-
-        <TouchableOpacity
-          onPress={() => {
-            storage.set(
-              "welcome_card_seen",
-              true
-            );
-
-            onClose();
-          }}
-          style={{
-            marginTop: 22,
-
-            backgroundColor:
-              "#44d800",
-
-            borderRadius: 14,
-
-            paddingVertical:
-              12,
-          }}
-        >
-          <Text
-            style={{
-              textAlign:
-                "center",
-
-              fontWeight:
-                "700",
-
-              color: "#000",
-            }}
-          >
-            Continue
-          </Text>
-        </TouchableOpacity>
-        <View
-  style={{
-    marginTop: 16,
-    height: 4,
-    borderRadius: 999,
-    overflow: "hidden",
-    backgroundColor:
-      "rgba(255,255,255,0.06)",
-  }}
->
-  <Animated.View
-    style={{
-      height: "100%",
-
-      width:
-        progress.interpolate({
-          inputRange: [
-            0,
-            100,
-          ],
-          outputRange: [
-            "0%",
-            "100%",
-          ],
-        }),
-
-      backgroundColor:
-  "#52ff00",
-    }}
-  />
-</View>
+        <Image
+          source={require(
+            "@/assets/images/loginpage/mili-welcome-card.webp"
+          )}
+          style={StyleSheet.absoluteFill}
+          contentFit="contain"
+          cachePolicy="memory-disk"
+          priority="high"
+          allowDownscaling
+        />
       </Animated.View>
     </View>
-  );
+
+  </View>
+);
 }
+
+const styles = StyleSheet.create({
+overlay: {
+  ...StyleSheet.absoluteFillObject,
+
+  justifyContent: "center",
+  alignItems: "center",
+
+  zIndex: 99999,
+},
+
+centerContainer: {
+  ...StyleSheet.absoluteFillObject,
+
+  justifyContent: "center",
+  alignItems: "center",
+
+  pointerEvents: "box-none",
+},
+  cardWrapper: {
+    justifyContent: "center",
+    alignItems: "center",
+
+    shadowColor: "#D6A928",
+
+    shadowOffset: {
+      width: 0,
+      height: 18,
+    },
+
+    shadowOpacity: 0.22,
+    shadowRadius: 28,
+
+    elevation: 18,
+  },
+});

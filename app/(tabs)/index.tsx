@@ -39,6 +39,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "../../styles/feed.styles";
 
 export default function Index() {
@@ -53,7 +54,7 @@ export default function Index() {
 const [
   showWelcome,
   setShowWelcome,
-] = useState(false);
+] = useState(true);
 
   const scale = useRef(new Animated.Value(1)).current;
   const glow = useRef(new Animated.Value(0)).current;
@@ -354,21 +355,17 @@ const storiesHeader = useMemo(() => {
 
   return (
     <>
-  <WelcomeModal
-    visible={
-      showWelcome
-    }
-    fullname={
-      user?.firstName ||
-      "Friend"
-    }
-    onClose={() =>
-      setShowWelcome(
-        false
-      )
-    }
-  />
-
+<WelcomeModal
+  visible={showWelcome}
+  fullname={user?.firstName || "Friend"}
+  onClose={() => setShowWelcome(false)}
+  blurIntensity={5}
+  dimOpacity={0.50}
+/>
+   <SafeAreaView
+          style={styles.container}
+          edges={["left", "right","top"]}
+        >
   <View
     style={styles.container}
   >
@@ -499,6 +496,7 @@ const storiesHeader = useMemo(() => {
 
 
 </View>
+</SafeAreaView>
 </>
   );
 }

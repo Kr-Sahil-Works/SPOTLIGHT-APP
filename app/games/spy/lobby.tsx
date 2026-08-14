@@ -1,6 +1,4 @@
 import {
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   View,
   useWindowDimensions,
@@ -19,6 +17,7 @@ import LobbyChatInput from "@/features/games/spy/lobby/chat/LobbyChatInput";
 import LobbyBackground from "@/features/games/spy/lobby/layout/LobbyBackground";
 import { LobbyChatMessage } from "@/features/games/spy/types/chat";
 import { LobbyPlayer } from "@/features/games/spy/types/player";
+import KeyboardComposer from "@/shared/keyboard/KeyboardComposer";
 
 const MOCK_PLAYERS: LobbyPlayer[] = [
   {
@@ -101,7 +100,7 @@ const MOCK_PLAYERS: LobbyPlayer[] = [
   {
     id: "8",
     userId: "8",
-    name: "piku",
+    name: "devilalsighn",
     avatar: "https://i.pravatar.cc/300?img=12",
     isHost: false,
     isReady: false,
@@ -225,8 +224,8 @@ export default function LobbyScreen() {
   const isShortScreen = height < 760;
 
   const playerAreaHeight = isShortScreen
-    ? 345
-    : 365;
+    ? 380
+    : 395;
 
   return (
     <SafeAreaView
@@ -319,21 +318,16 @@ export default function LobbyScreen() {
         {/* CHAT INPUT */}
 
         {chatOpen && (
-          <KeyboardAvoidingView
-            style={styles.chatComposer}
-            behavior={
-              Platform.OS === "ios"
-                ? "padding"
-                : "height"
-            }
-          >
-            <LobbyChatInput
-              onSend={() => {
-                setChatOpen(false);
-              }}
-            />
-          </KeyboardAvoidingView>
-        )}
+  <KeyboardComposer
+    style={styles.chatComposer}
+  >
+    <LobbyChatInput
+      onSend={() => {
+        setChatOpen(false);
+      }}
+    />
+  </KeyboardComposer>
+)}
       </View>
 
       {/* BOTTOM BAR */}
@@ -383,21 +377,22 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
 
-  chatComposer: {
-    position: "absolute",
+chatComposer: {
+  position: "absolute",
 
-    left: 0,
-    right: 0,
-    bottom: 6,
+  left: 0,
+  right: 0,
+  bottom: 0,
 
-    zIndex: 90,
+  zIndex: 90,
 
-    paddingHorizontal: 12,
-  },
+  paddingHorizontal: 12,
+  paddingBottom: 6,
+},
 
   bottomBar: {
     width: "100%",
-    height: 42,
+    height: 48,
 
     flexShrink: 0,
 

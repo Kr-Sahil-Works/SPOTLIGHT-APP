@@ -75,7 +75,9 @@ export default function PlayerSlot({
       numberOfLines={1}
       style={styles.name}
     >
-      {player.name}
+     {player.name.length > 14
+  ? `${player.name.slice(0, 14)}...`
+  : player.name}
     </Text>
   </View>
 

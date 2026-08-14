@@ -41,25 +41,25 @@ export default function DefaultSeatLayout({
    */
 const avatarSize =
 safePlayers.length <= 4
-? Math.round(
-Math.min(
-Math.max(width * 0.115, 44),
-48
-)
-)
-: safePlayers.length <= 6
-? Math.round(
-Math.min(
-Math.max(width * 0.105, 41),
-45
-)
-)
-: Math.round(
-Math.min(
-Math.max(width * 0.092, 36),
-40
-)
-);
+  ? Math.round(
+      Math.min(
+        Math.max(width * 0.129, 49),
+        54
+      )
+    )
+  : safePlayers.length <= 6
+  ? Math.round(
+      Math.min(
+        Math.max(width * 0.118, 46),
+        50
+      )
+    )
+  : Math.round(
+      Math.min(
+        Math.max(width * 0.103, 40),
+        45
+      )
+    );
 
   const seats: (LobbyPlayer | undefined)[] =
     Array.from(
