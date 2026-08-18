@@ -1,21 +1,14 @@
-export const SPY_COLORS = {
-  background: "#000",
-
-  surface: "#111",
-
-  glass: "rgba(10,10,10,0.55)",
-
-  border: "rgba(255,255,255,0.08)",
-
-  gold: "#F2A900",
-
-  green: "#2EDB59",
-
-  purple: "#8B5CF6",
-
-  text: "#FFFFFF",
-
-  textSecondary: "#B9B9B9",
-
-  offline: "#666",
+export const GAME_STATES = {
+  LOBBY: "lobby",
+  STARTING: "starting",
+  ROLE_REVEAL: "role_reveal",
+  DISCUSSION: "discussion",
+  VOTING: "voting",
+  VOTE_RESULT: "vote_result",
+  SPY_GUESS: "spy_guess",
+  ROUND_RESULT: "round_result",
+  GAME_FINISHED: "game_finished",
 } as const;
+
+export type GameState =
+  (typeof GAME_STATES)[keyof typeof GAME_STATES];

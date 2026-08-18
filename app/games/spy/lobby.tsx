@@ -19,6 +19,11 @@ import { LobbyChatMessage } from "@/features/games/spy/types/chat";
 import { LobbyPlayer } from "@/features/games/spy/types/player";
 import KeyboardComposer from "@/shared/keyboard/KeyboardComposer";
 
+import { useLocalSearchParams } from "expo-router";
+
+import { useLobby } from "@/features/games/spy/lobby/hooks/useLobby";
+import { useLobbyPlayers } from "@/features/games/spy/lobby/hooks/useLobbyPlayers";
+
 const MOCK_PLAYERS: LobbyPlayer[] = [
   {
     id: "1",
@@ -227,6 +232,21 @@ export default function LobbyScreen() {
     ? 380
     : 395;
 
+    const { roomId } =
+  useLocalSearchParams<{
+    roomId?: string;
+  }>();
+
+const {
+  room,
+  isLoading: roomLoading,
+} = useLobby(roomId);
+
+const {
+  players,
+  isLoading: playersLoading,
+} = useLobbyPlayers(roomId);
+
   return (
     <SafeAreaView
       style={styles.container}
@@ -266,8 +286,8 @@ export default function LobbyScreen() {
           },
         ]}
       >
-      <LobbyPlayersSection
-  players={demoPlayers}
+  <LobbyPlayersSection
+  players={players}
   votingStarted={DEMO_VOTING_STARTED}
 />
       </View>
@@ -286,9 +306,9 @@ export default function LobbyScreen() {
             },
           ]}
         >
-          <LobbyInfoPanel
-            currentPlayers={demoPlayers.length}
-            maxPlayers={8}
+      <LobbyInfoPanel
+  currentPlayers={players.length}
+  maxPlayers={room?.maxPlayers ?? 8}
             roomStatus="Waiting"
             isHost
             onInvite={() => {}}

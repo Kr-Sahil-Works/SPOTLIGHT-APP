@@ -3,8 +3,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 
+import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-
 import {
   Pressable,
   StyleSheet,
@@ -12,14 +12,18 @@ import {
   View
 } from "react-native";
 
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import createpagebgc from "@/assets/images/games/spy/backgrounds/createpagebgc.webp";
 import notesIcon from "@/assets/images/games/spy/icons/notes.webp";
-import Toggle from "@/shared/components/ui/Toggle";
 
 import AdvancedOptionsSelector from "@/features/games/spy/create/AdvancedOptionsSelector";
 import GameModeSelector from "@/features/games/spy/create/GameModeSelector";
+
+
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
+
 
 const modeIcons = {
   spy: require("@/assets/images/games/spy/modes/spy_mode.webp"),
@@ -52,14 +56,26 @@ const modeDescriptions = {
 };
 
 export default function CreateRoomScreen() {
+  const insets = useSafeAreaInsets();
 type GameMode =
   | "spy"
   | "wordless"
   | "master"
   | "y2";
 
+const { mode } =
+  useLocalSearchParams<{
+    mode?: GameMode;
+  }>();
+
+const createRoom = useMutation(
+  api.games.spy.rooms.createRoom
+);
+
 const [selectedMode, setSelectedMode] =
-  useState<GameMode>("spy");
+  useState<GameMode>(
+    mode ?? "spy"
+  );
 
   const [players, setPlayers] =
     useState(6);
@@ -80,7 +96,7 @@ const [selectedMode, setSelectedMode] =
   return (
     <SafeAreaView
       style={styles.container}
-      edges={["left", "right"]}
+    edges={["top", "left", "right"]}
     >
       {/* Background */}
 
@@ -93,11 +109,15 @@ const [selectedMode, setSelectedMode] =
       <View style={styles.overlay} />
 
       {/* Floating Back */}
-
-      <Pressable
-        style={styles.backButton}
-        onPress={() => router.back()}
-      >
+<Pressable
+  style={[
+    styles.backButton,
+    {
+      top: insets.top + 12,
+    },
+  ]}
+  onPress={() => router.back()}
+>
         <Ionicons
           name="chevron-back"
           size={20}
@@ -106,7 +126,12 @@ const [selectedMode, setSelectedMode] =
       </Pressable>
 
       <Pressable
-    style={styles.rulesButton}
+       style={[
+    styles.rulesButton,
+    {
+      top: insets.top + 12,
+    },
+  ]}
     onPress={() =>
         router.push("/games/spy/how-to-play")
     }
@@ -255,7 +280,7 @@ contentFit="contain"
         style={styles.circle}
         onPress={() =>
           setPlayers((p) =>
-            Math.min(12, p + 1)
+            Math.min(8, p + 1)
           )
         }
       >
@@ -289,26 +314,25 @@ contentFit="contain"
 
     {/* Advanced Room Toggle */}
 
-    <View style={styles.optionRow}>
-      <View>
-        <Text style={styles.optionTitle}>
-          Advanced Room
-        </Text>
+<View style={styles.disabledOptionRow}>
+  <View>
+    <Text style={styles.disabledOptionTitle}>
+      Advanced Room
+    </Text>
 
-        <Text style={styles.optionSubtitle}>
-          Unlock extra gameplay settings
-        </Text>
-      </View>
+    <Text style={styles.disabledOptionSubtitle}>
+      Unlock extra gameplay settings
+    </Text>
+  </View>
 
-      <Toggle
-        value={advancedEnabled}
-        onChange={setAdvancedEnabled}
-      />
-    </View>
+  <View style={styles.disabledToggle}>
+    <View style={styles.disabledToggleThumb} />
+  </View>
+</View>
 
     {/* Advanced Options */}
 
-    {advancedEnabled && (
+    {false && (
       <AdvancedOptionsSelector
         passwordEnabled={passwordEnabled}
         setPasswordEnabled={setPasswordEnabled}
@@ -323,13 +347,44 @@ contentFit="contain"
           {/* Create Button */}
           <View style={{ flex: 1 }} />
 
-      <View style={styles.buttonWrapper}>
+     {!expandedModes && (
+  <View style={styles.buttonWrapper}>
+    <View style={styles.buttonGlow} />
 
-  <View style={styles.buttonGlow} />
+    <Pressable
+      style={styles.createButton}
+      onPress={async () => {
+  try {
+    const result = await createRoom({
+      gameMode: selectedMode as
+        "spy" |
+        "wordless" |
+        "master" |
+        "y2",
 
-<Pressable
-    style={styles.createButton}
-    onPress={() => router.push("/games/spy/lobby")}
+      maxPlayers: players,
+
+      passwordEnabled,
+    });
+
+    console.log(
+      "ROOM CREATED:",
+      result
+    );
+
+    router.push({
+      pathname: "/games/spy/lobby",
+      params: {
+        roomId: result.roomId,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "CREATE ROOM ERROR:",
+      error
+    );
+  }
+}}
 >
             <Ionicons
               name="add-circle"
@@ -344,6 +399,7 @@ contentFit="contain"
           </Pressable>
 
         </View>
+     )}
         </View>
         </View>
 
@@ -411,7 +467,7 @@ card: {
   borderRadius: 20,
 
   borderWidth: 1,
-  borderColor: "#763b00",
+  borderColor: "#a46300",
 
   overflow: "hidden",
 
@@ -711,7 +767,61 @@ selectedSubtitle: {
 
     paddingHorizontal: 16,
   },
+disabledOptionRow: {
+  height: 58,
+  marginBottom: 14,
 
+  borderRadius: 18,
+
+  backgroundColor: "#0D0D0D",
+
+  borderWidth: 1,
+  borderColor: "#242424",
+
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+
+  paddingHorizontal: 16,
+},
+
+disabledOptionTitle: {
+  color: "#777",
+  fontSize: 15,
+  fontWeight: "700",
+},
+
+disabledOptionSubtitle: {
+  marginTop: 3,
+
+  color: "#4F4F4F",
+  fontSize: 8,
+  fontWeight: "500",
+},
+
+disabledToggle: {
+  width: 46,
+  height: 26,
+
+  borderRadius: 13,
+
+  backgroundColor: "#1B1B1B",
+
+  borderWidth: 1,
+  borderColor: "#303030",
+
+  justifyContent: "center",
+  paddingHorizontal: 3,
+},
+
+disabledToggleThumb: {
+  width: 20,
+  height: 20,
+
+  borderRadius: 10,
+
+  backgroundColor: "#454545",
+},
   optionTitle: {
     color: "#F5F5F5",
 

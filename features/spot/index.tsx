@@ -52,7 +52,7 @@ export default function SpotScreen() {
   return (
     <SafeAreaView
       style={styles.container}
-      edges={["left", "right", "bottom"]}
+      edges={["left", "right", "top"]}
     >
       <ScrollView
         showsVerticalScrollIndicator={false}

@@ -5,6 +5,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View
 } from "react-native";
 import Animated, {
@@ -15,9 +16,14 @@ import Animated, {
   withSequence,
   withTiming
 } from "react-native-reanimated";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import heroBg from "@/assets/images/games/spy/backgrounds/hero_bg.webp";
+import createRoomButton from "@/assets/images/games/spy/buttons/create_room.png";
+import joinRoomButton from "@/assets/images/games/spy/buttons/join_room.png";
 import masterSpy from "@/assets/images/games/spy/cards/master_spy.webp";
 import whoIsSpy from "@/assets/images/games/spy/cards/who_is_spy.webp";
 import wordlessSpy from "@/assets/images/games/spy/cards/wordless_spy.webp";
@@ -30,6 +36,8 @@ import JoinRoomModal from "@/features/games/spy/components/JoinRoomModal";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function SpyHomeScreen() {
+
+  const insets = useSafeAreaInsets();
 
 const [selectedMode, setSelectedMode] = useState<
   "spy" | "wordless" | "master" | "y2" | null
@@ -50,7 +58,7 @@ const y2Rotation = useSharedValue(0);
 
 const createScale = useSharedValue(1);
 const joinScale = useSharedValue(1);
-
+const { width, height } = useWindowDimensions();
 const [heroAnimating, setHeroAnimating] =
   useState(true);
 
@@ -175,35 +183,46 @@ const animateSelection = (
 };
 
 const createButtonAnimatedStyle = useAnimatedStyle(() => ({
-  transform: [{ scale: createScale.value }],
+  transform: [
+    { scale: createScale.value },
+    {
+      translateY:
+        (1 - createScale.value) * 10,
+    },
+  ],
 }));
 
 const joinButtonAnimatedStyle = useAnimatedStyle(() => ({
-  transform: [{ scale: joinScale.value }],
+  transform: [
+    { scale: joinScale.value },
+    {
+      translateY:
+        (1 - joinScale.value) * 10,
+    },
+  ],
 }));
 
-
 const createPressIn = () => {
-  createScale.value = withTiming(0.97, {
-    duration: 80,
+  createScale.value = withTiming(0.965, {
+    duration: 70,
   });
 };
 
 const createPressOut = () => {
   createScale.value = withTiming(1, {
-    duration: 140,
+    duration: 130,
   });
 };
 
 const joinPressIn = () => {
-  joinScale.value = withTiming(0.97, {
-    duration: 80,
+  joinScale.value = withTiming(0.965, {
+    duration: 70,
   });
 };
 
 const joinPressOut = () => {
   joinScale.value = withTiming(1, {
-    duration: 140,
+    duration: 130,
   });
 };
 
@@ -243,7 +262,7 @@ useEffect(() => {
 
   heroOpacity.value = withRepeat(
     withSequence(
-      withTiming(0.4, {
+      withTiming(0.65, {
         duration: 4000,
       }),
       withTiming(1, {
@@ -269,345 +288,399 @@ const heroAnimatedStyle =
   return (
 <SafeAreaView
   style={styles.container}
-  edges={["left", "right", "bottom"]}
+  edges={["left", "right", "top"]}
 >
-     <View style = {styles.content}>
-        {/* Header */}
+ <View style={styles.content}>
 
-        <Animated.View
-          entering={FadeInUp.duration(350)}
-          style={styles.header}
-        >
-          <Pressable
-            style={styles.iconButton}
-            onPress={() => router.back()}
-          >
-            <Image
-              source={exitIcon}
-              style={styles.exitIcon}
-              contentFit="contain"
-            />
-          </Pressable>
+  {/* =========================
+      TOP 60% — HEADER + HERO
+  ========================= */}
 
-       <Pressable
-  style={styles.iconButton}
-  onPress={() => router.push("/games/spy/how-to-play")}
->
-  <Image
-    source={notesIcon}
-    style={styles.notesIcon}
-    contentFit="contain"
-  />
-</Pressable>
-        </Animated.View>
+  <View style={styles.topSection}>
 
-        {/* Hero */}
+    {/* HEADER */}
 
- <View style={styles.heroSection}>
-  <Animated.View
-    pointerEvents="none"
-    style={[styles.heroContainer, heroAnimatedStyle]}
-  >
-    <Image
-      source={heroBg}
-      style={styles.hero}
-      contentFit="cover"
-    />
-  </Animated.View>
-
-  <View style={styles.modeHeader}>
-    <Animated.Text style={styles.modeTitle}>
-      SELECT MODE
-    </Animated.Text>
-
-    <View style={styles.playerInfo}>
-      <Text style={styles.playerIcon}>🕵️</Text>
-
-      <Text style={styles.playerText}>
-        4–8 Players
-      </Text>
-    </View>
-  </View>
-</View>
-  
-        {/* Cards */}
-
-<Animated.ScrollView
-  horizontal
-  style={{
-  flexGrow: 0,
-  height: 200,
-}}
-  showsHorizontalScrollIndicator={false}
-  decelerationRate="fast"
-  snapToInterval={170}
-  disableIntervalMomentum={false}
-  bounces
-  overScrollMode="always"
-contentContainerStyle={[
-  styles.cards,
-  {
-    paddingRight: 14, 
-  },
-]}
->
- <Animated.View
-  style={[
-    styles.card,
-    spyAnimatedStyle,
-    {
-      overflow: "visible",
-    },
-  ]}
->
-    <Pressable
-      android_ripple={{ color: "#222" }}
-      onPress={() => animateSelection("spy")}
-    >
-     <View>
-
-      <View style={styles.cardWrapper}>
-  <Image
-    source={whoIsSpy}
-   style={[
-  styles.cardImage,
-  {
-    opacity:
-      selectedMode === null
-        ? 0.60
-        : selectedMode === "spy"
-        ? 1
-        : 0.38,
-  },
-]}
-    contentFit="contain"
-  />
-
-  {selectedMode === "spy" && (
-    <View style={styles.selectedBadge}>
-      <Ionicons
-        name="checkmark"
-        size={14}
-        color="#000"
-      />
-    </View>
-  )}
-  </View>
-</View>
-    </Pressable>
-  </Animated.View>
-
-<Animated.View
-  style={[
-    styles.card,
-    wordlessAnimatedStyle,
-    {
-      overflow: "visible",
-    },
-  ]}
->
-    <Pressable
-      android_ripple={{ color: "#222" }}
-     onPress={() => animateSelection("wordless")}
-    >
-    <View>
-            <View style={styles.cardWrapper}>
-  <Image
-    source={wordlessSpy}
-  style={[
-  styles.cardImage,
-  {
-    opacity:
-      selectedMode === null
-        ? 0.60
-        : selectedMode === "wordless"
-        ? 1
-        : 0.38,
-  },
-]}
-    contentFit="contain"
-  />
-
-  {selectedMode === "wordless" && (
-    <View style={styles.selectedBadge}>
-      <Ionicons
-        name="checkmark"
-        size={16}
-        color="#111"
-      />
-    </View>
-  )}
-  </View>
-</View>
-    </Pressable>
-  </Animated.View>
-
-  {/* MASTER SPY */}
-
-<Animated.View
-  style={[
-    styles.card,
-    masterAnimatedStyle,
-    {
-      overflow: "visible",
-    },
-  ]}
->
-  <Pressable
-    android_ripple={{ color: "#222" }}
-    onPress={() => animateSelection("wordless")}
-  >
-    <View>
-      <View style={styles.cardWrapper}>
-        <Image
-          source={masterSpy}
-          style={[
-            styles.cardImage,
-            {
-              opacity:
-                selectedMode === null
-                  ? 0.60
-                  : selectedMode === "master"
-                  ? 1
-                  : 0.38,
-            },
-          ]}
-          contentFit="contain"
-        />
-
-        {selectedMode === "master" && (
-          <View style={styles.selectedBadge}>
-            <Ionicons
-              name="checkmark"
-              size={14}
-              color="#111"
-            />
-          </View>
-        )}
-      </View>
-    </View>
-  </Pressable>
-</Animated.View>
-
-{/* Y2 SPY */}
-
-<Animated.View
-  style={[
-    styles.card,
-    y2AnimatedStyle,
-    {
-      overflow: "visible",
-    },
-  ]}
->
-  <Pressable
-    android_ripple={{ color: "#222" }}
-  onPress={() => animateSelection("y2")}
-  >
-    <View>
-      <View style={styles.cardWrapper}>
-        <Image
-          source={y2Spy}
-          style={[
-            styles.cardImage,
-            {
-              opacity:
-                selectedMode === null
-                  ? 0.60
-                  : selectedMode === "y2"
-                  ? 1
-                  : 0.38,
-            },
-          ]}
-          contentFit="contain"
-        />
-
-        {selectedMode === "y2" && (
-          <View style={styles.selectedBadge}>
-            <Ionicons
-              name="checkmark"
-              size={14}
-              color="#111"
-            />
-          </View>
-        )}
-      </View>
-    </View>
-  </Pressable>
-</Animated.View>
-</Animated.ScrollView>
-<View style={styles.buttons}>
- <Animated.View
-  style={[
-    createButtonAnimatedStyle,
-    { width: "80%" },
-  ]}
->
-    <Pressable
-      disabled={!selectedMode}
-      onPressIn={createPressIn}
-      onPressOut={createPressOut}
+    <Animated.View
+      entering={FadeInUp.duration(350)}
       style={[
-        styles.button,
-        styles.createButton,
-        !selectedMode && {
-          opacity: 0.45,
+        styles.header,
+        {
+          paddingTop: 0,
         },
       ]}
-      android_ripple={{ color: "#D99100" }}
-      onPress={() => {
-        if (!selectedMode) return;
-
-        router.push("/games/spy/create");
-      }}
     >
-      <View style={styles.buttonContent}>
-        <View style={styles.buttonIconBox}>
-          <Ionicons
-            name="add"
-            size={20}
-            color="#F2A900"
-          />
-        </View>
+      <Pressable
+        style={styles.iconButton}
+        onPress={() => router.back()}
+      >
+        <Image
+          source={exitIcon}
+          style={styles.exitIcon}
+          contentFit="contain"
+        />
+      </Pressable>
 
-        <Animated.Text style={styles.createText}>
-          CREATE ROOM
-        </Animated.Text>
+      <Pressable
+        style={styles.iconButton}
+        onPress={() =>
+          router.push("/games/spy/how-to-play")
+        }
+      >
+        <Image
+          source={notesIcon}
+          style={styles.notesIcon}
+          contentFit="contain"
+        />
+      </Pressable>
+    </Animated.View>
+
+    {/* HERO */}
+
+    <View style={styles.heroSection}>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.heroContainer,
+          heroAnimatedStyle,
+        ]}
+      >
+        <Image
+          source={heroBg}
+          style={styles.hero}
+          contentFit="contain"
+                  contentPosition="top center"
+        />
+      </Animated.View>
+    </View>
+
+  </View>
+
+
+  {/* =========================
+      MIDDLE 30% — MODES + BUTTONS
+  ========================= */}
+
+  <View style={styles.middleSection}>
+
+    {/* MODE HEADER */}
+
+    <View style={styles.modeHeader}>
+      <Animated.Text style={styles.modeTitle}>
+        SELECT MODE
+      </Animated.Text>
+
+      <View style={styles.playerInfo}>
+        <Text style={styles.playerIcon}>
+          🕵️
+        </Text>
+
+        <Text style={styles.playerText}>
+          4–8 Players
+        </Text>
       </View>
-    </Pressable>
-  </Animated.View>
+    </View>
+
+
+    {/* MODE CARDS */}
+
+    <Animated.ScrollView
+      horizontal
+      style={styles.cardsScroll}
+      contentContainerStyle={styles.cards}
+      showsHorizontalScrollIndicator={false}
+      decelerationRate="fast"
+      snapToInterval={174}
+      disableIntervalMomentum={false}
+      bounces
+      overScrollMode="always"
+    >
+
+      {/* KEEP YOUR EXISTING FOUR CARDS HERE */}
+
+      {/* SPY */}
+
+      <Animated.View
+        style={[
+          styles.card,
+          spyAnimatedStyle,
+          {
+            overflow: "visible",
+          },
+        ]}
+      >
+        <Pressable
+          android_ripple={{ color: "#222" }}
+          onPress={() =>
+            animateSelection("spy")
+          }
+        >
+          <View style={styles.cardWrapper}>
+            <Image
+              source={whoIsSpy}
+              style={[
+                styles.cardImage,
+                {
+                  opacity:
+                    selectedMode === null
+                      ? 0.60
+                      : selectedMode === "spy"
+                      ? 1
+                      : 0.38,
+                },
+              ]}
+              contentFit="contain"
+            />
+
+            {selectedMode === "spy" && (
+              <View style={styles.selectedBadge}>
+                <Ionicons
+                  name="checkmark"
+                  size={14}
+                  color="#000"
+                />
+              </View>
+            )}
+          </View>
+        </Pressable>
+      </Animated.View>
+
+
+      {/* WORDLESS */}
+
+      <Animated.View
+        style={[
+          styles.card,
+          wordlessAnimatedStyle,
+          {
+            overflow: "visible",
+          },
+        ]}
+      >
+        <Pressable
+          android_ripple={{ color: "#222" }}
+          onPress={() =>
+            animateSelection("wordless")
+          }
+        >
+          <View style={styles.cardWrapper}>
+            <Image
+              source={wordlessSpy}
+              style={[
+                styles.cardImage,
+                {
+                  opacity:
+                    selectedMode === null
+                      ? 0.60
+                      : selectedMode === "wordless"
+                      ? 1
+                      : 0.38,
+                },
+              ]}
+              contentFit="contain"
+            />
+
+            {selectedMode === "wordless" && (
+              <View style={styles.selectedBadge}>
+                <Ionicons
+                  name="checkmark"
+                  size={16}
+                  color="#111"
+                />
+              </View>
+            )}
+          </View>
+        </Pressable>
+      </Animated.View>
+
+
+      {/* MASTER */}
+
+      <Animated.View
+        style={[
+          styles.card,
+          masterAnimatedStyle,
+          {
+            overflow: "visible",
+          },
+        ]}
+      >
+        <Pressable
+          android_ripple={{ color: "#222" }}
+          onPress={() =>
+            animateSelection("master")
+          }
+        >
+          <View style={styles.cardWrapper}>
+            <Image
+              source={masterSpy}
+              style={[
+                styles.cardImage,
+                {
+                  opacity:
+                    selectedMode === null
+                      ? 0.60
+                      : selectedMode === "master"
+                      ? 1
+                      : 0.38,
+                },
+              ]}
+              contentFit="contain"
+            />
+
+            {selectedMode === "master" && (
+              <View style={styles.selectedBadge}>
+                <Ionicons
+                  name="checkmark"
+                  size={14}
+                  color="#111"
+                />
+              </View>
+            )}
+          </View>
+        </Pressable>
+      </Animated.View>
+
+
+      {/* Y2 */}
+
+      <Animated.View
+        style={[
+          styles.card,
+          y2AnimatedStyle,
+          {
+            overflow: "visible",
+          },
+        ]}
+      >
+        <Pressable
+          android_ripple={{ color: "#222" }}
+          onPress={() =>
+            animateSelection("y2")
+          }
+        >
+          <View style={styles.cardWrapper}>
+            <Image
+              source={y2Spy}
+              style={[
+                styles.cardImage,
+                {
+                  opacity:
+                    selectedMode === null
+                      ? 0.60
+                      : selectedMode === "y2"
+                      ? 1
+                      : 0.38,
+                },
+              ]}
+              contentFit="contain"
+            />
+
+            {selectedMode === "y2" && (
+              <View style={styles.selectedBadge}>
+                <Ionicons
+                  name="checkmark"
+                  size={14}
+                  color="#111"
+                />
+              </View>
+            )}
+          </View>
+        </Pressable>
+      </Animated.View>
+
+    </Animated.ScrollView>
+
+
+    {/* BUTTONS */}
+
+    <View style={styles.buttons}>
+{/* =========================
+    CREATE ROOM
+========================= */}
+
+<Animated.View
+  style={[
+    createButtonAnimatedStyle,
+    styles.buttonWidth,
+  ]}
+>
+  <Pressable
+    disabled={!selectedMode}
+    onPressIn={createPressIn}
+    onPressOut={createPressOut}
+    style={styles.imageButton}
+    android_ripple={{
+      color: "#D99100",
+    }}
+    onPress={() => {
+      if (!selectedMode) return;
+
+      router.push({
+        pathname: "/games/spy/create",
+        params: {
+          mode: selectedMode,
+        },
+      });
+    }}
+  >
+   <View style={styles.buttonVisual}>
+  <Image
+    source={createRoomButton}
+    style={styles.buttonImage}
+    contentFit="contain"
+  />
+
+  {!selectedMode && (
+    <View
+      pointerEvents="none"
+      style={styles.disabledOverlay}
+    />
+  )}
+</View>
+  </Pressable>
+</Animated.View>
+
+
+{/* =========================
+    JOIN ROOM
+========================= */}
 
 <Animated.View
   style={[
     joinButtonAnimatedStyle,
-    { width: "80%" },
+    styles.buttonWidth,
   ]}
 >
-    <Pressable
-      onPressIn={joinPressIn}
-      onPressOut={joinPressOut}
-      style={[styles.button, styles.joinButton]}
-      android_ripple={{ color: "#303030" }}
-      onPress={() => {
-        setJoinVisible(true);
-      }}
-    >
-      <View style={styles.buttonContent}>
-        <Ionicons
-          name="search"
-          size={22}
-          color="#F5F5F5"
-        />
+  <Pressable
+    onPressIn={joinPressIn}
+    onPressOut={joinPressOut}
+    style={styles.imageButton}
+    android_ripple={{
+      color: "#333",
+    }}
+    onPress={() => {
+      setJoinVisible(true);
+    }}
+  >
+    <Image
+      source={joinRoomButton}
+      style={styles.buttonImage}
+      contentFit="contain"
+    />
+  </Pressable>
+</Animated.View>
+   
+    </View>
 
-        <Animated.Text style={styles.joinText}>
-          JOIN ROOM
-        </Animated.Text>
-      </View>
-    </Pressable>
-  </Animated.View>
+  </View>
+
+
+  {/* =========================
+      BOTTOM 10% — BREATHING SPACE
+  ========================= */}
+<View style={styles.bottomSpace} />
+
 </View>
-
-      </View>
 
       <JoinRoomModal
   visible={joinVisible}
@@ -623,35 +696,54 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
   },
 
-content: {
-  flex: 1,
-  paddingHorizontal: 20,
-},
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
 
+  /* =========================
+     HERO — 50%
+  ========================= */
 
-header: {
-  zIndex: 100,
-elevation: 100,
-  height: 60,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-},
+  topSection: {
+    height: "50%",
+    minHeight: 0,
+  },
 
+  /*
+   * Header sits ON TOP of the hero.
+   */
+  header: {
+    position: "absolute",
 
-iconButton: {
-  width: 32,        
-  height: 32,         
-  borderRadius: 10,
+    top: 0,
+    left: 0,
+    right: 0,
 
-  backgroundColor: "#151515",
+    height: 54,
 
-  borderWidth: 1,
-  borderColor: "#242424",
+    zIndex: 100,
+    elevation: 100,
 
-  justifyContent: "center",
-  alignItems: "center",
-},
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  iconButton: {
+    width: 32,
+    height: 32,
+
+    borderRadius: 10,
+
+    backgroundColor: "#151515",
+
+    borderWidth: 1,
+    borderColor: "#242424",
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
   exitIcon: {
     width: 20,
@@ -659,217 +751,207 @@ iconButton: {
   },
 
   notesIcon: {
-  width: 25,
-  height: 25,
-},
+    width: 25,
+    height: 25,
+  },
 
-heroContainer: {
-  width: "100%",
-  height: 250,          // was 420
+  /*
+   * Hero starts at the VERY TOP.
+   * No padding/margin above it.
+   */
+  heroSection: {
+    position: "absolute",
 
-  justifyContent: "center",
-  alignItems: "center",
-},
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
 
-hero: {
-  width: "100%",
-  height: 400,          // was 500
-  marginTop: -50,       // was -65
-},
-cards: {
-  marginTop: -6,
-  marginBottom: -30,
+    justifyContent: "flex-start",
+    alignItems: "center",
 
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-},
+    overflow: "hidden",
+  },
 
- card:{
-    width:160,
-    marginRight:14,
-},
+  heroContainer: {
+    width: "100%",
+    height: "100%",
+
+    justifyContent: "flex-start",
+    alignItems: "center",
+  },
+
+  hero: {
+    width: "100%",
+    height: "100%",
+  },
+
+
+  /* =========================
+     MODE SECTION — 18%
+  ========================= */
+
+  middleSection: {
+    height: "40%",
+    minHeight: 0,
+  },
+
+  modeHeader: {
+    height: 20,
+
+    flexDirection: "row",
+
+    justifyContent: "space-between",
+    alignItems: "center",
+
+    paddingHorizontal: 2,
+    paddingBottom: 0,
+  },
+
+  modeTitle: {
+    color: "#F2A900",
+
+    fontSize: 13,
+
+    fontWeight: "900",
+
+    letterSpacing: 1.3,
+  },
+
+  playerInfo: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    marginTop: 1,
+  },
+
+  playerIcon: {
+    fontSize: 11,
+
+    marginRight: 5,
+  },
+
+  playerText: {
+    color: "#7e7a68",
+
+    fontSize: 11,
+
+    fontWeight: "600",
+  },
+
+  /* =========================
+     MODE CARDS
+  ========================= */
+
+  cardsScroll: {
+    flexGrow: 0,
+
+    height: 155,
+  },
+
+  cards: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    paddingRight: 14,
+  },
+
+  card: {
+    width: 145,
+
+    marginRight: 12,
+  },
 
   cardImage: {
     width: "100%",
+
     aspectRatio: 1,
   },
 
-  heroSection: {
-  marginBottom: -40, // adjust until it sits exactly in the empty space
-},
+  cardWrapper: {
+    position: "relative",
+  },
 
-modeHeader: {
-  flexDirection: "row",
+  selectedBadge: {
+    position: "absolute",
 
-  justifyContent: "space-between",
+    top: 24,
+    right: 8,
 
-  alignItems: "center",
+    width: 22,
+    height: 22,
 
-  paddingHorizontal: 2,
+    borderRadius: 17,
 
-  marginTop: 26,
-},
+    backgroundColor: "#F4B223",
 
+    borderWidth: 3,
+    borderColor: "#111",
 
-modeTitle: {
-  color: "#F2A900",
+    justifyContent: "center",
+    alignItems: "center",
 
-  fontSize: 13,
+    zIndex: 999,
+    elevation: 20,
 
-  fontWeight: "900",
+    shadowColor: "#000",
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
 
-  letterSpacing: 1.3,
-},
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+  },
 
-playerInfo: {
-  flexDirection: "row",
+   /* =========================
+     BUTTON AREA
+  ========================= */
 
-  alignItems: "center",
-
-  marginTop: 1,
-},
-
-playerIcon: {
-  fontSize: 11,
-
-  marginRight: 5,
-},
-
-playerText: {
-  color: "#7A7A7A",
-
-  fontSize: 11,
-
-  fontWeight: "600",
-},
-
-buttonContent: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-
-  width: "100%",
-},
 
 buttons: {
-  marginTop: -6,
-  alignItems: "center",
-  gap: 10,
+  flex: 1,
+  minHeight: 0,
 
   width: "100%",
+
+  alignItems: "center",
+  justifyContent: "center",
+
+  paddingTop: 2,
 },
 
-button: {
-  width: "96%",
-  height: 50,
+bottomSpace: {
+  height: "10%",
+  minHeight: 0,
+},
 
-  borderRadius: 16,
-
-  flexDirection: "row",
-  justifyContent: "center",
-  alignItems: "center",
-
-  overflow: "hidden",
-
+buttonWidth: {
+  width: "74%",
   alignSelf: "center",
 },
 
-createButton: {
-  backgroundColor: "#F2A900",
-
-  borderWidth: 1.5,
-  borderColor: "#F7C553",
-
-  shadowColor: "#F2A900",
-  shadowOpacity: 0.18,
-  shadowRadius: 12,
-  shadowOffset: {
-    width: 0,
-    height: 6,
-  },
-
-  elevation: 8,
+imageButton: {
+  width: "100%",
+  alignSelf: "center",
 },
-
-
-joinButton: {
-  backgroundColor: "#171717",
-
-  borderWidth: 1.2,
-  borderColor: "#3A3A3A",
-
-  shadowColor: "#000",
-  shadowOpacity: 0.18,
-  shadowRadius: 8,
-  shadowOffset: {
-    width: 0,
-    height: 4,
-  },
-
-  elevation: 6,
-},
-
-buttonIconBox: {
-  width: 22,
-  height: 22,
-
-  marginRight: 8,
-
-  borderRadius: 7,
-
-  backgroundColor: "#111",
-
-  justifyContent: "center",
-  alignItems: "center",
-},
-
-createText: {
-  color: "#111",
-  fontSize: 13,
-  fontWeight: "900",
-  letterSpacing: 1,
-},
-
-joinText: {
-  color: "#F4F4F4",
-  fontSize: 13,
-  fontWeight: "900",
-  letterSpacing: 1,
-  marginLeft: 8,
-},
-
-cardWrapper: {
+buttonVisual: {
+  width: "100%",
   position: "relative",
 },
 
-selectedBadge: {
-  position: "absolute",
+disabledOverlay: {
+  ...StyleSheet.absoluteFillObject,
 
-  top: 24,
-  right: 8,
+  backgroundColor: "rgba(0, 0, 0, 0.48)",
 
-  width: 22,
-  height: 22,
-  borderRadius: 17,
+  borderRadius: 18,
+},
 
-  backgroundColor: "#F4B223",
-
-  borderWidth: 3,
-  borderColor: "#111",
-
-  justifyContent: "center",
-  alignItems: "center",
-
-  zIndex: 999,
-  elevation: 20,
-
-  shadowColor: "#000",
-  shadowOpacity: 0.35,
-  shadowRadius: 8,
-  shadowOffset: {
-    width: 0,
-    height: 3,
-  },
+buttonImage: {
+  width: "100%",
+  aspectRatio: 2172 / 724,
 },
 });

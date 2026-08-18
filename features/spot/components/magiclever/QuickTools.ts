@@ -34,7 +34,7 @@ export const QUICK_TOOLS: QuickTool[] = [
     id: "bookmarks",
     title: "Bookmarks",
     icon: require("@/assets/images/icons/MagicLever_Icons/bookmark.png"),
-    route: "/(tabs)/bookmarks",
+    route: "/bookmarks",
   },
 
   {

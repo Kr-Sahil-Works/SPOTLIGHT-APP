@@ -377,26 +377,534 @@ pinnedAt: v.optional(
   /* =========================
      ⌨️ TYPING
   ========================= */
-  typing: defineTable({
+   typing: defineTable({
     conversationId: v.id("conversations"),
     userId: v.id("users"),
     isTyping: v.boolean(),
 
-    // 🔥 NEW (important for expiry later)
     updatedAt: v.optional(v.number()),
   })
     .index("by_conversation", ["conversationId"])
     .index("by_user_conversation", ["conversationId", "userId"]),
 
+ 
 
-    treeScores: defineTable({
-  userId: v.string(),
-  fullname: v.string(),
-  image: v.optional(v.string()),
-  score: v.number(),
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+  /* =========================
+     🎮 SPY GAME ROOMS
+  ========================= */
+  gameRooms: defineTable({
+    /* 🔑 ROOM */
+    roomCode: v.string(),
+
+    /* 👑 HOST */
+    hostId: v.id("users"),
+
+    /* 🎮 GAME CONFIG */
+    gameMode: v.union(
+      v.literal("spy"),
+      v.literal("wordless"),
+      v.literal("master"),
+      v.literal("y2")
+    ),
+
+    maxPlayers: v.number(),
+
+    /* 🔐 PASSWORD */
+    passwordEnabled: v.boolean(),
+    passwordHash: v.optional(v.string()),
+
+    /* 🎯 ROOM STATE */
+    status: v.union(
+      v.literal("lobby"),
+      v.literal("starting"),
+      v.literal("playing"),
+      v.literal("finished")
+    ),
+
+    /* 🔒 PLAYER LIST */
+    playerListLocked: v.boolean(),
+
+    /* =========================
+       🗂️ CLASSIC CATEGORY
+    ========================= */
+
+    // The 8 categories shown for
+    // this particular match.
+    categoryOptions: v.optional(
+      v.array(v.string())
+    ),
+
+    // Winning category after voting.
+    selectedCategory: v.optional(
+      v.string()
+    ),
+
+    // Server-authoritative deadline.
+    categorySelectionEndsAt:
+      v.optional(v.number()),
+
+    /* =========================
+       👑 HOST GRACE PERIOD
+    ========================= */
+
+    // Set when the host disconnects.
+    hostDisconnectedAt:
+      v.optional(v.number()),
+
+    // If the host doesn't return before
+    // this timestamp, ownership transfers.
+    hostGraceEndsAt:
+      v.optional(v.number()),
+
+    /* ⏱️ TIMESTAMPS */
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_room_code", ["roomCode"])
+    .index("by_host", ["hostId"])
+    .index("by_status", ["status"]),
+
+
+  /* =========================
+     👥 SPY ROOM PLAYERS
+  ========================= */
+  gameRoomPlayers: defineTable({
+    roomId: v.id("gameRooms"),
+    userId: v.id("users"),
+
+    /* 👑 ROLE IN ROOM */
+    isHost: v.boolean(),
+
+    /* ✅ LOBBY */
+    isReady: v.boolean(),
+
+    /* 🌐 CONNECTION */
+    isConnected: v.boolean(),
+    lastActiveAt: v.number(),
+
+    /* 🎮 GAME */
+    isAlive: v.boolean(),
+
+    /* 🔒 MATCH */
+    eliminatedAt: v.optional(v.number()),
+
+    /* ⏱️ JOIN */
+    joinedAt: v.number(),
+  })
+    .index("by_room", ["roomId"])
+    .index("by_user", ["userId"])
+    .index("by_room_user", ["roomId", "userId"]),
+
+
+      /* =========================
+     🗳️ CLASSIC CATEGORY VOTES
+  ========================= */
+  gameCategoryVotes: defineTable({
+    roomId: v.id("gameRooms"),
+    userId: v.id("users"),
+
+    /* 🗂️ ONE CATEGORY PER PLAYER */
+    category: v.string(),
+
+    /* ⏱️ VOTE TIMESTAMP */
+    createdAt: v.number(),
+  })
+    .index("by_room", ["roomId"])
+    .index("by_room_user", ["roomId", "userId"]),
+
+
+      /* =========================
+     🎮 CLASSIC GAME ROUNDS
+  ========================= */
+  gameRounds: defineTable({
+    roomId: v.id("gameRooms"),
+
+    /* 🔢 ACTUAL ROUND NUMBER */
+    roundNumber: v.number(),
+
+    /* 🎮 ROUND STATE */
+    phase: v.union(
+      v.literal("speaking"),
+      v.literal("voting"),
+      v.literal("tieBreak"),
+      v.literal("result"),
+      v.literal("finished")
+    ),
+
+    /* 🗣️ SPEAKER */
+    speakerOrder: v.array(
+      v.id("gameRoomPlayers")
+    ),
+
+    currentSpeakerIndex: v.number(),
+    speakersCompleted: v.number(),
+
+    /* ⏱️ CURRENT TIMER */
+    turnEndsAt: v.optional(v.number()),
+
+    /* 🗳️ VOTING TIMER */
+    votingEndsAt: v.optional(v.number()),
+
+    /* 🔁 TIE BREAK */
+    isTieBreak: v.boolean(),
+
+    tieBreakOrder: v.optional(
+      v.array(v.id("gameRoomPlayers"))
+    ),
+
+    tieBreakSpeakerIndex:
+      v.optional(v.number()),
+
+    /* 🏁 ROUND RESULT */
+    eliminatedPlayerId:
+      v.optional(v.id("gameRoomPlayers")),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_room", ["roomId"])
+    .index("by_room_round", [
+      "roomId",
+      "roundNumber",
+    ]),
+
+  /* =========================
+   🗳️ CLASSIC ROUND VOTES
+========================= */
+
+gameRoundVotes: defineTable({
+  /* 🔗 ROUND */
+  roundId: v.id("gameRounds"),
+
+  /* 🔗 ROOM */
+  roomId: v.id("gameRooms"),
+
+  /* 👤 VOTER */
+  voterId: v.id("gameRoomPlayers"),
+
+  /* 🎯 TARGET */
+  targetId: v.optional(
+    v.id("gameRoomPlayers")
+  ),
+
+  /* ⏭️ SKIP */
+  skipped: v.boolean(),
+
+  /* ⏱️ TIME */
+  createdAt: v.number(),
 })
-.index("by_score", ["score"])
-.index("by_user", ["userId"]),
+  .index(
+    "by_round",
+    ["roundId"]
+  )
+  .index(
+    "by_round_voter",
+    [
+      "roundId",
+      "voterId",
+    ]
+  )
+  .index(
+    "by_round_target",
+    [
+      "roundId",
+      "targetId",
+    ]
+  )
+  .index(
+    "by_room",
+    ["roomId"]
+  ),
+  
+  /* =========================
+   ⚖️ CLASSIC TIE-BREAK VOTES
+========================= */
+
+gameTieBreakVotes: defineTable({
+  /* 🔗 ROUND */
+  roundId:
+    v.id("gameRounds"),
+
+  /* 🏠 ROOM */
+  roomId:
+    v.id("gameRooms"),
+
+  /* 👤 VOTER */
+  voterId:
+    v.id("gameRoomPlayers"),
+
+  /* 🎯 TARGET */
+  targetId:
+    v.optional(
+      v.id("gameRoomPlayers")
+    ),
+
+  /* ⏭️ SKIP */
+  skipped:
+    v.boolean(),
+
+  /* ⏱️ TIME */
+  createdAt:
+    v.number(),
+})
+  .index(
+    "by_round",
+    ["roundId"]
+  )
+  .index(
+    "by_round_voter",
+    [
+      "roundId",
+      "voterId",
+    ]
+  )
+  .index(
+    "by_round_target",
+    [
+      "roundId",
+      "targetId",
+    ]
+  ),
+
+  /* =========================
+     🔐 PRIVATE CLASSIC PLAYER
+  ========================= */
+  gamePlayerSecrets: defineTable({
+    roomId: v.id("gameRooms"),
+    playerId: v.id("gameRoomPlayers"),
+    userId: v.id("users"),
+
+    /* 🎭 SECRET ROLE */
+    role: v.union(
+      v.literal("spy"),
+      v.literal("villager")
+    ),
+
+    /* 🔐 SECRET WORD */
+    word: v.string(),
+
+    createdAt: v.number(),
+  })
+    .index("by_room", ["roomId"])
+    .index("by_player", ["playerId"])
+    .index("by_room_user", [
+      "roomId",
+      "userId",
+    ]),
+
+  /* =========================
+     🎮 SPY GAME MATCHES
+  ========================= */
+  gameMatches: defineTable({
+    /* 🔗 ROOM */
+    roomId: v.id("gameRooms"),
+
+    /* 🎮 GAME */
+    gameMode: v.union(
+      v.literal("spy"),
+      v.literal("wordless"),
+      v.literal("master"),
+      v.literal("y2")
+    ),
+
+    /* 🗂️ CATEGORY */
+    category: v.string(),
+
+    /* 🎯 MATCH STATE */
+    status: v.union(
+      v.literal("starting"),
+      v.literal("playing"),
+      v.literal("finished")
+    ),
+
+    /* 🔢 ROUND */
+    currentRound: v.number(),
+
+    maxRounds: v.number(),
+
+    /* 👑 WINNER */
+    winner: v.optional(
+      v.union(
+        v.literal("spy"),
+        v.literal("villagers")
+      )
+    ),
+
+    /* ⏱️ MATCH TIMING */
+    startedAt: v.number(),
+
+    finishedAt: v.optional(
+      v.number()
+    ),
+
+    /* 🧠 FUTURE WORD HISTORY */
+    wordPairId: v.optional(
+      v.string()
+    ),
+
+    /* 🎯 SPY */
+    spyPlayerId: v.optional(
+      v.id("gameRoomPlayers")
+    ),
+
+    createdAt: v.number(),
+
+    updatedAt: v.number(),
+  })
+    .index("by_room", ["roomId"])
+    .index("by_status", ["status"])
+    .index("by_room_status", [
+      "roomId",
+      "status",
+    ]),
+
+
+    /* =========================
+   🎮 CLASSIC SPY MATCHES
+========================= */
+
+gameClassicMatches: defineTable({
+  /* 🔗 ROOM */
+  roomId: v.id("gameRooms"),
+
+  /* 🗂️ CATEGORY */
+  category: v.string(),
+
+  /* 🧩 WORD PAIR */
+  wordPairId: v.string(),
+
+  /* 🔄 50% WORD SWAP */
+  wordsSwapped: v.boolean(),
+
+  /* 🔢 ROUND */
+  roundNumber: v.number(),
+
+  maxRounds: v.number(),
+
+  speakersCompleted: v.number(),
+  /* 🎮 PHASE */
+  phase: v.union(
+    v.literal("category"),
+    v.literal("speaking"),
+    v.literal("voting"),
+    v.literal("tieBreak"),
+    v.literal("finished")
+  ),
+
+  /* 🎤 CURRENT SPEAKER */
+  currentSpeakerUserId:
+    v.optional(v.id("users")),
+
+  turnStartedAt:
+    v.optional(v.number()),
+
+  turnEndsAt:
+    v.optional(v.number()),
+
+  /* 🏆 RESULT */
+  winner: v.optional(
+    v.union(
+      v.literal("villagers"),
+      v.literal("spy")
+    )
+  ),
+
+  status: v.union(
+    v.literal("active"),
+    v.literal("finished")
+  ),
+
+  createdAt: v.number(),
+
+  updatedAt: v.number(),
+})
+  .index("by_room", ["roomId"])
+  .index("by_status", ["status"])
+  .index(
+    "by_room_status",
+    ["roomId", "status"]
+  ),
+
+/* =========================
+   👥 CLASSIC MATCH PLAYERS
+========================= */
+
+gameClassicPlayers: defineTable({
+  /* 🔗 MATCH */
+  matchId: v.id(
+    "gameClassicMatches"
+  ),
+
+  /* 👤 USER */
+  userId: v.id("users"),
+
+  /* 🎭 SECRET ROLE */
+  role: v.union(
+    v.literal("villager"),
+    v.literal("spy")
+  ),
+
+  /* 🔐 PRIVATE WORD */
+  word: v.string(),
+
+  /* ❤️ ALIVE */
+  isAlive: v.boolean(),
+
+  /* 🎤 NORMAL SPEAKING ORDER */
+  speakingOrder: v.number(),
+
+  /* ❌ ELIMINATION */
+  eliminatedAt:
+    v.optional(v.number()),
+
+  /* ⏱️ JOIN */
+  joinedAt: v.number(),
+})
+  .index(
+    "by_match",
+    ["matchId"]
+  )
+  .index(
+    "by_match_user",
+    ["matchId", "userId"]
+  )
+  .index(
+    "by_match_alive",
+    ["matchId", "isAlive"]
+  ),
+
+/* =========================
+   🗳️ CLASSIC CATEGORY VOTES
+========================= */
+
+gameClassicCategoryVotes: defineTable({
+  roomId: v.id("gameRooms"),
+
+  userId: v.id("users"),
+
+  categoryId: v.string(),
+
+  createdAt: v.number(),
+
+  updatedAt: v.number(),
+})
+  .index(
+    "by_room",
+    ["roomId"]
+  )
+  .index(
+    "by_room_user",
+    ["roomId", "userId"]
+  )
+  .index(
+    "by_room_category",
+    ["roomId", "categoryId"]
+  ),
+  
 });
 
 

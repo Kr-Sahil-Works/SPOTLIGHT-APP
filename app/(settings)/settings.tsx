@@ -226,18 +226,6 @@ const verifyDeveloperCode =
     api.security.verifyDeveloperCode
   );
 
-  const [unlockingTree, setUnlockingTree] =
-  useState(false);
-
-const tunnelScale =
-  useRef(
-    new Animated.Value(0)
-  ).current;
-
-const tunnelOpacity =
-  useRef(
-    new Animated.Value(0)
-  ).current;
 
 
   const { showToast } =
@@ -323,70 +311,32 @@ const tunnelOpacity =
   <TouchableOpacity
     activeOpacity={0.9}
 onPress={async () => {
-  const nextTap =
-    tapCount + 1;
+  const nextTap = tapCount + 1;
 
   setTapCount(nextTap);
 
   if (nextTap >= 7) {
     setTapCount(0);
 
-await Haptics.impactAsync(
-  Haptics.ImpactFeedbackStyle.Medium
-);
-
-setTimeout(() => {
-  Haptics.impactAsync(
-    Haptics.ImpactFeedbackStyle.Heavy
-  );
-}, 120);
-
-setTimeout(() => {
-  Haptics.notificationAsync(
-    Haptics.NotificationFeedbackType.Success
-  );
-}, 250);
-
-  setUnlockingTree(true);
-
-Animated.parallel([
-  Animated.timing(
-    tunnelScale,
-    {
-      toValue: 25,
-      duration: 1400,
-      useNativeDriver: true,
-    }
-  ),
-
-  Animated.timing(
-    tunnelOpacity,
-    {
-      toValue: 1,
-      duration: 250,
-      useNativeDriver: true,
-    }
-  ),
-]).start();
-
-setTimeout(() => {
-  router.push(
-    "/(tools)/tree-game"
-  );
-
-  setTimeout(() => {
-    setUnlockingTree(false);
-
-    tunnelScale.setValue(0);
-    tunnelOpacity.setValue(0);
-  }, 300);
-}, 1400);
+    await Haptics.impactAsync(
+      Haptics.ImpactFeedbackStyle.Medium
+    );
 
     setTimeout(() => {
-      router.push(
-        "/(tools)/tree-game"
+      Haptics.impactAsync(
+        Haptics.ImpactFeedbackStyle.Heavy
       );
-    }, 1200);
+    }, 120);
+
+    setTimeout(() => {
+      Haptics.notificationAsync(
+        Haptics.NotificationFeedbackType.Success
+      );
+    }, 250);
+
+    setTimeout(() => {
+      router.push("/(tools)/easter-egg");
+    }, 1400);
   }
 }}
   >
@@ -773,49 +723,6 @@ redirectTimeoutRef.current =
 
 
       </ScrollView>
-
-      {unlockingTree && (
-  <Animated.View
-    pointerEvents="none"
-    style={{
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-
-      justifyContent: "center",
-      alignItems: "center",
-
-      backgroundColor: "rgba(0,0,0,0.92)",
-
-      opacity:
-        tunnelOpacity,
-
-      zIndex: 99999,
-    }}
-  >
-    <Animated.View
-      style={{
-        width: 18,
-        height: 18,
-
-        borderRadius: 999,
-
-        backgroundColor:
-          "#7CFF4F",
-
-        transform: [
-          {
-            scale:
-              tunnelScale,
-          },
-        ],
-      }}
-    />
-  </Animated.View>
-)}
-
       {/* DEV SECRET MODAL */}
 <Modal
   visible={showDevModal}

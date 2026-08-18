@@ -27,8 +27,6 @@ import { useAppToast } from "@/components/common/AppToast";
 import { storage } from "@/lib/mmkv";
 
 import {
-  closeApp,
-  disablePreviousIcon,
   setAppIcon,
 } from "expo-dynamic-icons";
 
@@ -741,22 +739,13 @@ const applyIcon = useCallback(
     showToast,
   ]
 );
-  const handleClose =
-    useCallback(async () => {
-      try {
-        await disablePreviousIcon();
-      } catch (e) {
-        console.log(e);
-      }
-
-      Animated.timing(fade, {
-        toValue: 1,
-        duration: 450,
-        useNativeDriver: true,
-      }).start(async () => {
-        await closeApp();
-      });
-    }, [fade]);
+const handleClose = useCallback(() => {
+  Animated.timing(fade, {
+    toValue: 1,
+    duration: 450,
+    useNativeDriver: true,
+  }).start();
+}, [fade]);
 
   return (
    <SafeAreaView

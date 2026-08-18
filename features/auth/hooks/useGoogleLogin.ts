@@ -11,65 +11,6 @@ export default function useGoogleLogin() {
     try {
       const result =
         await startGoogleAuthenticationFlow();
-
-      console.log(
-        "========== GOOGLE RESULT =========="
-      );
-
-      console.log(
-        "createdSessionId:",
-        result.createdSessionId
-      );
-
-      console.log(
-        "has setActive:",
-        !!result.setActive
-      );
-
-      console.log(
-        "signIn exists:",
-        !!result.signIn
-      );
-
-      console.log(
-        "signUp exists:",
-        !!result.signUp
-      );
-
-      console.log(
-        "signIn status:",
-        result.signIn?.status
-      );
-
-      console.log(
-        "signUp status:",
-        result.signUp?.status
-      );
-
-      console.log(
-        "signIn createdSessionId:",
-        result.signIn?.createdSessionId
-      );
-
-      console.log(
-        "signUp createdSessionId:",
-        result.signUp?.createdSessionId
-      );
-
-      console.log(
-        "signIn firstFactor:",
-        result.signIn?.firstFactorVerification?.status
-      );
-
-      console.log(
-        "signUp externalAccount:",
-        result.signUp?.verifications?.externalAccount?.status
-      );
-
-      console.log(
-        "========== GOOGLE END =========="
-      );
-
       if (
         result.createdSessionId &&
         result.setActive
@@ -77,11 +18,6 @@ export default function useGoogleLogin() {
         await result.setActive({
           session: result.createdSessionId,
         });
-
-        console.log(
-          "========== SESSION ACTIVE =========="
-        );
-
         return {
           success: true,
           cancelled: false,
@@ -94,9 +30,6 @@ export default function useGoogleLogin() {
         error: "NO_SESSION_CREATED",
       };
     } catch (error: any) {
-      console.log(
-        "========== GOOGLE ERROR =========="
-      );
 
       console.log(
         "error:",
@@ -126,11 +59,6 @@ export default function useGoogleLogin() {
           2
         )
       );
-
-      console.log(
-        "========== GOOGLE ERROR END =========="
-      );
-
       return {
         success: false,
         cancelled:

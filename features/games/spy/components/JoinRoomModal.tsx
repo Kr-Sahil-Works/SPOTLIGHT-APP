@@ -349,7 +349,7 @@ pinCard: {
 spyContainer: {
   position: "absolute",
   top: -82,
-  zIndex: 50,
+  zIndex: -10,
 },
 
   spy: {
