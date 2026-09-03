@@ -1,4 +1,3 @@
-import { storage } from "@/lib/mmkv";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { useEffect, useRef } from "react";
@@ -114,16 +113,9 @@ export default function WelcomeModal({
     entrance.start();
     floating.start();
     tilting.start();
-
-    const timer = setTimeout(() => {
-      storage.set(
-        "welcome_card_seen",
-        true
-      );
-
-      onClose();
-    }, 22000);
-
+const timer = setTimeout(() => {
+  onClose();
+}, 22000);
     return () => {
       clearTimeout(timer);
 
@@ -198,11 +190,6 @@ return (
     <Pressable
       style={StyleSheet.absoluteFill}
       onPress={() => {
-        storage.set(
-          "welcome_card_seen",
-          true
-        );
-
         onClose();
       }}
     />

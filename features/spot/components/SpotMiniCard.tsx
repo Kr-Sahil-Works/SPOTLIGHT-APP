@@ -1,4 +1,5 @@
-import { Image, ImageSourcePropType, StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
+import { ImageSourcePropType, StyleSheet, Text, View } from "react-native";
 
 type Props = {
   title: string;
@@ -14,7 +15,7 @@ export default function SpotMiniCard({
       <Image
         source={image}
         style={styles.image}
-        resizeMode="contain"
+      contentFit="contain"
       />
 
       <Text style={styles.title}>

@@ -11,6 +11,8 @@ type Props = {
   maxPlayers: number;
   roomStatus: string;
   isHost?: boolean;
+  isReady?: boolean;
+  canStart?: boolean;
   onInvite?: () => void;
   onReady?: () => void;
 };
@@ -20,6 +22,8 @@ export default function LobbyInfoPanel({
   maxPlayers,
   roomStatus,
   isHost = false,
+  isReady = false,
+  canStart = false,
   onInvite,
   onReady,
 }: Props) {
@@ -79,17 +83,47 @@ export default function LobbyInfoPanel({
           </Text>
         </Pressable>
 
-        <Pressable
-          onPress={onReady}
-          style={({ pressed }) => [
-            styles.readyButton,
-            pressed && styles.readyPressed,
-          ]}
-        >
-          <Text style={styles.readyText}>
-            {isHost ? "Start" : "Ready"}
-          </Text>
-        </Pressable>
+      <Pressable
+  disabled={isHost ? !canStart : false}
+  onPress={onReady}
+  style={({ pressed }) => [
+    styles.readyButton,
+
+    isHost &&
+      !canStart &&
+      styles.startDisabled,
+
+    !isHost &&
+      isReady &&
+      styles.unreadyButton,
+
+    pressed &&
+      (isHost
+        ? canStart
+        : true) &&
+      styles.readyPressed,
+  ]}
+>
+  <Text
+    style={[
+      styles.readyText,
+
+      isHost &&
+        !canStart &&
+        styles.startDisabledText,
+
+      !isHost &&
+        isReady &&
+        styles.unreadyText,
+    ]}
+  >
+    {isHost
+      ? "Start"
+      : isReady
+      ? "Cancel"
+      : "Ready"}
+  </Text>
+</Pressable>
       </View>
     </View>
   );
@@ -99,7 +133,7 @@ const styles = StyleSheet.create({
   container: {
     height: 48,
 
-    marginHorizontal: 26,
+    marginHorizontal: 46,
 
     paddingHorizontal: 18,
 
@@ -230,7 +264,35 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
   },
+startDisabled: {
+  backgroundColor:
+    "rgba(255,255,255,0.10)",
 
+  borderWidth: 1,
+
+  borderColor:
+    "rgba(255,255,255,0.08)",
+
+  opacity: 0.55,
+},
+
+startDisabledText: {
+  color: "rgba(255,255,255,0.38)",
+},
+
+unreadyButton: {
+  backgroundColor:
+    "#3333335b",
+
+  borderWidth: 1,
+
+  borderColor:
+    "rgba(255,255,255,0.14)",
+},
+
+unreadyText: {
+  color: "rgba(255, 255, 255, 0.8)",
+},
   pressed: {
     opacity: 0.7,
 

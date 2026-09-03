@@ -55,28 +55,34 @@ return (
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    height: 40,
+container: {
+  width: "100%",
+  height: 45,
 
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-around",
 
-    backgroundColor: "rgba(10,10,9,0.92)",
+  backgroundColor: "rgba(16, 16, 16, 0.92)",
 
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.10)",
+  borderTopWidth: 1,
+  borderTopColor: "rgba(255,255,255,0.10)",
 
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+  // borderTopLeftRadius: 14,
+  // borderTopRightRadius: 14,
 
-    overflow: "hidden",
-  },
+  overflow: "hidden",
+
+  /*
+   * Keep the bar at the bottom
+   * of its parent.
+   */
+  marginTop: "auto",
+},
 
   button: {
-    width: 36,
-    height: 35,
+    width: 34,
+    height: 34,
 
     borderRadius: 18,
 

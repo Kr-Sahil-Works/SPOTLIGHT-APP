@@ -1,15 +1,15 @@
 import {
-    query,
+  query,
 } from "../../../_generated/server";
 
 import { v } from "convex/values";
 
 import type {
-    QueryCtx,
+  QueryCtx,
 } from "../../../_generated/server";
 
 /* =========================
-   🔐 QUERY AUTH
+   🔐 CURRENT USER
 ========================= */
 
 const getCurrentUser =
@@ -123,7 +123,7 @@ export const getClassicGameState =
       }
 
       /* =========================
-         🎮 MATCH
+         🎮 ACTIVE MATCH
       ========================= */
 
       const match =
@@ -147,6 +147,32 @@ export const getClassicGameState =
           .first();
 
       /* =========================
+         🎯 CURRENT ROUND
+      ========================= */
+
+      const round =
+        match
+          ? await ctx.db
+              .query(
+                "gameRounds"
+              )
+              .withIndex(
+                "by_room_round",
+                (q) =>
+                  q
+                    .eq(
+                      "roomId",
+                      room._id
+                    )
+                    .eq(
+                      "roundNumber",
+                      match.currentRound
+                    )
+              )
+              .first()
+          : null;
+
+      /* =========================
          👥 PLAYERS
       ========================= */
 
@@ -166,7 +192,7 @@ export const getClassicGameState =
           .collect();
 
       /* =========================
-         🎭 SAFE PLAYER DATA
+         👤 SAFE PLAYER DATA
       ========================= */
 
       const safePlayers =
@@ -193,82 +219,6 @@ export const getClassicGameState =
         );
 
       /* =========================
-         🔐 MY SECRET
-      ========================= */
-
-      let mySecret:
-        | {
-            role:
-              | "spy"
-              | "villager";
-
-            word:
-              string;
-          }
-        | null =
-        null;
-
-      if (match) {
-        const secret =
-          await ctx.db
-            .query(
-              "gamePlayerSecrets"
-            )
-            .withIndex(
-              "by_room_user",
-              (q) =>
-                q
-                  .eq(
-                    "roomId",
-                    room._id
-                  )
-                  .eq(
-                    "userId",
-                    user._id
-                  )
-            )
-            .unique();
-
-        if (secret) {
-          mySecret = {
-            role:
-              secret.role,
-
-            word:
-              secret.word,
-          };
-        }
-      }
-
-      /* =========================
-         🔢 ROUND
-      ========================= */
-
-      let round = null;
-
-      if (match) {
-        round =
-          await ctx.db
-            .query(
-              "gameRounds"
-            )
-            .withIndex(
-              "by_room_round",
-              (q) =>
-                q
-                  .eq(
-                    "roomId",
-                    room._id
-                  )
-                  .eq(
-                    "roundNumber",
-                    match.currentRound
-                  )
-            )
-            .first();
-      }
-
-      /* =========================
          🎤 CURRENT SPEAKER
       ========================= */
 
@@ -276,65 +226,58 @@ export const getClassicGameState =
         null;
 
       if (
-        round
-      ) {
-        if (
-          round.phase ===
+        round &&
+        round.phase ===
           "speaking"
-        ) {
-          const playerId =
-            round.speakerOrder[
-              round.currentSpeakerIndex
-            ];
+      ) {
+        const speakerId =
+          round.speakerOrder[
+            round.currentSpeakerIndex
+          ];
 
-          if (playerId) {
-            const player =
-              await ctx.db.get(
-                playerId
-              );
+        if (speakerId) {
+          const speaker =
+            await ctx.db.get(
+              speakerId
+            );
 
-            if (player) {
-              currentSpeaker = {
-                playerId:
-                  player._id,
+          if (speaker) {
+            currentSpeaker = {
+              playerId:
+                speaker._id,
 
-                userId:
-                  player.userId,
-              };
-            }
-          }
-        }
-
-        if (
-          round.phase ===
-            "tieBreak" &&
-          round.tieBreakOrder &&
-          round.tieBreakSpeakerIndex !==
-            undefined
-        ) {
-          const playerId =
-            round.tieBreakOrder[
-              round.tieBreakSpeakerIndex
-            ];
-
-          if (playerId) {
-            const player =
-              await ctx.db.get(
-                playerId
-              );
-
-            if (player) {
-              currentSpeaker = {
-                playerId:
-                  player._id,
-
-                userId:
-                  player.userId,
-              };
-            }
+              userId:
+                speaker.userId,
+            };
           }
         }
       }
+
+      /* =========================
+         🔐 MY SECRET
+      ========================= */
+
+      const mySecret =
+        match
+          ? await ctx.db
+              .query(
+                "gamePlayerSecrets"
+              )
+              .withIndex(
+                "by_room_user",
+                (q) =>
+                  q
+                    .eq(
+                      "roomId",
+                      room._id
+                    )
+                    .eq(
+                      "userId",
+                      user._id
+                    )
+              )
+              .first()
+          : null;
 
       /* =========================
          🗳️ MY VOTE STATUS
@@ -407,6 +350,8 @@ export const getClassicGameState =
         round?.tieBreakOrder ??
         [];
 
+
+        
       /* =========================
          📦 RETURN
       ========================= */
@@ -424,6 +369,9 @@ export const getClassicGameState =
 
           categoryOptions:
             room.categoryOptions,
+
+          categorySelectionEndsAt:
+            room.categorySelectionEndsAt,
         },
 
         match: match
@@ -464,6 +412,12 @@ export const getClassicGameState =
 
               phase:
                 round.phase,
+
+                roundIntroEndsAt:
+  round.roundIntroEndsAt,
+  
+              speakerOrder:
+                round.speakerOrder,
 
               currentSpeakerIndex:
                 round.currentSpeakerIndex,
@@ -538,6 +492,10 @@ export const getClassicVotingState =
         await getCurrentUser(
           ctx
         );
+
+      /* =========================
+         🔎 ROUND
+      ========================= */
 
       const round =
         await ctx.db.get(
@@ -614,18 +572,45 @@ export const getClassicVotingState =
               .collect();
 
       /* =========================
-         🔐 ONLY RETURN MY VOTE
+         📊 VOTE COUNTS
       ========================= */
 
-      const myVote =
-        votes.find(
-          (vote) =>
-            vote.voterId ===
-            voter._id
+      const voteCounts =
+        new Map<
+          string,
+          number
+        >();
+
+      for (
+        const vote of votes
+      ) {
+        if (
+          vote.skipped
+        ) {
+          continue;
+        }
+
+        if (
+          !vote.targetId
+        ) {
+          continue;
+        }
+
+        const key =
+          vote.targetId.toString();
+
+        voteCounts.set(
+          key,
+          (
+            voteCounts.get(
+              key
+            ) ?? 0
+          ) + 1
         );
+      }
 
       /* =========================
-         📊 VOTE COUNT
+         🏁 RETURN
       ========================= */
 
       return {
@@ -641,21 +626,15 @@ export const getClassicVotingState =
         votingEndsAt:
           round.votingEndsAt,
 
-        hasVoted:
-          !!myVote,
+        voterId:
+          voter._id,
 
-        myVote: myVote
-          ? {
-              targetId:
-                myVote.targetId,
+        votes,
 
-              skipped:
-                myVote.skipped,
-            }
-          : null,
-
-        totalVotes:
-          votes.length,
+        voteCounts:
+          Object.fromEntries(
+            voteCounts
+          ),
       };
     },
   });

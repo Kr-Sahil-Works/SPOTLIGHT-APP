@@ -499,6 +499,27 @@ pinnedAt: v.optional(
     .index("by_user", ["userId"])
     .index("by_room_user", ["roomId", "userId"]),
 
+/* =========================
+   🔐 ROOM JOIN SECURITY
+========================= */
+
+gameRoomJoinAttempts: defineTable({
+  userId: v.id("users"),
+
+  roomCode: v.string(),
+
+  failedAttempts: v.number(),
+
+  lockedUntil:
+    v.optional(v.number()),
+
+  updatedAt: v.number(),
+})
+  .index(
+    "by_user_room_code",
+    ["userId", "roomCode"]
+  ),
+
 
       /* =========================
      🗳️ CLASSIC CATEGORY VOTES
@@ -527,13 +548,14 @@ pinnedAt: v.optional(
     roundNumber: v.number(),
 
     /* 🎮 ROUND STATE */
-    phase: v.union(
-      v.literal("speaking"),
-      v.literal("voting"),
-      v.literal("tieBreak"),
-      v.literal("result"),
-      v.literal("finished")
-    ),
+phase: v.union(
+  v.literal("roundIntro"),
+  v.literal("speaking"),
+  v.literal("voting"),
+  v.literal("tieBreak"),
+  v.literal("result"),
+  v.literal("finished")
+),
 
     /* 🗣️ SPEAKER */
     speakerOrder: v.array(
@@ -545,6 +567,10 @@ pinnedAt: v.optional(
 
     /* ⏱️ CURRENT TIMER */
     turnEndsAt: v.optional(v.number()),
+    /* 🎬 ROUND INTRO */
+
+roundIntroEndsAt:
+  v.optional(v.number()),
 
     /* 🗳️ VOTING TIMER */
     votingEndsAt: v.optional(v.number()),
@@ -741,15 +767,24 @@ gameTieBreakVotes: defineTable({
       v.number()
     ),
 
-    /* 🧠 FUTURE WORD HISTORY */
-    wordPairId: v.optional(
-      v.string()
-    ),
+ /* 🧩 WORD PAIR */
+wordPairId: v.optional(
+  v.string()
+),
 
-    /* 🎯 SPY */
-    spyPlayerId: v.optional(
-      v.id("gameRoomPlayers")
-    ),
+/* 👥 ACTUAL WORDS USED IN THIS MATCH */
+villagerWord: v.optional(
+  v.string()
+),
+
+spyWord: v.optional(
+  v.string()
+),
+
+/* 🎯 SPY */
+spyPlayerId: v.optional(
+  v.id("gameRoomPlayers")
+),
 
     createdAt: v.number(),
 
@@ -904,7 +939,18 @@ gameClassicCategoryVotes: defineTable({
     "by_room_category",
     ["roomId", "categoryId"]
   ),
-  
+
+
+
+
+
+
+
+
+
+
+
+
 });
 
 

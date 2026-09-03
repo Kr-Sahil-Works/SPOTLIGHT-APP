@@ -26,7 +26,7 @@ import {
    🎮 CLASSIC CONSTANTS
 ========================= */
 
-const CATEGORY_SELECTION_SECONDS = 10;
+const CATEGORY_SELECTION_SECONDS = 12;
 
 const MIN_PLAYERS = 4;
 

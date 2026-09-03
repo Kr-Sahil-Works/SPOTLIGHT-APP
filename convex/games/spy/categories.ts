@@ -35,10 +35,10 @@ export const CLASSIC_CATEGORIES = [
     id: "technology",
     name: "Technology",
   },
-  {
-    id: "vehicles",
-    name: "Vehicles",
-  },
+{
+  id: "names",
+  name: "Names",
+},
   {
     id: "professions",
     name: "Professions",

@@ -18,6 +18,7 @@ import type * as files from "../files.js";
 import type * as games_spy_categories from "../games/spy/categories.js";
 import type * as games_spy_classic_categories from "../games/spy/classic/categories.js";
 import type * as games_spy_classic_categorySelection from "../games/spy/classic/categorySelection.js";
+import type * as games_spy_classic_categoryVoting from "../games/spy/classic/categoryVoting.js";
 import type * as games_spy_classic_game from "../games/spy/classic/game.js";
 import type * as games_spy_classic_gameEnd from "../games/spy/classic/gameEnd.js";
 import type * as games_spy_classic_nextRound from "../games/spy/classic/nextRound.js";
@@ -33,7 +34,6 @@ import type * as games_spy_classic_utils_pairSelector from "../games/spy/classic
 import type * as games_spy_classic_utils_roleAssigner from "../games/spy/classic/utils/roleAssigner.js";
 import type * as games_spy_classic_utils_turnOrder from "../games/spy/classic/utils/turnOrder.js";
 import type * as games_spy_classic_utils_winConditions from "../games/spy/classic/utils/winConditions.js";
-import type * as games_spy_classic_voting from "../games/spy/classic/voting.js";
 import type * as games_spy_classic_words_animals from "../games/spy/classic/words/animals.js";
 import type * as games_spy_classic_words_city from "../games/spy/classic/words/city.js";
 import type * as games_spy_classic_words_entertainment from "../games/spy/classic/words/entertainment.js";
@@ -41,6 +41,7 @@ import type * as games_spy_classic_words_everyday from "../games/spy/classic/wor
 import type * as games_spy_classic_words_food from "../games/spy/classic/words/food.js";
 import type * as games_spy_classic_words_index from "../games/spy/classic/words/index.js";
 import type * as games_spy_classic_words_movies from "../games/spy/classic/words/movies.js";
+import type * as games_spy_classic_words_names from "../games/spy/classic/words/names.js";
 import type * as games_spy_classic_words_nature from "../games/spy/classic/words/nature.js";
 import type * as games_spy_classic_words_objects from "../games/spy/classic/words/objects.js";
 import type * as games_spy_classic_words_places from "../games/spy/classic/words/places.js";
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   "games/spy/categories": typeof games_spy_categories;
   "games/spy/classic/categories": typeof games_spy_classic_categories;
   "games/spy/classic/categorySelection": typeof games_spy_classic_categorySelection;
+  "games/spy/classic/categoryVoting": typeof games_spy_classic_categoryVoting;
   "games/spy/classic/game": typeof games_spy_classic_game;
   "games/spy/classic/gameEnd": typeof games_spy_classic_gameEnd;
   "games/spy/classic/nextRound": typeof games_spy_classic_nextRound;
@@ -92,7 +94,6 @@ declare const fullApi: ApiFromModules<{
   "games/spy/classic/utils/roleAssigner": typeof games_spy_classic_utils_roleAssigner;
   "games/spy/classic/utils/turnOrder": typeof games_spy_classic_utils_turnOrder;
   "games/spy/classic/utils/winConditions": typeof games_spy_classic_utils_winConditions;
-  "games/spy/classic/voting": typeof games_spy_classic_voting;
   "games/spy/classic/words/animals": typeof games_spy_classic_words_animals;
   "games/spy/classic/words/city": typeof games_spy_classic_words_city;
   "games/spy/classic/words/entertainment": typeof games_spy_classic_words_entertainment;
@@ -100,6 +101,7 @@ declare const fullApi: ApiFromModules<{
   "games/spy/classic/words/food": typeof games_spy_classic_words_food;
   "games/spy/classic/words/index": typeof games_spy_classic_words_index;
   "games/spy/classic/words/movies": typeof games_spy_classic_words_movies;
+  "games/spy/classic/words/names": typeof games_spy_classic_words_names;
   "games/spy/classic/words/nature": typeof games_spy_classic_words_nature;
   "games/spy/classic/words/objects": typeof games_spy_classic_words_objects;
   "games/spy/classic/words/places": typeof games_spy_classic_words_places;

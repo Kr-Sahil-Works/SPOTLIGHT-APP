@@ -11,12 +11,14 @@ import React, {
 
 import {
   FlatList,
-  SafeAreaView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+
 
 export default function DiscoverPage() {
   const router = useRouter();

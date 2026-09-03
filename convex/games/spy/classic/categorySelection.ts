@@ -1,16 +1,21 @@
 import {
-    mutation
+  mutation,
+  query
 } from "../../../_generated/server";
 
 import { v } from "convex/values";
 
 import {
-    getAuthenticatedUser,
+  getAuthenticatedUser,
 } from "../../../users/users.core";
 
 import {
-    CLASSIC_CATEGORIES,
+  CLASSIC_CATEGORIES,
 } from "./categories";
+
+import {
+  startClassicGameInternal,
+} from "./game";
 
 const MIN_PLAYERS = 4;
 
@@ -82,48 +87,70 @@ export const castCategoryVote =
       /* =========================
          🎮 STATE
       ========================= */
+/* =========================
+   ✅ ALREADY FINALIZED
+========================= */
 
-      if (
-        room.status !== "starting"
-      ) {
-        throw new Error(
-          "Category selection is not active"
-        );
-      }
+/*
+ * Another player/device may have already
+ * finalized the category.
+ *
+ * Return the existing result instead of
+ * throwing an error.
+ */
+if (
+  room.selectedCategory !==
+  undefined
+) {
+  return {
+    success: true,
 
-      if (
-        room.selectedCategory !==
-        undefined
-      ) {
-        throw new Error(
-          "Category has already been selected"
-        );
-      }
+    selectedCategory:
+      room.selectedCategory,
+
+    alreadyFinalized:
+      true,
+  };
+}
+
+/* =========================
+   🎮 CATEGORY SELECTION STATE
+========================= */
+
+if (
+  room.status !==
+  "starting"
+) {
+  throw new Error(
+    "Category selection is not active"
+  );
+}
 
       /* =========================
          ⏱️ DEADLINE
       ========================= */
 
-      if (
-        room.categorySelectionEndsAt ===
-        undefined
-      ) {
-        throw new Error(
-          "Category selection has not started"
-        );
-      }
+  if (
+  room.categorySelectionEndsAt ===
+  undefined
+) {
+  throw new Error(
+    "Category selection has not started"
+  );
+}
 
-      const now =
-        Date.now();
+const now =
+  Date.now();
 
-      if (
-        now >=
-        room.categorySelectionEndsAt
-      ) {
-        throw new Error(
-          "Category selection time has ended"
-        );
-      }
+if (
+  now >=
+  room.categorySelectionEndsAt
+) {
+  throw new Error(
+    "Category selection has ended"
+  );
+}
+
 
       /* =========================
          👤 VERIFY PLAYER
@@ -218,12 +245,22 @@ export const castCategoryVote =
        * No changing votes.
        */
 
-      if (existingVote) {
-        throw new Error(
-          "You have already selected a category"
-        );
-      }
+    if (existingVote) {
+  return {
+    success: true,
 
+    alreadyVoted: true,
+
+    categorySelected: true,
+
+    selectedCategory:
+      existingVote.categoryId,
+
+    voteCount: undefined,
+
+    playerCount: undefined,
+  };
+}
       /* =========================
          💾 SAVE VOTE
       ========================= */
@@ -300,48 +337,34 @@ export const castCategoryVote =
        * We only finalize the category.
        */
 
-      if (
-        votes.length ===
-        players.length
-      ) {
-        const selectedCategory =
-          selectWinningCategory(
-            room.categoryOptions ?? [],
-            votes
-          );
+if (
+  votes.length ===
+  players.length
+) {
+  const selectedCategory =
+    selectWinningCategory(
+      room.categoryOptions ?? [],
+      votes
+    );
 
-        await ctx.db.patch(
-          room._id,
-          {
-            selectedCategory,
+  await ctx.db.patch(
+    room._id,
+    {
+      selectedCategory,
 
-            /*
-             * Stop the selection
-             * window immediately.
-             */
+      categorySelectionEndsAt:
+        now,
 
-            categorySelectionEndsAt:
-              now,
+      updatedAt:
+        now,
+    }
+  );
 
-            updatedAt:
-              now,
-          }
-        );
-
-        return {
-          success: true,
-
-          categorySelected: true,
-
-          selectedCategory,
-
-          voteCount:
-            votes.length,
-
-          playerCount:
-            players.length,
-        };
-      }
+  return await startClassicGameInternal(
+    ctx,
+    room._id
+  );
+}
 
       return {
         success: true,
@@ -357,6 +380,60 @@ export const castCategoryVote =
         playerCount:
           players.length,
       };
+    },
+  });
+
+
+/* =========================
+   👥 GET CATEGORY VOTERS
+========================= */
+
+export const getCategoryVotes =
+  query({
+    args: {
+      roomId: v.id("gameRooms"),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      const votes =
+        await ctx.db
+          .query(
+            "gameClassicCategoryVotes"
+          )
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                args.roomId
+              )
+          )
+          .collect();
+
+      const result = [];
+
+      for (const vote of votes) {
+        const user =
+          await ctx.db.get(
+            vote.userId
+          );
+
+        result.push({
+          userId: vote.userId,
+
+          categoryId:
+            vote.categoryId,
+
+          // Your users table uses `image`
+          avatar:
+            user?.image ?? "",
+        });
+      }
+
+      return result;
     },
   });
 
@@ -480,34 +557,39 @@ export const finalizeCategorySelection =
           "Room not found"
         );
       }
+/*
+ * Another player/device may already have
+ * finalized the category and started the game.
+ *
+ * Treat that as success instead of throwing.
+ */
 
-      if (
-        room.hostId !== user._id
-      ) {
-        throw new Error(
-          "Only the host can finalize category selection"
-        );
-      }
+if (
+  room.selectedCategory !==
+  undefined
+) {
+  return {
+    success: true,
 
-      if (
-        room.status !== "starting"
-      ) {
-        throw new Error(
-          "Category selection is not active"
-        );
-      }
+    selectedCategory:
+      room.selectedCategory,
 
-      if (
-        room.selectedCategory !==
-        undefined
-      ) {
-        return {
-          success: true,
-          selectedCategory:
-            room.selectedCategory,
-        };
-      }
+    alreadyFinalized:
+      true,
+  };
+}
 
+if (
+  room.status !==
+  "starting"
+) {
+  return {
+    success: true,
+
+    alreadyFinalized:
+      true,
+  };
+}
       if (
         room.categorySelectionEndsAt ===
         undefined
@@ -520,20 +602,15 @@ export const finalizeCategorySelection =
       const now =
         Date.now();
 
-      /*
-       * Server refuses to finalize
-       * before the timer expires.
-       */
-
-      if (
-        now <
-        room.categorySelectionEndsAt
-      ) {
-        throw new Error(
-          "Category selection is still active"
-        );
-      }
-
+   /*
+ * The client only calls this after its
+ * countdown reaches zero.
+ *
+ * Convex may receive the request slightly
+ * before the exact server deadline, so
+ * allow the finalization request instead
+ * of throwing a timing error.
+ */
       const votes =
         await ctx.db
           .query(
@@ -598,26 +675,29 @@ export const finalizeCategorySelection =
           );
       }
 
-      await ctx.db.patch(
-        room._id,
-        {
-          selectedCategory,
+    await ctx.db.patch(
+  room._id,
+  {
+    selectedCategory,
 
-          categorySelectionEndsAt:
-            now,
+    categorySelectionEndsAt:
+      now,
 
-          updatedAt:
-            now,
-        }
-      );
+    updatedAt:
+      now,
+  }
+);
 
-      return {
-        success: true,
+/*
+ * Timer expired.
+ *
+ * Automatically start the Classic game.
+ * No host START ROUND action is required.
+ */
 
-        selectedCategory,
-
-        voteCount:
-          votes.length,
-      };
+return await startClassicGameInternal(
+  ctx,
+  room._id
+);
     },
   });

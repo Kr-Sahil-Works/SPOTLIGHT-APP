@@ -18,7 +18,7 @@ export default function MilesScreen() {
       <View style={styles.container}>
         {/* Background */}
         <Image
-          source={require("@/assets/images/games/spy/backgrounds/1.png")}
+          source={require("@/assets/images/games/spy/backgrounds/lobby_bg.png")}
           style={StyleSheet.absoluteFillObject}
           contentFit="cover"
         />

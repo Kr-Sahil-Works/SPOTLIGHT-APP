@@ -5,27 +5,48 @@ type Props = {
   isHost: boolean;
   isReady: boolean;
   isSpeaking: boolean;
+  isPlaying?: boolean;
+  isEliminated?: boolean;
 };
 
 export default function PlayerStatusOverlay({
   isHost,
   isReady,
   isSpeaking,
+  isPlaying = false,
+  isEliminated = false,
 }: Props) {
+
+  if (isPlaying) {
+  if (!isEliminated) {
+    return null;
+  }
+
+  return null;
+}
+
   return (
     <>
+      {/* =========================
+          👑 HOST
+      ========================= */}
+
       {isHost && (
-        <View style={[styles.badge, styles.host]}>
+        <View style={styles.hostDot}>
           <Ionicons
             name="star"
-            size={7}
-            color="#FFF"
+            size={6}
+            color="#F2A900"
           />
         </View>
       )}
 
+      {/* =========================
+          ✅ READY
+      ========================= */}
+
       {isReady && (
-        <View style={[styles.badge, styles.ready]}>
+        <View style={styles.readyDot}>
           <Ionicons
             name="checkmark"
             size={7}
@@ -34,63 +55,76 @@ export default function PlayerStatusOverlay({
         </View>
       )}
 
-      {isSpeaking && (
-        <View style={styles.voice}>
-          <Ionicons
-            name="mic"
-            size={7}
-            color="#FFF"
-          />
-        </View>
-      )}
+      {/* =========================
+          🎤 SPEAKING
+          
+          No separate badge.
+          PlayerAvatar handles the
+          speaking/turn indicator.
+      ========================= */}
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  badge: {
+  /*
+   * =========================
+   * 👑 HOST
+   * =========================
+   */
+
+  hostDot: {
     position: "absolute",
 
-    width: 12,
-    height: 12,
+    top: -2,
+    left: -2,
 
-    borderRadius: 6,
+    width: 11,
+    height: 11,
 
-    justifyContent: "center",
+    borderRadius: 5.5,
+
     alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor:
+      "rgba(18,18,22,0.94)",
+
+    borderWidth: 1,
+
+    borderColor:
+      "#F2A900",
 
     zIndex: 20,
   },
 
-  host: {
-    top: -3,
-    left: -3,
+  /*
+   * =========================
+   * ✅ READY
+   * =========================
+   */
 
-    backgroundColor: "#F2A900",
-  },
-
-  ready: {
-    bottom: -3,
-    right: -3,
-
-    backgroundColor: "#22C55E",
-  },
-
-  voice: {
+  readyDot: {
     position: "absolute",
 
-    bottom: 1,
-    left: 1,
+    bottom: -2,
+    right: -2,
 
-    width: 12,
-    height: 12,
+    width: 11,
+    height: 11,
 
-    borderRadius: 6,
+    borderRadius: 5.5,
 
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
 
-    backgroundColor: "#8B5CF6",
+    backgroundColor:
+      "#2ED428",
+
+    borderWidth: 1,
+
+    borderColor:
+      "rgba(255,255,255,0.25)",
 
     zIndex: 20,
   },

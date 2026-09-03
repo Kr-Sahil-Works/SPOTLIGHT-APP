@@ -1,4 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 type Props = {
   playerNumber?: number;
@@ -21,7 +25,10 @@ export default function LobbyChatBubble({
         </View>
       )}
 
-      <Text style={styles.sender}>
+      <Text
+        style={styles.sender}
+        numberOfLines={1}
+      >
         {sender}:
       </Text>
 
@@ -38,41 +45,77 @@ export default function LobbyChatBubble({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
+
     alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    minHeight: 26,
+
+    minHeight: 24,
+
+    paddingHorizontal: 7,
+    paddingVertical: 1.5,
   },
 
   number: {
-    width: 22,
-    height: 22,
-    borderRadius: 7,
-    backgroundColor: "rgba(199, 255, 45, 0.9)",
+    width: 17,
+    height: 17,
+
+    borderRadius: 5,
+
     justifyContent: "center",
     alignItems: "center",
+
     marginRight: 4,
+
+    backgroundColor:
+      "rgba(242,169,0,0.07)",
+
+    borderWidth: 1,
+
+    borderColor:
+      "rgba(242,169,0,0.16)",
   },
 
   numberText: {
-    color: "#FFF",
-    fontSize: 11,
+    color: "#F2A900",
+
+    fontSize: 8,
+
     fontWeight: "800",
+
+    includeFontPadding: false,
+
+    textAlign: "center",
   },
 
   sender: {
     color: "#F2A900",
-    fontSize: 11,
-    fontWeight: "700",
-    marginRight: 4,
+
+    fontSize: 10,
+
+    fontWeight: "800",
+
+    letterSpacing: 0.05,
+
+    marginRight: 3,
+
     flexShrink: 0,
+
+    includeFontPadding: false,
   },
 
   message: {
-    color: "#FFF",
-    fontSize: 10,
-    letterSpacing: 0.6,
-    lineHeight: 18,
+    color:
+      "rgba(255,255,255,0.82)",
+
+    fontSize: 9.5,
+
+    fontWeight: "500",
+
+    letterSpacing: 0.15,
+
+    lineHeight: 15,
+
     flexShrink: 1,
+
+    includeFontPadding: false,
   },
 });

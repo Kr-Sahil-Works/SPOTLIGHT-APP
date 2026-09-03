@@ -1,6 +1,5 @@
 import { Id } from "../../../../_generated/dataModel";
 
-
 export type AssignedClassicRole = {
   userId: Id<"users">;
 
@@ -39,37 +38,10 @@ export const assignClassicRoles = (
     players[spyIndex].userId;
 
   /* =========================
-     🔀 RANDOMIZE SPEAKING ORDER
-  ========================= */
-
-  const shuffledPlayers = [
-    ...players,
-  ];
-
-  for (
-    let i = shuffledPlayers.length - 1;
-    i > 0;
-    i--
-  ) {
-    const j =
-      Math.floor(
-        Math.random() * (i + 1)
-      );
-
-    [
-      shuffledPlayers[i],
-      shuffledPlayers[j],
-    ] = [
-      shuffledPlayers[j],
-      shuffledPlayers[i],
-    ];
-  }
-
-  /* =========================
      🎮 ASSIGN ROLES
   ========================= */
 
-  return shuffledPlayers.map(
+  return players.map(
     (player, index) => {
       const isSpy =
         player.userId ===
@@ -89,6 +61,11 @@ export const assignClassicRoles = (
             ? spyWord
             : villagerWord,
 
+        /*
+         * Speaking order follows
+         * the original room/player
+         * order.
+         */
         speakingOrder:
           index,
       };

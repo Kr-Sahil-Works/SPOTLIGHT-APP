@@ -155,25 +155,26 @@ const TabIcon = memo(function TabIcon({
     new Animated.Value(1)
   ).current;
 
-  const handlePressIn = () => {
-    Haptics.impactAsync(
-      Haptics.ImpactFeedbackStyle.Light
-    );
+const handlePressIn = () => {
+  Haptics.impactAsync(
+    Haptics.ImpactFeedbackStyle.Light
+  );
 
-    Animated.sequence([
-      Animated.timing(scale, {
-        toValue: 1.05,
-        duration: 90,
-        useNativeDriver: true,
-      }),
+  Animated.sequence([
+    Animated.timing(scale, {
+      toValue: 0.88,
+      duration: 70,
+      useNativeDriver: true,
+    }),
 
-      Animated.spring(scale, {
-        toValue: 1,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
+    Animated.spring(scale, {
+      toValue: 1,
+      friction: 6,
+      tension: 100,
+      useNativeDriver: true,
+    }),
+  ]).start();
+};
 if (name === "profile") {
   if (!profileImage) {
     return (
@@ -295,6 +296,11 @@ const chatTheme =
 );
 const cachedProfileImage =
   getProfileImage();
+  const handleTabPress = (routeName: string) => {
+  Haptics.impactAsync(
+    Haptics.ImpactFeedbackStyle.Light
+  );
+};
 
   const insets = useSafeAreaInsets();
 
@@ -343,8 +349,13 @@ style={{
           const isFocused = state.index === index;
 
           return (
-            <TouchableOpacity
-              key={route.key}
+           <TouchableOpacity
+  key={route.key}
+  onPressIn={() => {
+    if (route.name !== "profile") {
+      handleTabPress(route.name);
+    }
+  }}
         onPress={() => {
   const isFocused =
     state.index === index;
@@ -379,14 +390,13 @@ style={{
 <TabIcon
   name={route.name}
   size={24}
-  color={
-    route.name === "chats" &&
-    isFocused
-      ? chatTheme.glow ??
-        chatTheme.headerColor ??
-        COLORS.primary
-      : "rgba(255,255,255,0.5)"
-  }
+ color={
+  isFocused
+    ? chatTheme.glow ??
+      chatTheme.headerColor ??
+      COLORS.primary
+    : "rgba(255,255,255,0.5)"
+}
   focused={isFocused}
   profileImage={
     currentUser?.image ??

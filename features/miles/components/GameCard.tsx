@@ -1,4 +1,6 @@
-import { Image, ImageSourcePropType, Pressable, StyleSheet, View } from "react-native";
+import { Image } from "expo-image";
+import { ImageSourcePropType, Pressable, StyleSheet, View } from "react-native";
+
 
 type Props = {
   image: ImageSourcePropType;
@@ -22,7 +24,7 @@ export default function GameCard({
         <Image
           source={image}
           style={styles.image}
-          resizeMode="contain"
+          contentFit="contain"
         />
       </Pressable>
     </View>

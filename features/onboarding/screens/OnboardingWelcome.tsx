@@ -1,7 +1,7 @@
+import { Image } from "expo-image";
 import { useEffect, useRef } from "react";
 import {
   Animated,
-  Image,
   StyleSheet,
   Text,
   View,
@@ -152,7 +152,7 @@ export default function OnboardingWelcome({
         >
           <Image
             source={appLogo}
-            resizeMode="contain"
+     contentFit="contain"
             style={styles.logo}
           />
         </Animated.View>

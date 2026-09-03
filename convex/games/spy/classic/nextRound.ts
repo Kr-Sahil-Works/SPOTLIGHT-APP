@@ -8,7 +8,6 @@ import {
   getAuthenticatedUser,
 } from "../../../users/users.core";
 
-const SPEAKING_SECONDS = 30;
 
 /* =========================
    🎮 START NEXT ROUND
@@ -334,21 +333,21 @@ if (
         );
       }
 
-      /* =========================
-         ⏱️ TIMER
-      ========================= */
+/* =========================
+   ⏱️ ROUND INTRO TIMER
+========================= */
 
-      const now =
-        Date.now();
+const now =
+  Date.now();
 
-      const turnEndsAt =
-        now +
-        SPEAKING_SECONDS *
-          1000;
+const ROUND_INTRO_SECONDS = 8;
 
-      const nextRoundNumber =
-        match.currentRound + 1;
+const roundIntroEndsAt =
+  now +
+  ROUND_INTRO_SECONDS * 1000;
 
+const nextRoundNumber =
+  match.currentRound + 1;
       /* =========================
          🎮 CREATE ROUND
       ========================= */
@@ -363,8 +362,8 @@ if (
             roundNumber:
               nextRoundNumber,
 
-            phase:
-              "speaking",
+           phase:
+  "roundIntro",
 
             speakerOrder:
               finalSpeakerOrder,
@@ -375,10 +374,13 @@ if (
             speakersCompleted:
               0,
 
-            turnEndsAt,
+         roundIntroEndsAt,
 
-            votingEndsAt:
-              undefined,
+turnEndsAt:
+  undefined,
+
+votingEndsAt:
+  undefined,
 
             isTieBreak:
               false,
@@ -415,28 +417,34 @@ if (
         }
       );
 
-      return {
-        success: true,
+   return {
+  success: true,
 
-        roundId:
-          nextRoundId,
+  roundId:
+    nextRoundId,
 
-        roundNumber:
-          nextRoundNumber,
+  roundNumber:
+    nextRoundNumber,
 
-        phase:
-          "speaking",
+  phase:
+    "roundIntro",
 
-        currentSpeakerUserId:
-          firstSpeaker.userId,
+  currentSpeakerUserId:
+    firstSpeaker.userId,
 
-        turnStartedAt:
-          now,
+  turnStartedAt:
+    undefined,
 
-        turnEndsAt,
+  roundIntroEndsAt,
 
-        alivePlayerCount:
-          alivePlayers.length,
-      };
+  turnEndsAt:
+    undefined,
+
+  votingEndsAt:
+    undefined,
+
+  alivePlayerCount:
+    alivePlayers.length,
+};
     },
   });

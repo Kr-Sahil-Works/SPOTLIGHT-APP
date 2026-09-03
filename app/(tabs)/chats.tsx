@@ -13,7 +13,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import useChatListTheme from "@/hooks/useChatListTheme";
@@ -30,8 +30,7 @@ export default function Chats() {
 const insets = useSafeAreaInsets();
 const TAB_BAR_HEIGHT = 60 + insets.bottom;
 const [openSuggestions, setOpenSuggestions] = useState(false);
-const theme =
-  useChatListTheme();
+const theme = useChatListTheme();
   const [
   chatListThemeOpen,
   setChatListThemeOpen,
@@ -110,32 +109,33 @@ const data =
     : cachedChats;
 
 return (
-  <>
+  <View
+    style={[
+      styles.container,
+      {
+        backgroundColor: theme.background,
+      },
+    ]}
+  >
 
-    <LinearGradient
-      pointerEvents="none"
-      colors={[
-        `${theme.glow ?? "#44d800"}40`,
-        `${theme.glow ?? "#44d800"}15`,
-        "transparent",
-      ]}
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 260,
-        zIndex: 0,
-      }}
-    />
+  <LinearGradient
+  pointerEvents="none"
+  colors={[
+    `${theme.glow ?? "#FFD600"}45`,
+    `${theme.glow ?? "#FFD600"}18`,
+    "transparent",
+  ]}
+  style={{
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 280,
+    zIndex: 0,
+  }}
+/>
 
-    <View
-      style={{
-        flex: 1,
-        backgroundColor:
-          theme.background,
-      }}
-    >
+     <View style={styles.content}>
       {/* HEADER */}
     <ChatHeader
   isOnline={isOnline}
@@ -209,6 +209,18 @@ return (
           </View>
         )}
     </View>
-  </>
+  </View>
 );
 }
+
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 0,
+  },
+
+  content: {
+    flex: 1,
+  },
+});

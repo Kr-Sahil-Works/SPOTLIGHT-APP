@@ -1,24 +1,30 @@
+import { api } from "@/convex/_generated/api";
+import { useMutation } from "convex/react";
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import {
-  Modal,
-  Pressable,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
+
+import LobbyOverlay from "@/features/games/spy/lobby/layout/LobbyOverlay";
+
 import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import pincodeboard from "@/assets/images/games/spy/boards/round_intro.png";
 
 import PinDots from "@/shared/components/ui/PinDots";
 import PinKeypad from "@/shared/components/ui/PinKeypad";
-
-import joinSpy from "@/assets/images/games/spy/mascot/join_spy.webp";
 
 type Props = {
   visible: boolean;
@@ -29,372 +35,608 @@ export default function JoinRoomModal({
   visible,
   onClose,
 }: Props) {
-  const [pin, setPin] = useState("");
-  const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
-  const handleNumber = (digit: string) => {
-    if (pin.length >= 4) return;
+  const { width, height } =
+    useWindowDimensions();
 
-    const nextPin = pin + digit;
+  const [pin, setPin] =
+    useState("");
 
-    setPin(nextPin);
+  const [success, setSuccess] =
+    useState(false);
 
-    if (nextPin.length === 4) {
-      mascotLook.value = withTiming(-5, {
-  duration: 100,
-});
+  const [errorMessage, setErrorMessage] =
+    useState<string | null>(null);
 
-setTimeout(() => {
-  mascotLook.value = withTiming(0, {
-    duration: 100,
-  });
-}, 120);
-      setSuccess(true);
+  const errorTimeoutRef =
+    useRef<ReturnType<typeof setTimeout> | null>(
+      null
+    );
 
-setTimeout(() => {
-  setSuccess(false);
-}, 120);
+  const joinRoom =
+    useMutation(
+      api.games.spy.rooms.joinRoom
+    );
+
+  /* =========================
+     ERROR
+  ========================= */
+
+  const showError = (
+    message: string
+  ) => {
+    setErrorMessage(message);
+
+    if (errorTimeoutRef.current) {
+      clearTimeout(
+        errorTimeoutRef.current
+      );
+    }
+
+    errorTimeoutRef.current =
+      setTimeout(() => {
+        setErrorMessage(null);
+        errorTimeoutRef.current = null;
+      }, 6000);
+  };
+
+  /* =========================
+     JOIN ROOM
+  ========================= */
+
+  const joinRoomByCode = async (
+    roomCode: string
+  ) => {
+    try {
+      setErrorMessage(null);
+
+      const result =
+        await joinRoom({
+          roomCode,
+        });
+
+      /* =========================
+         EXPECTED FAILURE
+      ========================= */
+
+      if (!result.success) {
+        switch (result.reason) {
+          case "INVALID_ROOM_CODE":
+            showError(
+              "Enter a valid 4-digit room code."
+            );
+            break;
+
+          case "ROOM_NOT_FOUND":
+            showError(
+              "Room not found. Check the 4-digit code."
+            );
+            break;
+
+          case "ROOM_FULL":
+            showError(
+              "This room is full."
+            );
+            break;
+
+          case "ROOM_NOT_JOINABLE":
+            showError(
+              "This game has already started."
+            );
+            break;
+
+          default:
+            showError(
+              "Unable to join room. Please try again."
+            );
+        }
+
+        setPin("");
+        setSuccess(false);
+
+        return;
+      }
+
+      /* =========================
+         SUCCESS
+      ========================= */
+
+      setPin("");
+      setSuccess(false);
+
+      onClose();
+
+      router.push({
+        pathname:
+          "/games/spy/lobby",
+
+        params: {
+          roomId:
+            result.roomId,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "JOIN ROOM ERROR:",
+        error
+      );
+
+      /*
+       * Server-side lock currently
+       * arrives as an exception.
+       *
+       * Detect it here without
+       * crashing the modal.
+       */
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : String(error);
+
+      if (
+        message.includes(
+          "Too many failed attempts"
+        ) ||
+        message.includes(
+          "locked for 15 minutes"
+        )
+      ) {
+        showError(
+          "Too many attempts. Try again in 15 minutes."
+        );
+      } else {
+        showError(
+          "Something went wrong. Please try again."
+        );
+      }
+
+      setPin("");
+      setSuccess(false);
     }
   };
 
-const overlayOpacity = useSharedValue(0);
-const cardScale = useSharedValue(0.92);
-const cardOpacity = useSharedValue(0);
+  /* =========================
+     NUMBER INPUT
+  ========================= */
 
-const keypadScale = useSharedValue(1);
-const keypadOpacity = useSharedValue(1);
+  const handleNumber = (
+    digit: string
+  ) => {
+    setErrorMessage(null);
 
-const mascotScale = useSharedValue(0.7);
-const mascotOpacity = useSharedValue(0);
-const mascotLook = useSharedValue(0);
+    if (errorTimeoutRef.current) {
+      clearTimeout(
+        errorTimeoutRef.current
+      );
 
-useEffect(() => {
-  if (visible) {
-   overlayOpacity.value = withTiming(1, {
-  duration: 180,
-});
+      errorTimeoutRef.current = null;
+    }
 
-cardOpacity.value = withTiming(1, {
-  duration: 220,
-});
+    if (pin.length >= 4) {
+      return;
+    }
 
-cardScale.value = withTiming(1, {
-  duration: 220,
-  easing: Easing.out(Easing.cubic),
-});
+    const nextPin =
+      pin + digit;
 
-keypadOpacity.value = withTiming(1, {
-  duration: 180,
-});
+    setPin(nextPin);
 
-keypadScale.value = withTiming(1, {
-  duration: 180,
-});
+    if (
+      nextPin.length === 4
+    ) {
+      setSuccess(true);
 
-mascotOpacity.value = withTiming(1, {
-  duration: 140,
-});
+      setTimeout(() => {
+        setSuccess(false);
+      }, 140);
 
-mascotScale.value = withTiming(1, {
-  duration: 260,
-  easing: Easing.out(Easing.back(1.8)),
-});
-
-  } else {
-    cardOpacity.value = 0;
-    cardScale.value = 0.92;
-    keypadScale.value = 1;
-    keypadOpacity.value = 1;
-    mascotOpacity.value = 0;
-    mascotScale.value = 0.7;
-    overlayOpacity.value = 0;
-  }
-}, [visible]);
-
-const keypadAnimatedStyle =
-  useAnimatedStyle(() => ({
-    opacity: keypadOpacity.value,
-
-    transform: [
-      {
-        scale: keypadScale.value,
-      },
-    ],
-  }));
-
-
-const cardAnimatedStyle =
-  useAnimatedStyle(() => ({
-    opacity: cardOpacity.value,
-
-    transform: [
-      {
-        scale: cardScale.value,
-      },
-    ],
-  }));
-
-const mascotAnimatedStyle =
-  useAnimatedStyle(() => ({
-    opacity: mascotOpacity.value,
-
-    transform: [
-      {
-        translateY: mascotLook.value,
-      },
-      {
-        scale: mascotScale.value,
-      },
-    ],
-  }));
-
-const overlayAnimatedStyle =
-  useAnimatedStyle(() => ({
-    opacity: overlayOpacity.value,
-  }));
-
-const closeModal = () => {
-  mascotOpacity.value = withTiming(0, {
-    duration: 100,
-  });
-
-  cardScale.value = withTiming(0.97, {
-    duration: 140,
-  });
-
-  cardOpacity.value = withTiming(0, {
-    duration: 140,
-  });
-
-  keypadOpacity.value = withTiming(0.85, {
-    duration: 120,
-  });
-
-  overlayOpacity.value = withTiming(0, {
-    duration: 160,
-  });
-
- setTimeout(() => {
-  setPin("");
-  setSuccess(false);
-
-  onClose();
-}, 150);
-};
-  
-  const handleBackspace = () => {
-    setPin((prev) => prev.slice(0, -1));
+      void joinRoomByCode(
+        nextPin
+      );
+    }
   };
 
- return (
-  <Modal
-    visible={visible}
-    transparent
-    animationType="none"
-    statusBarTranslucent
-    onRequestClose={closeModal}
-  >
-    <SafeAreaView
-      style={styles.container}
-      edges={["left", "right", "bottom"]}
+  /* =========================
+     BACKSPACE
+  ========================= */
+
+  const handleBackspace = () => {
+    setErrorMessage(null);
+
+    setPin((prev) =>
+      prev.slice(0, -1)
+    );
+  };
+
+  /* =========================
+     BOARD ANIMATION
+  ========================= */
+
+  const boardOpacity =
+    useSharedValue(0);
+
+  const boardScale =
+    useSharedValue(0.94);
+
+  const keypadOpacity =
+    useSharedValue(0);
+
+  const keypadTranslateY =
+    useSharedValue(20);
+
+  useEffect(() => {
+    if (visible) {
+      boardOpacity.value =
+        withTiming(1, {
+          duration: 220,
+        });
+
+      boardScale.value =
+        withTiming(1, {
+          duration: 280,
+          easing:
+            Easing.out(
+              Easing.cubic
+            ),
+        });
+
+      keypadOpacity.value =
+        withTiming(1, {
+          duration: 220,
+        });
+
+      keypadTranslateY.value =
+        withTiming(0, {
+          duration: 260,
+          easing:
+            Easing.out(
+              Easing.cubic
+            ),
+        });
+    } else {
+      boardOpacity.value = 0;
+      boardScale.value = 0.94;
+
+      keypadOpacity.value = 0;
+      keypadTranslateY.value = 20;
+    }
+  }, [visible]);
+
+  const boardAnimatedStyle =
+    useAnimatedStyle(() => ({
+      opacity:
+        boardOpacity.value,
+
+      transform: [
+        {
+          scale:
+            boardScale.value,
+        },
+      ],
+    }));
+
+  const keypadAnimatedStyle =
+    useAnimatedStyle(() => ({
+      opacity:
+        keypadOpacity.value,
+
+      transform: [
+        {
+          translateY:
+            keypadTranslateY.value,
+        },
+      ],
+    }));
+
+  /* =========================
+     CLOSE
+  ========================= */
+
+  const closeModal = () => {
+    if (
+      errorTimeoutRef.current
+    ) {
+      clearTimeout(
+        errorTimeoutRef.current
+      );
+
+      errorTimeoutRef.current =
+        null;
+    }
+
+    setErrorMessage(null);
+
+    boardOpacity.value =
+      withTiming(0, {
+        duration: 120,
+      });
+
+    boardScale.value =
+      withTiming(0.96, {
+        duration: 120,
+      });
+
+    keypadOpacity.value =
+      withTiming(0, {
+        duration: 100,
+      });
+
+    keypadTranslateY.value =
+      withTiming(15, {
+        duration: 100,
+      });
+
+    setTimeout(() => {
+      setPin("");
+      setSuccess(false);
+      onClose();
+    }, 130);
+  };
+
+  /* =========================
+     BOARD SIZE
+  ========================= */
+
+  const boardWidth = Math.min(
+    width * 0.94,
+    430
+  );
+
+  const boardHeight =
+    boardWidth / 1.5;
+
+  /*
+   * On short phones move the
+   * board slightly upward.
+   */
+
+  const boardTop =
+    height < 760
+      ? 95
+      : 110;
+
+  return (
+    <LobbyOverlay
+      visible={visible}
+      onClose={closeModal}
     >
-      {/* Tap outside to close */}
-<Animated.View
-  pointerEvents="box-none"
-  style={[
-    styles.overlay,
-    overlayAnimatedStyle,
-  ]}
->
-  <Pressable
-    style={StyleSheet.absoluteFill}
-    onPress={closeModal}
-  />
-</Animated.View>
-
-      {/* Modal */}
-<View style={styles.cardBackdrop} />
-      <View style={styles.modalContainer}>
-
-        {/* Floating Mascot */}
-
-      <Animated.View
-  style={[
-    styles.cardArea,
-    cardAnimatedStyle,
-  ]}
->
-
-  {/* Floating Mascot */}
-
-<Animated.View style={[styles.spyContainer, mascotAnimatedStyle]}>
-  <Image
-    source={joinSpy}
-    style={styles.spy}
-    contentFit="contain"
-  />
-</Animated.View>
-
-  {/* Card */}
-
-  <View style={styles.pinCard}>
-
-    <Text style={styles.title}>
-      ENTER ROOM PIN
-    </Text>
-
-    
-<PinDots
-  length={pin.length}
-  success={success}
-/>
-
-  </View>
-
-</Animated.View>
-
-        {/* Keypad */}
+      <SafeAreaView
+        style={styles.container}
+        edges={[
+          "top",
+          "left",
+          "right",
+          "bottom",
+        ]}
+      >
+        {/* =========================
+            BOARD
+        ========================= */}
 
         <Animated.View
-  style={[
-    styles.keypadContainer,
-    keypadAnimatedStyle,
-  ]}
->
-          <PinKeypad
-            onNumberPress={handleNumber}
-            onBackspace={handleBackspace}
-            onClose={closeModal}
+          style={[
+            styles.boardContainer,
+            {
+              width:
+                boardWidth,
+
+              height:
+                boardHeight,
+
+              top:
+                boardTop,
+            },
+            boardAnimatedStyle,
+          ]}
+        >
+          <Image
+            source={pincodeboard}
+            style={styles.board}
+            contentFit="contain"
           />
+
+          {/* =====================
+              BOARD CONTENT
+          ===================== */}
+
+          <View
+            pointerEvents="none"
+            style={styles.boardContent}
+          >
+            <Text
+              style={styles.boardLabel}
+            >
+              ROOM PIN
+            </Text>
+
+            <View
+              style={styles.pinArea}
+            >
+              <PinDots
+                length={pin.length}
+                success={success}
+              />
+            </View>
+
+            {errorMessage && (
+              <View
+                style={
+                  styles.errorContainer
+                }
+              >
+                <Text
+                  style={
+                    styles.errorText
+                  }
+                >
+                  {errorMessage}
+                </Text>
+              </View>
+            )}
+          </View>
         </Animated.View>
 
-      </View>
-    </SafeAreaView>
-    </Modal>
+        {/* =========================
+            KEYPAD
+        ========================= */}
+
+        <Animated.View
+          style={[
+            styles.keypadContainer,
+            keypadAnimatedStyle,
+          ]}
+        >
+          <PinKeypad
+            onNumberPress={
+              handleNumber
+            }
+            onBackspace={
+              handleBackspace
+            }
+            onClose={
+              closeModal
+            }
+          />
+        </Animated.View>
+      </SafeAreaView>
+    </LobbyOverlay>
   );
 }
 
-const styles = StyleSheet.create({
+/* =====================================================
+   STYLES
+===================================================== */
+
+const styles =
+  StyleSheet.create({
     container: {
-  flex: 1,
-  backgroundColor: "rgba(0, 0, 0, 0.67)",
-  justifyContent: "space-between",
+      flex: 1,
 
-  alignItems: "center",
-},
+      width: "100%",
 
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
+      alignItems:
+        "center",
 
-modalContainer: {
-  flex: 1,
+      justifyContent:
+        "flex-end",
+    },
 
-  width: "100%",
+    /* =========================
+       BOARD
+    ========================= */
 
-  justifyContent: "flex-end",
+    boardContainer: {
+      position:
+        "absolute",
 
-  alignItems: "center",
-},
+      alignItems:
+        "center",
 
-cardArea: {
-  width: "100%",
+      justifyContent:
+        "center",
 
-  alignItems: "center",
+      zIndex: 10,
+    },
 
-  position: "absolute",
+    board: {
+      width: "100%",
 
-  top: 180,
+      height: "100%",
+    },
 
-  left: 0,
-  right: 0,
+    /* =========================
+       BOARD CONTENT
+    ========================= */
 
-  zIndex: 20,
-},
+    boardContent: {
+      position:
+        "absolute",
 
+      left: "12%",
 
-pinCard: {
-  width: "65%",
+      right: "12%",
 
- height:145,
+      top: "38%",
 
-  backgroundColor: "#0a0909",
+      bottom: "12%",
 
-  borderRadius: 24,
+      alignItems:
+        "center",
 
-  borderWidth: 1,
-  borderColor: "#2D2D2D",
+      justifyContent:
+        "center",
+    },
 
-  alignItems: "center",
-  justifyContent: "flex-end",
+    boardLabel: {
+      color:
+        "rgba(242, 242, 242, 0.55)",
 
-  paddingTop: 46,
-  paddingBottom: 20 ,
+      fontSize: 10,
 
-  shadowColor: "#000",
+      fontWeight: "800",
 
-  shadowOpacity: 0.30,
+      letterSpacing: 2.4,
 
-  shadowRadius: 16,
+      marginBottom: 13,
+    },
 
-  shadowOffset: {
-    width: 0,
-    height: 8,
-  },
+    pinArea: {
+      minHeight: 42,
 
-  elevation: 12,
-},
+      alignItems:
+        "center",
 
+      justifyContent:
+        "center",
 
-spyContainer: {
-  position: "absolute",
-  top: -82,
-  zIndex: -10,
-},
+      width: "100%",
+    },
 
-  spy: {
-  width: 120,
-  height: 120,
-},
+    /* =========================
+       ERROR
+    ========================= */
 
-  title: {
-    color: "#F5F5F5",
+    errorContainer: {
+      position:
+        "absolute",
 
-    fontSize: 16,
+      bottom: -2,
 
-    fontWeight: "800",
+      left: 10,
 
-    letterSpacing: 1,
+      right: 10,
 
-    marginBottom: 18,
-  },
+      alignItems:
+        "center",
+    },
 
+    errorText: {
+      color:
+        "#D2A62A",
 
-cardBackdrop: {
-  position: "absolute",
+      fontSize: 10,
 
-  top: 0,
+      fontWeight: "700",
 
-  width: "100%",
+      textAlign:
+        "center",
 
-  height: 330,
+      letterSpacing:
+        0.2,
+    },
 
-  backgroundColor: "#000000c5",
-},
-  
+    /* =========================
+       KEYPAD
+    ========================= */
 
-keypadContainer: {
-  width: "100%",
+    keypadContainer: {
+      width: "100%",
 
-  alignSelf: "stretch",
+      zIndex: 20,
 
-  marginTop: "auto",
-
-  backgroundColor: "#141414",
-
-  borderTopWidth:1.5,
-  borderTopColor: "#ffffff1a",
-  borderColor: "#2A2A2A",
-},
-
-});
+      marginTop:
+        "auto",
+    },
+  });

@@ -1,36 +1,65 @@
 import { Image } from "expo-image";
 import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import LeaveRoomDialog from "../dialogs/LeaveRoomDialog";
 import FloatingWordCard from "./FloatingWordCard";
 import LobbyMenu from "./LobbyMenu";
 import LobbyOverlay from "./LobbyOverlay";
+import VotingTimer from "./VotingTimer";
 
 type Props = {
   onSettings?: () => void;
   onRules?: () => void;
   onVolume?: () => void;
   onExit?: () => void;
-};
 
+  votingStarted?: boolean;
+votingRemaining?: number | null;
+
+  word?: string;
+roomCode?: string;
+
+isHost?: boolean;
+
+  gameStarted?: boolean;
+};
 export default function LobbyHeader({
   onSettings,
   onRules,
   onVolume,
   onExit,
+  word,
+roomCode,
+isHost = false,
+gameStarted = false,
+votingStarted = false,
+votingRemaining = null,
 }: Props) {
-  const insets = useSafeAreaInsets();
+  const insets =
+    useSafeAreaInsets();
 
   const [menuOpen, setMenuOpen] =
     useState(false);
 
-    const [leaveDialogVisible, setLeaveDialogVisible] =
-    useState(false);
+  const [
+    leaveDialogVisible,
+    setLeaveDialogVisible,
+  ] = useState(false);
+
+  /* =========================
+     ☰ MENU
+  ========================= */
 
   const handleMenu = () => {
-    setMenuOpen((previous) => !previous);
+    setMenuOpen(
+      (previous) => !previous
+    );
   };
 
   const closeMenu = () => {
@@ -52,132 +81,225 @@ export default function LobbyHeader({
     onVolume?.();
   };
 
-const handleExit = () => {
-  closeMenu();
-  setLeaveDialogVisible(true);
-};
+  /* =========================
+     🚪 EXIT
+  ========================= */
 
-const handleStay = () => {
-  setLeaveDialogVisible(false);
-};
+  const handleExit = () => {
+    closeMenu();
+    setLeaveDialogVisible(true);
+  };
 
-const handleLeave = () => {
-  setLeaveDialogVisible(false);
-  onExit?.();
-};
-return (
-  <>
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top + 6,
-        },
-      ]}
-    >
-      <Pressable
-        onPress={handleMenu}
-        hitSlop={8}
-        style={({ pressed }) => [
-          styles.button,
-          menuOpen && styles.buttonActive,
-          pressed && styles.pressed,
+  const handleStay = () => {
+    setLeaveDialogVisible(false);
+  };
+
+  const handleLeave = () => {
+    setLeaveDialogVisible(false);
+    onExit?.();
+  };
+
+  return (
+    <>
+      {/* =========================
+          HEADER
+      ========================= */}
+
+      <View
+        style={[
+          styles.container,
+          {
+            paddingTop:
+              insets.top + 6,
+          },
         ]}
       >
-        <Image
-          source={require("@/assets/images/games/spy/icons/cctv_lobby.webp")}
-          style={styles.cctvIcon}
-          resizeMode="contain"
-          pointerEvents="none"
-        />
-      </Pressable>
 
-      <FloatingWordCard
-        title="WAITING ROOM"
-        subtitle="Host will start the game"
-      />
-    </View>
+        <VotingTimer
+  visible={votingStarted}
+  remaining={votingRemaining}
+/>
+        {/* =========================
+            📹 CCTV / MENU
+        ========================= */}
 
-    <LobbyOverlay
-      visible={menuOpen}
-      onClose={closeMenu}
-    >
-      <View style={styles.menuPosition}>
-        <LobbyMenu
-          onSettings={handleSettings}
-          onRules={handleRules}
-          onVolume={handleVolume}
-          onExit={handleExit}
-        />
+        <Pressable
+          onPress={handleMenu}
+          hitSlop={8}
+          style={({
+            pressed,
+          }) => [
+            styles.button,
+
+            menuOpen &&
+              styles.buttonActive,
+
+            pressed &&
+              styles.pressed,
+          ]}
+        >
+          <Image
+            source={require(
+              "@/assets/images/games/spy/icons/cctv_lobby.webp"
+            )}
+            style={styles.cctvIcon}
+            contentFit="contain"
+            pointerEvents="none"
+          />
+        </Pressable>
+
+        {/* =========================
+            📝 FLOATING WORD / WAITING
+        ========================= */}
+
+        {!gameStarted ? (
+<FloatingWordCard
+  title={
+    roomCode
+      ? `Room Code : ${roomCode}`
+      : "WAITING ROOM"
+  }
+  subtitle={
+    isHost
+      ? "Start when all players ready"
+      : "Host will start the game"
+  }
+/>
+        ) : (
+          !!word && (
+            <FloatingWordCard
+              word={word}
+            />
+          )
+        )}
       </View>
-    </LobbyOverlay>
 
-    <LeaveRoomDialog
-      visible={leaveDialogVisible}
-      onStay={handleStay}
-      onLeave={handleLeave}
-    />
-  </>
-);
+      {/* =========================
+          ☰ MENU OVERLAY
+      ========================= */}
+
+      <LobbyOverlay
+        visible={menuOpen}
+        onClose={closeMenu}
+      >
+        <View
+          style={
+            styles.menuPosition
+          }
+        >
+          <LobbyMenu
+            onSettings={
+              handleSettings
+            }
+            onRules={
+              handleRules
+            }
+            onVolume={
+              handleVolume
+            }
+            onExit={
+              handleExit
+            }
+          />
+        </View>
+      </LobbyOverlay>
+
+      {/* =========================
+          🚪 LEAVE ROOM
+      ========================= */}
+
+      <LeaveRoomDialog
+        visible={
+          leaveDialogVisible
+        }
+        onStay={handleStay}
+        onLeave={handleLeave}
+      />
+    </>
+  );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: 112,
-    marginTop: 4,
+const styles =
+  StyleSheet.create({
+    container: {
+      height: 112,
 
-    paddingHorizontal: 12,
+      marginTop: 4,
 
-    position: "relative",
+      paddingHorizontal: 12,
 
-    zIndex: 100,
-  },
+      position: "relative",
 
-  button: {
-    width: 34,
+      zIndex: 100,
+    },
 
-    height: 34,
+    /* =========================
+       CCTV BUTTON
+    ========================= */
 
-    borderRadius: 10,
+    button: {
+      width: 34,
 
-    justifyContent: "center",
+      height: 34,
 
-    alignItems: "center",
+      borderRadius: 10,
 
-    backgroundColor:
-      "#0a090914",
+      
+  marginTop: 16, 
+  marginLeft:2,
 
-    borderWidth: 1,
+      justifyContent:
+        "center",
 
-    borderColor:
-      "rgba(242,169,0,0.28)",
-  },
-  menuPosition: {
-  position: "absolute",
-  top: 10,
-  left: 10,
-},
+      alignItems:
+        "center",
 
-  buttonActive: {
-    backgroundColor:
-      "rgba(242, 0, 0, 0.32)",
+      backgroundColor:
+        "#0a090914",
 
-    borderColor:
-      "rgba(242,169,0,0.28)",
-  },
+      borderWidth: 1,
 
-  cctvIcon: {
-  width: 44,
-  height: 44,
-},
+      borderColor:
+        "rgba(242,169,0,0.28)",
+    },
 
-  pressed: {
-    opacity: 0.7,
+    buttonActive: {
+      backgroundColor:
+        "rgba(242, 0, 0, 0.32)",
 
-    transform: [
-      {
-        scale: 0.92,
-      },
-    ],
-  },
-});
+      borderColor:
+        "rgba(242,169,0,0.28)",
+    },
+
+    cctvIcon: {
+      width: 44,
+
+      height: 44,
+    },
+
+    /* =========================
+       MENU POSITION
+    ========================= */
+
+    menuPosition: {
+      position: "absolute",
+
+      top: 10,
+
+      left: 10,
+    },
+
+    /* =========================
+       PRESS
+    ========================= */
+
+    pressed: {
+      opacity: 0.7,
+
+      transform: [
+        {
+          scale: 0.92,
+        },
+      ],
+    },
+  });

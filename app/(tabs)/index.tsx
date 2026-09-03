@@ -51,10 +51,8 @@ export default function Index() {
   const { user } =
   useUser();
 
-const [
-  showWelcome,
-  setShowWelcome,
-] = useState(true);
+const [showWelcome, setShowWelcome] =
+  useState(false);
 
   const scale = useRef(new Animated.Value(1)).current;
   const glow = useRef(new Animated.Value(0)).current;
@@ -76,25 +74,32 @@ const posts = useQuery(
 );
 
 useEffect(() => {
-  const seen =
-    storage.getBoolean(
-      "welcome_card_seen"
-    );
+  const launchCount =
+    storage.getNumber(
+      "welcome_launch_count"
+    ) ?? 0;
 
-  if (!seen) {
-    const timer =
-      setTimeout(() => {
-        setShowWelcome(
-          true
-        );
-      }, 800);
-
-    return () =>
-      clearTimeout(
-        timer
-      );
+  if (launchCount >= 3) {
+    return;
   }
+
+  const nextCount =
+    launchCount + 1;
+
+  storage.set(
+    "welcome_launch_count",
+    nextCount
+  );
+
+  const timer = setTimeout(() => {
+    setShowWelcome(true);
+  }, 800);
+
+  return () => {
+    clearTimeout(timer);
+  };
 }, []);
+
 
   // ✅ CACHE (PREVENT BLANK UI)
   const [cachedPosts, setCachedPosts] = useState<any[]>([]);

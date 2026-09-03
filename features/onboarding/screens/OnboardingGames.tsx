@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
 import {
   Animated,
-  Image,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from "react-native";
+
+import { Image } from "expo-image";
 
 import OnboardingLayout from "../components/OnboardingLayout";
 
@@ -159,7 +160,7 @@ export default function OnboardingGames({
              * "contain" shows as much of the original
              * Spy artwork as possible instead of cropping it.
              */
-            resizeMode="contain"
+    contentFit="contain"
 
             style={styles.image}
           />

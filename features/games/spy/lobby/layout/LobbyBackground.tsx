@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { StyleSheet } from "react-native";
 
-import lobbyWall from "@/assets/images/games/spy/backgrounds/1.png";
+import lobbyWall from "@/assets/images/games/spy/backgrounds/lobby_bg.png";
 
 export default function LobbyBackground() {
   return (

@@ -11,11 +11,13 @@ import {
   View
 } from "react-native";
 
+
 import { useAppToast } from "@/components/common/AppToast";
 import ContactNumberModal from "@/components/modals/ContactNumberModal";
 import useUser from "@/features/chat/hooks/useUser";
 import useNetwork from "@/hooks/useNetwork";
 import { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CallOptionsModal from "../modals/CallOptionsModal";
 
 
@@ -49,7 +51,7 @@ export default function ChatHeader({
   conversationId,
 }: Props) {
   const router = useRouter();
-
+const insets = useSafeAreaInsets();
   const { showToast } =
   useAppToast();
   
@@ -209,7 +211,8 @@ return (
   <>
     <View
       style={{
-        height: 50,
+  height: 50 + insets.top,
+paddingTop: insets.top,
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 12,

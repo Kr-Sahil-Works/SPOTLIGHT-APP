@@ -1,6 +1,6 @@
+import { Image } from "expo-image";
 import React from "react";
 import {
-  Image,
   Pressable,
   StyleSheet,
 } from "react-native";
@@ -26,7 +26,7 @@ export default function MagicDot({
     >
     <Image
   source={icon}
-  resizeMode="contain"
+ contentFit="contain"
   style={[
     styles.icon,
     {

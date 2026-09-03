@@ -8,6 +8,7 @@ import {
   getAuthenticatedUser,
 } from "../../../users/users.core";
 
+
 const SPEAKING_SECONDS = 30;
 const VOTING_SECONDS = 20;
 
@@ -17,11 +18,13 @@ const VOTING_SECONDS = 20;
 
 export const advanceClassicTurn =
   mutation({
-    args: {
-      roundId:
-        v.id("gameRounds"),
-    },
+  args: {
+  roundId:
+    v.id("gameRounds"),
 
+  force:
+    v.optional(v.boolean()),
+},
     handler: async (
       ctx,
       args
@@ -54,15 +57,17 @@ export const advanceClassicTurn =
          🎮 PHASE
       ========================= */
 
-      if (
-        round.phase !==
-        "speaking"
-      ) {
-        throw new Error(
-          "Round is not in speaking phase"
-        );
-      }
-
+   if (
+  round.phase !==
+  "speaking"
+) {
+  return {
+    success: false,
+    advanced: false,
+    reason:
+      "ROUND_NOT_SPEAKING",
+  };
+}
       /* =========================
          🏠 ROOM
       ========================= */
@@ -104,11 +109,7 @@ export const advanceClassicTurn =
         );
       }
 
-      /* =========================
-         👑 AUTHORIZATION
-      ========================= */
-
- const isHost =
+      const isHost =
   room.hostId ===
   user._id;
 
@@ -117,39 +118,34 @@ const isCurrentSpeaker =
   user._id;
 
 if (
-  !currentPlayer.isAlive
-) {
-  throw new Error(
-    "Eliminated players cannot speak"
-  );
-}
-
-if (
-  !isHost &&
+  args.force &&
   !isCurrentSpeaker
 ) {
   throw new Error(
-    "Only the current speaker or host can advance the turn"
+    "Only the current speaker can skip their turn"
   );
 }
 
-      /* =========================
-         ⏱️ TIMER
-      ========================= */
+/* =========================
+   ⏱️ TIMER
+========================= */
 
-      const now =
-        Date.now();
+const now =
+  Date.now();
 
-      if (
-        round.turnEndsAt !==
-          undefined &&
-        now <
-          round.turnEndsAt
-      ) {
-        throw new Error(
-          "Current speaking time has not ended"
-        );
-      }
+if (
+  !args.force &&
+  round.turnEndsAt !==
+    undefined &&
+  now <
+    round.turnEndsAt
+) {
+  return {
+    success: false,
+    advanced: false,
+    reason: "TURN_NOT_EXPIRED",
+  };
+}
 
       /* =========================
          👥 GET ALIVE PLAYERS
@@ -341,6 +337,127 @@ if (
         turnStartedAt:
           now,
 
+        turnEndsAt,
+      };
+    },
+  });
+
+
+  export const startClassicSpeaking =
+  mutation({
+    args: {
+      roundId:
+        v.id("gameRounds"),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      await getAuthenticatedUser(ctx);
+
+      const round =
+        await ctx.db.get(
+          args.roundId
+        );
+
+      if (!round) {
+        throw new Error(
+          "Round not found"
+        );
+      }
+
+      if (
+        round.phase !==
+        "roundIntro"
+      ) {
+        return {
+          success: false,
+          advanced: false,
+          reason:
+            "ROUND_NOT_INTRO",
+        };
+      }
+
+      const now =
+        Date.now();
+
+      if (
+        round.roundIntroEndsAt !==
+          undefined &&
+        now <
+          round.roundIntroEndsAt
+      ) {
+        return {
+          success: false,
+          advanced: false,
+          reason:
+            "INTRO_NOT_EXPIRED",
+        };
+      }
+
+      /* Find first alive speaker */
+
+      let speakerIndex =
+        -1;
+
+      for (
+        let i = 0;
+        i <
+          round.speakerOrder.length;
+        i++
+      ) {
+        const player =
+          await ctx.db.get(
+            round.speakerOrder[i]
+          );
+
+        if (
+          player &&
+          player.isAlive
+        ) {
+          speakerIndex = i;
+          break;
+        }
+      }
+
+      if (speakerIndex === -1) {
+        throw new Error(
+          "No alive speaker found"
+        );
+      }
+
+      const turnEndsAt =
+        now +
+        SPEAKING_SECONDS *
+          1000;
+
+      await ctx.db.patch(
+        round._id,
+        {
+          phase: "speaking",
+
+          currentSpeakerIndex:
+            speakerIndex,
+
+          speakersCompleted: 0,
+
+          turnEndsAt,
+
+          roundIntroEndsAt:
+            undefined,
+
+          updatedAt: now,
+        }
+      );
+
+      return {
+        success: true,
+        phase: "speaking",
+        currentSpeakerId:
+          round.speakerOrder[
+            speakerIndex
+          ],
         turnEndsAt,
       };
     },

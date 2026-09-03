@@ -1,6 +1,7 @@
 import {
   mutation,
   query,
+  type MutationCtx,
   type QueryCtx,
 } from "../../../_generated/server";
 
@@ -14,6 +15,7 @@ import {
   selectClassicWordPair,
 } from "./utils/pairSelector";
 
+import { Id } from "../../../_generated/dataModel";
 import {
   assignClassicRoles,
 } from "./utils/roleAssigner";
@@ -80,6 +82,510 @@ const getAuthenticatedUserForQuery =
 
 /* =========================
    🚀 START CLASSIC GAME
+   INTERNAL HELPER
+========================= */
+
+export const startClassicGameInternal =
+  async (
+    ctx: MutationCtx,
+    roomId: Id<"gameRooms">
+  ) => {
+    /* =========================
+       🔎 ROOM
+    ========================= */
+
+    const room =
+      await ctx.db.get(roomId);
+
+    if (!room) {
+      throw new Error(
+        "Room not found"
+      );
+    }
+
+    /* =========================
+       🎮 ROOM STATE
+    ========================= */
+
+    if (
+      room.status !== "starting"
+    ) {
+      throw new Error(
+        "Room is not ready to start"
+      );
+    }
+
+    /* =========================
+       🔒 PLAYER LIST
+    ========================= */
+
+    if (
+      !room.playerListLocked
+    ) {
+      throw new Error(
+        "Player list must be locked before starting the game"
+      );
+    }
+
+    /* =========================
+       🗂️ CATEGORY
+    ========================= */
+
+    if (
+      !room.selectedCategory
+    ) {
+      throw new Error(
+        "A category must be selected first"
+      );
+    }
+
+    /* =========================
+       👥 ROOM PLAYERS
+    ========================= */
+
+    const roomPlayers =
+      await ctx.db
+        .query(
+          "gameRoomPlayers"
+        )
+        .withIndex(
+          "by_room",
+          (q) =>
+            q.eq(
+              "roomId",
+              room._id
+            )
+        )
+        .collect();
+
+    /* =========================
+       👥 PLAYER COUNT
+    ========================= */
+
+    if (
+      roomPlayers.length <
+      MIN_PLAYERS
+    ) {
+      throw new Error(
+        `At least ${MIN_PLAYERS} players are required`
+      );
+    }
+
+    if (
+      roomPlayers.length >
+      MAX_PLAYERS
+    ) {
+      throw new Error(
+        `Maximum ${MAX_PLAYERS} players are allowed`
+      );
+    }
+
+    if (
+      roomPlayers.length >
+      room.maxPlayers
+    ) {
+      throw new Error(
+        "Room has more players than its configured limit"
+      );
+    }
+    /* =========================
+       🌐 CONNECTION CHECK
+    ========================= */
+
+    const disconnectedPlayer =
+      roomPlayers.find(
+        (player) =>
+          !player.isConnected
+      );
+
+    if (
+      disconnectedPlayer
+    ) {
+      throw new Error(
+        "All players must be connected before the game starts"
+      );
+    }
+
+    /* =========================
+       🎮 CHECK EXISTING MATCH
+    ========================= */
+
+    const existingMatch =
+      await ctx.db
+        .query(
+          "gameMatches"
+        )
+        .withIndex(
+          "by_room_status",
+          (q) =>
+            q
+              .eq(
+                "roomId",
+                room._id
+              )
+              .eq(
+                "status",
+                "playing"
+              )
+        )
+        .first();
+
+    if (existingMatch) {
+      throw new Error(
+        "A Classic game is already running in this room"
+      );
+    }
+
+    /* =========================
+       🎲 SELECT WORD PAIR
+    ========================= */
+
+    const selectedPair =
+      selectClassicWordPair(
+        room.selectedCategory
+      );
+
+    /* =========================
+       🔄 50% WORD SWAP
+    ========================= */
+
+    /*
+     * Normal:
+     *
+     * Villagers → villagerWord
+     * Spy       → spyWord
+     *
+     * Swapped:
+     *
+     * Villagers → spyWord
+     * Spy       → villagerWord
+     */
+
+    /* =========================
+       🎭 ASSIGN ROLES
+    ========================= */
+
+    const assignedPlayers =
+      assignClassicRoles(
+        roomPlayers.map(
+          (player) => ({
+            userId:
+              player.userId,
+          })
+        ),
+        selectedPair.villagerWord,
+        selectedPair.spyWord
+      );
+
+    /* =========================
+       🔎 FIND SPY
+    ========================= */
+
+    const spyAssignment =
+      assignedPlayers.find(
+        (player) =>
+          player.role ===
+          "spy"
+      );
+
+    if (!spyAssignment) {
+      throw new Error(
+        "Failed to assign the spy"
+      );
+    }
+
+    /* =========================
+       🗂️ SPEAKING ORDER
+    ========================= */
+
+    const orderedPlayers =
+      [...assignedPlayers]
+        .sort(
+          (a, b) =>
+            a.speakingOrder -
+            b.speakingOrder
+        );
+
+    if (
+      orderedPlayers.length ===
+      0
+    ) {
+      throw new Error(
+        "Unable to create speaking order"
+      );
+    }
+
+    /* =========================
+       🎤 FIRST SPEAKER
+    ========================= */
+
+    const firstSpeaker =
+      orderedPlayers[0];
+
+    /* =========================
+       ⏱️ MATCH START
+    ========================= */
+
+    const now =
+      Date.now();
+
+ 
+const ROUND_INTRO_SECONDS = 2;
+
+const roundIntroEndsAt =
+  now +
+  ROUND_INTRO_SECONDS * 1000;
+
+    /* =========================
+       🎮 CREATE MATCH
+    ========================= */
+
+    const matchId =
+      await ctx.db.insert(
+        "gameMatches",
+        {
+          roomId:
+            room._id,
+
+          gameMode:
+            "spy",
+
+          category:
+            room.selectedCategory,
+
+          status:
+            "playing",
+
+          currentRound:
+            1,
+
+          maxRounds:
+            MAX_ROUNDS,
+
+          winner:
+            undefined,
+
+          startedAt:
+            now,
+
+          finishedAt:
+            undefined,
+wordPairId:
+  selectedPair.pair.id,
+
+/* 👥 ACTUAL WORDS ASSIGNED */
+villagerWord:
+  selectedPair.villagerWord,
+
+spyWord:
+  selectedPair.spyWord,
+
+/* 🎯 SPY */
+spyPlayerId:
+  roomPlayers.find(
+    (player) =>
+      player.userId ===
+      spyAssignment.userId
+  )?._id,
+
+          createdAt:
+            now,
+
+          updatedAt:
+            now,
+        }
+      );
+
+    /* =========================
+       🔐 CREATE PRIVATE SECRETS
+    ========================= */
+
+    for (
+      const player of
+      assignedPlayers
+    ) {
+      const roomPlayer =
+        roomPlayers.find(
+          (roomPlayer) =>
+            roomPlayer.userId ===
+            player.userId
+        );
+
+      if (!roomPlayer) {
+        throw new Error(
+          "Room player not found while creating secret"
+        );
+      }
+
+      await ctx.db.insert(
+        "gamePlayerSecrets",
+        {
+          roomId:
+            room._id,
+
+          playerId:
+            roomPlayer._id,
+
+          userId:
+            roomPlayer.userId,
+
+          role:
+            player.role,
+
+          word:
+            player.word,
+
+          createdAt:
+            now,
+        }
+      );
+
+      /* =========================
+         ❤️ RESET ALIVE STATE
+      ========================= */
+
+      await ctx.db.patch(
+        roomPlayer._id,
+        {
+          isAlive:
+            true,
+
+          eliminatedAt:
+            undefined,
+        }
+      );
+    }
+
+    /* =========================
+       🎮 CREATE ROUND 1
+    ========================= */
+
+    const speakerOrder =
+      orderedPlayers.map(
+        (player) => {
+          const roomPlayer =
+            roomPlayers.find(
+              (roomPlayer) =>
+                roomPlayer.userId ===
+                player.userId
+            );
+
+          if (!roomPlayer) {
+            throw new Error(
+              "Room player missing from speaking order"
+            );
+          }
+
+          return roomPlayer._id;
+        }
+      );
+
+    const roundId =
+      await ctx.db.insert(
+        "gameRounds",
+        {
+          roomId:
+            room._id,
+
+          roundNumber:
+            1,
+
+         phase:
+  "roundIntro",
+
+          speakerOrder,
+
+          currentSpeakerIndex:
+            0,
+
+          speakersCompleted:
+            0,
+
+         turnEndsAt:
+  undefined,
+
+roundIntroEndsAt,
+
+          votingEndsAt:
+            undefined,
+
+          isTieBreak:
+            false,
+
+          tieBreakOrder:
+            undefined,
+
+          tieBreakSpeakerIndex:
+            undefined,
+
+          eliminatedPlayerId:
+            undefined,
+
+          createdAt:
+            now,
+
+          updatedAt:
+            now,
+        }
+      );
+
+    /* =========================
+       🏠 UPDATE ROOM
+    ========================= */
+
+    await ctx.db.patch(
+      room._id,
+      {
+        status:
+          "playing",
+
+        updatedAt:
+          now,
+      }
+    );
+
+    /* =========================
+       📦 RETURN
+    ========================= */
+
+    return {
+      success: true,
+
+      matchId,
+
+      roundId,
+
+      category:
+        room.selectedCategory,
+
+      roundNumber:
+        1,
+
+      phase:
+        "speaking",
+
+      currentSpeakerUserId:
+        firstSpeaker.userId,
+
+      turnStartedAt:
+        now,
+
+     roundIntroEndsAt,
+
+turnEndsAt:
+  undefined,
+
+votingEndsAt:
+  undefined,
+
+      wordsSwapped:
+        selectedPair.wordsSwapped,
+    };
+  };
+
+
+/* =========================
+   🚀 HOST START CLASSIC GAME
 ========================= */
 
 export const startClassicGame =
@@ -102,8 +608,6 @@ export const startClassicGame =
           ctx
         );
 
-
-
       /* =========================
          🔎 ROOM
       ========================= */
@@ -112,15 +616,6 @@ export const startClassicGame =
         await ctx.db.get(
           args.roomId
         );
-                /* =========================
-   🔒 HOST VALIDATION
-========================= */
-
-if (!room) {
-  throw new Error(
-    "Room not found"
-  );
-}
 
       if (!room) {
         throw new Error(
@@ -154,468 +649,10 @@ if (!room) {
         );
       }
 
-      /* =========================
-         🎮 ROOM STATE
-      ========================= */
-
-      if (
-        room.status !==
-        "starting"
-      ) {
-        throw new Error(
-          "Room is not ready to start"
-        );
-      }
-
-      /* =========================
-         🔒 PLAYER LIST
-      ========================= */
-
-      if (
-        !room.playerListLocked
-      ) {
-        throw new Error(
-          "Player list must be locked before starting the game"
-        );
-      }
-
-      /* =========================
-         🗂️ CATEGORY
-      ========================= */
-
-      if (
-        !room.selectedCategory
-      ) {
-        throw new Error(
-          "A category must be selected first"
-        );
-      }
-
-      /* =========================
-         👥 ROOM PLAYERS
-      ========================= */
-
-      const roomPlayers =
-        await ctx.db
-          .query(
-            "gameRoomPlayers"
-          )
-          .withIndex(
-            "by_room",
-            (q) =>
-              q.eq(
-                "roomId",
-                room._id
-              )
-          )
-          .collect();
-
-      /* =========================
-         👥 PLAYER COUNT
-      ========================= */
-
-      if (
-        roomPlayers.length <
-        MIN_PLAYERS
-      ) {
-        throw new Error(
-          `At least ${MIN_PLAYERS} players are required`
-        );
-      }
-
-      if (
-        roomPlayers.length >
-        MAX_PLAYERS
-      ) {
-        throw new Error(
-          `Maximum ${MAX_PLAYERS} players are allowed`
-        );
-      }
-
-      if (
-        roomPlayers.length >
-        room.maxPlayers
-      ) {
-        throw new Error(
-          "Room has more players than its configured limit"
-        );
-      }
-
-      /* =========================
-         🌐 CONNECTION CHECK
-      ========================= */
-
-      const disconnectedPlayer =
-        roomPlayers.find(
-          (player) =>
-            !player.isConnected
-        );
-
-      if (
-        disconnectedPlayer
-      ) {
-        throw new Error(
-          "All players must be connected before the game starts"
-        );
-      }
-
-      /* =========================
-         🎮 CHECK EXISTING MATCH
-      ========================= */
-
-      const existingMatch =
-        await ctx.db
-          .query(
-            "gameMatches"
-          )
-          .withIndex(
-            "by_room_status",
-            (q) =>
-              q
-                .eq(
-                  "roomId",
-                  room._id
-                )
-                .eq(
-                  "status",
-                  "playing"
-                )
-          )
-          .first();
-
-      if (existingMatch) {
-        throw new Error(
-          "A Classic game is already running in this room"
-        );
-      }
-
-      /* =========================
-         🎲 SELECT WORD PAIR
-      ========================= */
-
-      const selectedPair =
-        selectClassicWordPair(
-          room.selectedCategory
-        );
-
-      /* =========================
-         🔄 50% WORD SWAP
-      ========================= */
-
-      /*
-       * Normal:
-       *
-       * Villagers → villagerWord
-       * Spy       → spyWord
-       *
-       * Swapped:
-       *
-       * Villagers → spyWord
-       * Spy       → villagerWord
-       */
-
-      /* =========================
-         🎭 ASSIGN ROLES
-      ========================= */
-
-      const assignedPlayers =
-        assignClassicRoles(
-          roomPlayers.map(
-            (player) => ({
-              userId:
-                player.userId,
-            })
-          ),
-          selectedPair.villagerWord,
-          selectedPair.spyWord
-        );
-
-      /* =========================
-         🔎 FIND SPY
-      ========================= */
-
-      const spyAssignment =
-        assignedPlayers.find(
-          (player) =>
-            player.role ===
-            "spy"
-        );
-
-      if (!spyAssignment) {
-        throw new Error(
-          "Failed to assign the spy"
-        );
-      }
-
-      /* =========================
-         🗂️ SPEAKING ORDER
-      ========================= */
-
-      const orderedPlayers =
-        [...assignedPlayers]
-          .sort(
-            (a, b) =>
-              a.speakingOrder -
-              b.speakingOrder
-          );
-
-      if (
-        orderedPlayers.length ===
-        0
-      ) {
-        throw new Error(
-          "Unable to create speaking order"
-        );
-      }
-
-      /* =========================
-         🎤 FIRST SPEAKER
-      ========================= */
-
-      const firstSpeaker =
-        orderedPlayers[0];
-
-      /* =========================
-         ⏱️ MATCH START
-      ========================= */
-
-      const now =
-        Date.now();
-
-      const turnEndsAt =
-        now +
-        SPEAKING_SECONDS *
-          1000;
-
-      /* =========================
-         🎮 CREATE MATCH
-      ========================= */
-
-      const matchId =
-        await ctx.db.insert(
-          "gameMatches",
-          {
-            roomId:
-              room._id,
-
-            gameMode:
-              "spy",
-
-            category:
-              room.selectedCategory,
-
-            status:
-              "playing",
-
-            currentRound:
-              1,
-
-            maxRounds:
-              MAX_ROUNDS,
-
-            winner:
-              undefined,
-
-            startedAt:
-              now,
-
-            finishedAt:
-              undefined,
-
-            wordPairId:
-              selectedPair.pair.id,
-
-            spyPlayerId:
-              roomPlayers.find(
-                (player) =>
-                  player.userId ===
-                  spyAssignment.userId
-              )?._id,
-
-            createdAt:
-              now,
-
-            updatedAt:
-              now,
-          }
-        );
-
-      /* =========================
-         🔐 CREATE PRIVATE SECRETS
-      ========================= */
-
-      for (
-        const player of
-        assignedPlayers
-      ) {
-        const roomPlayer =
-          roomPlayers.find(
-            (roomPlayer) =>
-              roomPlayer.userId ===
-              player.userId
-          );
-
-        if (!roomPlayer) {
-          throw new Error(
-            "Room player not found while creating secret"
-          );
-        }
-
-        await ctx.db.insert(
-          "gamePlayerSecrets",
-          {
-            roomId:
-              room._id,
-
-            playerId:
-              roomPlayer._id,
-
-            userId:
-              roomPlayer.userId,
-
-            role:
-              player.role,
-
-            word:
-              player.word,
-
-            createdAt:
-              now,
-          }
-        );
-
-        /* =========================
-           ❤️ RESET ALIVE STATE
-        ========================= */
-
-        await ctx.db.patch(
-          roomPlayer._id,
-          {
-            isAlive:
-              true,
-
-            eliminatedAt:
-              undefined,
-          }
-        );
-      }
-
-      /* =========================
-         🎮 CREATE ROUND 1
-      ========================= */
-
-      const speakerOrder =
-        orderedPlayers.map(
-          (player) => {
-            const roomPlayer =
-              roomPlayers.find(
-                (roomPlayer) =>
-                  roomPlayer.userId ===
-                  player.userId
-              );
-
-            if (!roomPlayer) {
-              throw new Error(
-                "Room player missing from speaking order"
-              );
-            }
-
-            return roomPlayer._id;
-          }
-        );
-
-      const roundId =
-        await ctx.db.insert(
-          "gameRounds",
-          {
-            roomId:
-              room._id,
-
-            roundNumber:
-              1,
-
-            phase:
-              "speaking",
-
-            speakerOrder,
-
-            currentSpeakerIndex:
-              0,
-
-            speakersCompleted:
-              0,
-
-            turnEndsAt,
-
-            votingEndsAt:
-              undefined,
-
-            isTieBreak:
-              false,
-
-            tieBreakOrder:
-              undefined,
-
-            tieBreakSpeakerIndex:
-              undefined,
-
-            eliminatedPlayerId:
-              undefined,
-
-            createdAt:
-              now,
-
-            updatedAt:
-              now,
-          }
-        );
-
-      /* =========================
-         🏠 UPDATE ROOM
-      ========================= */
-
-      await ctx.db.patch(
-        room._id,
-        {
-          status:
-            "playing",
-
-          updatedAt:
-            now,
-        }
+      return await startClassicGameInternal(
+        ctx,
+        args.roomId
       );
-
-      /* =========================
-         📦 RETURN
-      ========================= */
-
-      return {
-        success: true,
-
-        matchId,
-
-        roundId,
-
-        category:
-          room.selectedCategory,
-
-        roundNumber:
-          1,
-
-        phase:
-          "speaking",
-
-        currentSpeakerUserId:
-          firstSpeaker.userId,
-
-        turnStartedAt:
-          now,
-
-        turnEndsAt,
-
-        wordsSwapped:
-          selectedPair.wordsSwapped,
-      };
     },
   });
 
@@ -800,6 +837,101 @@ export const getActiveClassicMatch =
                   round.eliminatedPlayerId,
               }
             : null,
+      };
+    },
+  });
+
+/* =========================
+   🔐 MY PRIVATE WORD
+========================= */
+
+export const getMyPrivateWord =
+  query({
+    args: {
+      roomId:
+        v.id("gameRooms"),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+    const user =
+  await getAuthenticatedUserForQuery(
+    ctx
+  );
+      const room =
+        await ctx.db.get(
+          args.roomId
+        );
+
+      if (!room) {
+        throw new Error(
+          "Room not found"
+        );
+      }
+
+   const match =
+  await ctx.db
+    .query("gameMatches")
+    .withIndex(
+      "by_room_status",
+      (q) =>
+        q
+          .eq(
+            "roomId",
+            room._id
+          )
+          .eq(
+            "status",
+            "playing"
+          )
+    )
+    .first();
+
+      if (!match) {
+        return null;
+      }
+
+      const player =
+        await ctx.db
+          .query(
+            "gameRoomPlayers"
+          )
+          .withIndex(
+            "by_room_user",
+            (q) =>
+              q
+                .eq(
+                  "roomId",
+                  room._id
+                )
+                .eq(
+                  "userId",
+                  user._id
+                )
+          )
+          .unique();
+
+      if (!player) {
+        return null;
+      }
+
+      const isSpy =
+        match.spyPlayerId ===
+        player._id;
+
+      return {
+        role: isSpy
+          ? "spy"
+          : "villager",
+
+        word: isSpy
+          ? match.spyWord
+          : match.villagerWord,
+
+        matchId:
+          match._id,
       };
     },
   });

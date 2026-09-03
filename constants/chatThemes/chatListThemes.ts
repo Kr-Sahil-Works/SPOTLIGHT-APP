@@ -20,22 +20,22 @@ export const CHAT_LIST_THEMES: ChatListTheme[] = [
   // MINIMAL THEMES
   // ======================
 
-  {
-    id: "spotlight-green",
-    name: "Spotlight Green",
+{
+  id: "spotlight-gold",
+  name: "Spotlight Gold",
 
-    background: "#040704",
+  background: "#050403",
 
-    searchBg: "#0b140b",
+  searchBg: "#171106",
 
-    cardBg: "#0d170d",
+  cardBg: "#060606",
 
-    cardBorder: "#44d80033",
+  cardBorder: "#F0B92C66",
 
-    glow: "#44d800",
+  glow: "#fdb100",
 
-    headerColor: "#44d800",
-  },
+  headerColor: "#ffbb01",
+},
 
 
     {

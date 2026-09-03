@@ -107,14 +107,14 @@ export const startRoundVoting =
         );
       }
 
-      if (
-        round.phase !==
-        "voting"
-      ) {
-        throw new Error(
-          "Round is not ready for voting"
-        );
-      }
+    if (
+  round.phase !== "voting" &&
+  round.phase !== "tieBreak"
+) {
+  throw new Error(
+    "Voting is not active"
+  );
+}
 
       /* =========================
          🏠 ROOM
@@ -223,14 +223,14 @@ export const castRoundVote =
         );
       }
 
-      if (
-        round.phase !==
-        "voting"
-      ) {
-        throw new Error(
-          "Voting is not active"
-        );
-      }
+   if (
+  round.phase !== "voting" &&
+  round.phase !== "tieBreak"
+) {
+  throw new Error(
+    "Voting is not active"
+  );
+}
 
       if (
         round.votingEndsAt ===
@@ -635,25 +635,45 @@ export const getMyRoundVote =
         return null;
       }
 
-      const vote =
-        await ctx.db
-          .query(
-            "gameRoundVotes"
-          )
-          .withIndex(
-            "by_round_voter",
-            (q) =>
-              q
-                .eq(
-                  "roundId",
-                  round._id
-                )
-                .eq(
-                  "voterId",
-                  voter._id
-                )
-          )
-          .unique();
+  const vote =
+  round.isTieBreak
+    ? await ctx.db
+        .query(
+          "gameTieBreakVotes"
+        )
+        .withIndex(
+          "by_round_voter",
+          (q) =>
+            q
+              .eq(
+                "roundId",
+                round._id
+              )
+              .eq(
+                "voterId",
+                voter._id
+              )
+        )
+        .unique()
+    : await ctx.db
+        .query(
+          "gameRoundVotes"
+        )
+        .withIndex(
+          "by_round_voter",
+          (q) =>
+            q
+              .eq(
+                "roundId",
+                round._id
+              )
+              .eq(
+                "voterId",
+                voter._id
+              )
+        )
+        .unique();
+        
 
       if (!vote) {
         return {
@@ -711,14 +731,14 @@ export const finalizeRoundVoting =
         );
       }
 
-      if (
-        round.phase !==
-        "voting"
-      ) {
-        throw new Error(
-          "Voting is not active"
-        );
-      }
+ if (
+  round.phase !== "voting" &&
+  round.phase !== "tieBreak"
+) {
+  throw new Error(
+    "Voting is not active"
+  );
+}
 
       if (
         round.votingEndsAt ===
@@ -914,16 +934,95 @@ const leaders =
    ⚖️ TIE
 ========================= */
 
-if (
-  leaders.length > 1
-) {
-  /*
-   * Normal voting tie:
-   * enter tie-break.
-   *
-   * Tie-break tie:
-   * nobody is eliminated.
-   */
+if (leaders.length > 1) {
+  /* =========================
+     👥 CHECK ALL-PLAYER TIE
+  ========================= */
+
+  const alivePlayers =
+    await ctx.db
+      .query("gameRoomPlayers")
+      .withIndex(
+        "by_room",
+        (q) =>
+          q.eq(
+            "roomId",
+            round.roomId
+          )
+      )
+      .collect();
+
+  const alivePlayerIds =
+    alivePlayers
+      .filter(
+        (player) =>
+          player.isAlive
+      )
+      .map(
+        (player) =>
+          player._id.toString()
+      );
+
+  const allAlivePlayersTied =
+    alivePlayerIds.length ===
+      leaders.length &&
+    leaders.every(
+      (playerId) =>
+        alivePlayerIds.includes(
+          playerId.toString()
+        )
+    );
+
+  /* =========================
+     ⏭️ ALL PLAYERS TIED
+     
+     No tie-break.
+     Nobody is eliminated.
+  ========================= */
+
+  if (
+    allAlivePlayersTied
+  ) {
+    await ctx.db.patch(
+      round._id,
+      {
+        phase:
+          "result",
+
+        eliminatedPlayerId:
+          undefined,
+
+        votingEndsAt:
+          undefined,
+
+        turnEndsAt:
+          undefined,
+
+        updatedAt:
+          now,
+      }
+    );
+
+    return {
+      success: true,
+
+      result:
+        "all_players_tied",
+
+      isTieBreak:
+        round.isTieBreak,
+
+      eliminatedPlayerId:
+        undefined,
+
+      tiedPlayerIds:
+        leaders,
+    };
+  }
+
+  /* =========================
+     🔁 NORMAL TIE → TIE-BREAK
+  ========================= */
 
   if (
     !round.isTieBreak
@@ -931,20 +1030,21 @@ if (
     await ctx.db.patch(
       round._id,
       {
-        phase:
-          "tieBreak",
+   phase:
+  "tieBreak",
 
-        isTieBreak:
-          true,
+isTieBreak:
+  true,
 
-        tieBreakOrder:
-          leaders,
+tieBreakOrder:
+  leaders,
 
-        tieBreakSpeakerIndex:
-          undefined,
+tieBreakSpeakerIndex:
+  undefined,
 
-        votingEndsAt:
-          undefined,
+votingEndsAt:
+  now +
+  VOTING_SECONDS * 1000,
 
         turnEndsAt:
           undefined,
@@ -997,6 +1097,12 @@ if (
 
     isTieBreak:
       true,
+
+    eliminatedPlayerId:
+      undefined,
+
+    tiedPlayerIds:
+      leaders,
   };
 }
 
@@ -1131,3 +1237,205 @@ const shuffleIds = (
 
   return result;
 };
+
+
+/* =========================
+   📊 VOTING RESULT
+========================= */
+
+export const getRoundVotingResult =
+  query({
+    args: {
+      roundId:
+        v.id("gameRounds"),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      const round =
+        await ctx.db.get(
+          args.roundId
+        );
+
+      if (!round) {
+        return null;
+      }
+
+      if (
+        round.phase !==
+        "result"
+      ) {
+        return null;
+      }
+
+      const votes =
+        round.isTieBreak
+          ? await ctx.db
+              .query(
+                "gameTieBreakVotes"
+              )
+              .withIndex(
+                "by_round",
+                (q) =>
+                  q.eq(
+                    "roundId",
+                    round._id
+                  )
+              )
+              .collect()
+          : await ctx.db
+              .query(
+                "gameRoundVotes"
+              )
+              .withIndex(
+                "by_round",
+                (q) =>
+                  q.eq(
+                    "roundId",
+                    round._id
+                  )
+              )
+              .collect();
+
+      const voteCounts =
+        new Map<
+          string,
+          number
+        >();
+
+      for (
+        const vote of votes
+      ) {
+        if (
+          vote.skipped ||
+          !vote.targetId
+        ) {
+          continue;
+        }
+
+        const key =
+          vote.targetId.toString();
+
+        voteCounts.set(
+          key,
+          (
+            voteCounts.get(
+              key
+            ) ?? 0
+          ) + 1
+        );
+      }
+
+      const skippedVotes =
+        votes.filter(
+          (vote) =>
+            vote.skipped
+        ).length;
+
+     let eliminatedPlayer = undefined;
+
+if (round.eliminatedPlayerId) {
+  eliminatedPlayer = await ctx.db.get(
+    round.eliminatedPlayerId
+  );
+}
+
+if (!eliminatedPlayer) {
+  return {
+    roundId: round._id,
+    eliminatedPlayer: null,
+    voteCount: 0,
+    skippedVotes,
+    role: undefined,
+  };
+}
+
+/* =========================
+   👤 GET USER PROFILE
+========================= */
+
+const eliminatedUser =
+  await ctx.db.get(
+    eliminatedPlayer.userId
+  );
+
+if (
+  !eliminatedUser ||
+  eliminatedUser.isDeleted
+) {
+  return {
+    roundId: round._id,
+    eliminatedPlayer: null,
+    voteCount: 0,
+    skippedVotes,
+    role: undefined,
+  };
+}
+
+/* =========================
+   🎮 ACTIVE MATCH
+========================= */
+
+const match =
+  await ctx.db
+    .query("gameMatches")
+    .withIndex(
+      "by_room_status",
+      (q) =>
+        q
+          .eq(
+            "roomId",
+            round.roomId
+          )
+          .eq(
+            "status",
+            "playing"
+          )
+    )
+    .first();
+
+/* =========================
+   🕵️ ROLE
+========================= */
+
+const role:
+  | "spy"
+  | "villager"
+  | undefined =
+  match
+    ? match.spyPlayerId ===
+      eliminatedPlayer._id
+      ? "spy"
+      : "villager"
+    : undefined;
+
+return {
+  roundId:
+    round._id,
+
+  eliminatedPlayer: {
+    id:
+      eliminatedPlayer._id,
+
+    userId:
+      eliminatedPlayer.userId,
+
+    name:
+      eliminatedUser.username,
+
+    avatar:
+      eliminatedUser.image,
+  },
+
+  voteCount:
+    voteCounts.get(
+      eliminatedPlayer._id.toString()
+    ) ?? 0,
+
+  skippedVotes,
+
+  role,
+};}
+  });

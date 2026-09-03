@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
   useMMKVString,
@@ -25,7 +26,8 @@ export default function ChatHeader({
   onOpenChatListTheme,
   isOnline = true,
 }: Props) {
-  const router = useRouter();
+const router = useRouter();
+const insets = useSafeAreaInsets();
   const theme =
   useChatListTheme();
 
@@ -45,7 +47,7 @@ const useGreenNotes =
 return (
   <View
     style={{
-      paddingTop: 20,
+paddingTop: insets.top + 10,
       paddingHorizontal: 18,
     }}
   >

@@ -1,5 +1,10 @@
 import { BlurView } from "expo-blur";
-import { Modal, Pressable, StyleSheet, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
 
 type Props = {
   visible: boolean;
@@ -22,20 +27,32 @@ export default function LobbyOverlay({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View style={styles.overlay}>
+      <View
+        style={styles.overlay}
+      >
+        {/* =========================
+            BACKGROUND BLUR + DIM
+        ========================= */}
+
         <Pressable
-          style={StyleSheet.absoluteFill}
+          style={styles.backdrop}
           onPress={onClose}
         >
-        <BlurView
-  intensity={25}
-  tint="dark"
-  experimentalBlurMethod="dimezisBlurView"
-  style={StyleSheet.absoluteFill}
-/>
+          <BlurView
+            intensity={25}
+            tint="dark"
+            experimentalBlurMethod="dimezisBlurView"
+            style={StyleSheet.absoluteFill}
+          />
 
-<View style={styles.dim} />
+          <View
+            style={styles.dim}
+          />
         </Pressable>
+
+        {/* =========================
+            FOREGROUND CONTENT
+        ========================= */}
 
         <View
           style={[
@@ -51,18 +68,42 @@ export default function LobbyOverlay({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.25)",
-  },
+const styles =
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
 
-dim: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: "rgba(0, 0, 0, 0.51)",
-},
+      backgroundColor:
+        "rgba(0,0,0,0.25)",
 
-  content: {
-    position: "absolute",
-  },
-});
+      position:
+        "relative",
+    },
+
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+
+      zIndex: 1,
+
+      elevation: 1,
+    },
+
+    dim: {
+      ...StyleSheet.absoluteFillObject,
+
+      backgroundColor:
+        "rgba(0,0,0,0.51)",
+
+      zIndex: 2,
+
+      elevation: 2,
+    },
+
+    content: {
+      ...StyleSheet.absoluteFillObject,
+
+      zIndex: 10,
+
+      elevation: 10,
+    },
+  });

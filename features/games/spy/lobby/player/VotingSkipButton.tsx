@@ -2,11 +2,13 @@ import { Pressable, StyleSheet, Text } from "react-native";
 
 type Props = {
   visible: boolean;
+  disabled?: boolean;
   onPress?: () => void;
 };
 
 export default function VotingSkipButton({
   visible,
+  disabled = false,
   onPress,
 }: Props) {
   if (!visible) {
@@ -14,11 +16,13 @@ export default function VotingSkipButton({
   }
 
   return (
-    <Pressable
+ <Pressable
+      disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        pressed && styles.pressed,
+       pressed && styles.pressed,
+disabled && styles.disabled,
       ]}
     >
       <Text style={styles.text}>SKIP</Text>
@@ -53,4 +57,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     transform: [{ scale: 0.94 }],
   },
+  disabled: {
+  opacity: 0.35,
+},
 });

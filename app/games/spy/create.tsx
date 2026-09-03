@@ -78,7 +78,7 @@ const [selectedMode, setSelectedMode] =
   );
 
   const [players, setPlayers] =
-    useState(6);
+    useState(4);
 
   const [passwordEnabled, setPasswordEnabled] =
     useState(false);
@@ -354,36 +354,54 @@ contentFit="contain"
     <Pressable
       style={styles.createButton}
       onPress={async () => {
-  try {
-    const result = await createRoom({
-      gameMode: selectedMode as
-        "spy" |
-        "wordless" |
-        "master" |
-        "y2",
+ try {
+  const result = await createRoom({
+    gameMode: selectedMode as
+      "spy" |
+      "wordless" |
+      "master" |
+      "y2",
 
-      maxPlayers: players,
+    maxPlayers: players,
 
-      passwordEnabled,
-    });
+    passwordEnabled,
+  });
 
-    console.log(
-      "ROOM CREATED:",
-      result
-    );
+  if (!result.success) {
+    if (
+      result.reason ===
+      "ROOM_CODE_GENERATION_FAILED"
+    ) {
+      console.error(
+        "Unable to generate a unique room code."
+      );
 
-    router.push({
-      pathname: "/games/spy/lobby",
-      params: {
-        roomId: result.roomId,
-      },
-    });
-  } catch (error) {
-    console.error(
-      "CREATE ROOM ERROR:",
-      error
-    );
+      return;
+    }
+
+    return;
   }
+
+  console.log(
+    "ROOM CREATED:",
+    result
+  );
+
+  router.push({
+    pathname:
+      "/games/spy/lobby",
+
+    params: {
+      roomId:
+        result.roomId,
+    },
+  });
+} catch (error) {
+  console.error(
+    "CREATE ROOM ERROR:",
+    error
+  );
+}
 }}
 >
             <Ionicons
