@@ -558,7 +558,7 @@ const styles =
 
       right: "12%",
 
-      top: "38%",
+      top: "44%",
 
       bottom: "12%",
 
@@ -579,7 +579,7 @@ const styles =
 
       letterSpacing: 2.4,
 
-      marginBottom: 13,
+      marginBottom: 2,
     },
 
     pinArea: {

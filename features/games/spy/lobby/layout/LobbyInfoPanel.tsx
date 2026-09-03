@@ -143,9 +143,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
 
-    backgroundColor: "rgba(12,12,17,0.78)",
+    backgroundColor: "#0c0c11bf",
 
-    borderWidth: 1,
+    borderWidth: 0.8,
     borderColor: "rgba(242,169,0,0.22)",
   },
 

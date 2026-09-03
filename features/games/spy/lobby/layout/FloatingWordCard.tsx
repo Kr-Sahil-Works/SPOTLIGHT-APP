@@ -75,6 +75,7 @@ const isWordMode = !!word;
               styles.word,
               {
                 fontSize: 18 * scale,
+                opacity: 0.96,
               },
             ]}
           >
@@ -112,7 +113,7 @@ const isWordMode = !!word;
                   styles.subtitle,
                   {
                     fontSize:
-                      10 * scale,
+                      12 * scale,
                   },
                 ]}
               >
@@ -154,68 +155,96 @@ wrapper: {
     zIndex: 1,
   },
 
-  /*
-   * Actual black/gold plaque area.
-   *
-   * The floating PNG contains a lot of empty/wire area,
-   * so the text must NOT be centered across the whole PNG.
-   */
-  content: {
-    position: "absolute",
+content: {
+  position: "absolute",
 
-    left: "17%",
-    right: "17%",
+  left: "18%",
+  right: "18%",
 
-    top: "55%",
-    bottom: "20%",
+  top: "42%",
 
-    alignItems: "center",
-    justifyContent: "center",
+  height: 44,
 
-    zIndex: 5,
+  alignItems: "center",
+  justifyContent: "center",
 
-    paddingHorizontal: 2,
+  zIndex: 5,
+
+  paddingHorizontal: 4,
+
+  transform: [
+    {
+      translateY: 8,
+    },
+  ],
+},
+
+
+
+word: {
+  color: "#F5E8C8",
+
+  fontWeight: "900",
+
+  letterSpacing: 0.8,
+
+  textAlign: "center",
+
+  // textTransform: "uppercase",
+
+  includeFontPadding: false,
+
+  textShadowColor:
+    "rgba(55,32,0,0.9)",
+
+  textShadowOffset: {
+    width: 1,
+    height: 1.5,
   },
 
-  word: {
-    color: "#FFFFFF",
+  textShadowRadius: 0.6,
+},
 
-    fontWeight: "900",
 
-    letterSpacing: 0.6,
 
-    textAlign: "center",
 
-    textTransform: "uppercase",
+ title: {
+  color: "#F8F3E4",
 
-    includeFontPadding: false,
+  fontWeight: "900",
+
+  letterSpacing: 0.45,
+
+  textAlign: "center",
+
+  textTransform: "uppercase",
+
+  includeFontPadding: false,
+
+  textShadowColor:
+    "#3d3421bc",
+
+  textShadowOffset: {
+    width: 0,
+    height: 0,
   },
 
-  title: {
-    color: "#FFFFFF",
+  textShadowRadius: 4,
+},
 
-    fontWeight: "900",
+ subtitle: {
+  marginTop: 3,
 
-    letterSpacing: 0.35,
+  color: "#C99418",
 
-    textAlign: "center",
+  fontWeight: "600",
 
-    textTransform: "uppercase",
+  letterSpacing: 0.1,
 
-    includeFontPadding: false,
-  },
+  textAlign: "center",
 
-  subtitle: {
-    marginTop: 3,
+  includeFontPadding: false,
 
-    color: "#D09A00",
-
-    fontWeight: "600",
-
-    letterSpacing: 0.1,
-
-    textAlign: "center",
-
-    includeFontPadding: false,
-  },
+  opacity: 0.9,
+},
 });

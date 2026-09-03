@@ -1,102 +1,116 @@
 import { Ionicons } from "@expo/vector-icons";
+
 import {
   Pressable,
   StyleSheet,
   View,
 } from "react-native";
 
-const ICONS = [
-  "happy-outline",
-  "gift-outline",
-  "chatbubble-outline",
-  "ellipsis-horizontal",
-] as const;
-
 type Props = {
+  isHost?: boolean;
+
   onEmoji?: () => void;
   onGift?: () => void;
   onChat?: () => void;
+  onReset?: () => void;
   onMore?: () => void;
 };
 
 export default function LobbyBottomBar({
+  isHost = false,
+
   onEmoji,
   onGift,
   onChat,
+  onReset,
   onMore,
 }: Props) {
   const actions = [
     onEmoji,
     onGift,
     onChat,
-    onMore,
+    isHost
+      ? onReset
+      : onMore,
   ];
 
-return (
-  <View style={styles.container}>
-    {ICONS.map((icon, index) => (
-      <Pressable
-        key={icon}
-        onPress={actions[index]}
-        style={({ pressed }) => [
-          styles.button,
-          pressed && styles.pressed,
-        ]}
-      >
-        <Ionicons
-          name={icon}
-          size={18}
-          color="#F2A900"
-        />
-      </Pressable>
-    ))}
-  </View>
-);
+  const icons = [
+    "happy-outline",
+    "gift-outline",
+    "chatbubble-outline",
+    isHost
+      ? "refresh-outline"
+      : "ellipsis-horizontal",
+  ] as const;
+
+  return (
+    <View style={styles.container}>
+      {icons.map((icon, index) => (
+        <Pressable
+          key={icon}
+          onPress={actions[index]}
+          style={({ pressed }) => [
+            styles.button,
+            pressed &&
+              styles.pressed,
+          ]}
+        >
+          <Ionicons
+            name={icon}
+            size={18}
+            color="#F2A900"
+          />
+        </Pressable>
+      ))}
+    </View>
+  );
 }
 
-const styles = StyleSheet.create({
-container: {
-  width: "100%",
-  height: 45,
+const styles =
+  StyleSheet.create({
+    container: {
+      width: "100%",
+      height: 45,
 
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-around",
+      flexDirection: "row",
 
-  backgroundColor: "rgba(16, 16, 16, 0.92)",
+      alignItems: "center",
 
-  borderTopWidth: 1,
-  borderTopColor: "rgba(255,255,255,0.10)",
+      justifyContent:
+        "space-around",
 
-  // borderTopLeftRadius: 14,
-  // borderTopRightRadius: 14,
+      backgroundColor:
+        "rgba(16, 16, 16, 0.92)",
 
-  overflow: "hidden",
+      borderTopWidth: 1,
 
-  /*
-   * Keep the bar at the bottom
-   * of its parent.
-   */
-  marginTop: "auto",
-},
+      borderTopColor:
+        "rgba(255,255,255,0.10)",
 
-  button: {
-    width: 34,
-    height: 34,
+      overflow: "hidden",
 
-    borderRadius: 18,
+      marginTop: "auto",
+    },
 
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    button: {
+      width: 34,
+      height: 34,
 
-  pressed: {
-    transform: [
-      {
-        scale: 0.88,
-      },
-    ],
+      borderRadius: 18,
 
-    opacity: 0.7,
-  },
-});
+      justifyContent:
+        "center",
+
+      alignItems: "center",
+    },
+
+    pressed: {
+      transform: [
+        {
+          scale: 0.88,
+        },
+      ],
+
+      opacity: 0.7,
+    },
+  });

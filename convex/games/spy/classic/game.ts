@@ -29,7 +29,6 @@ const MAX_PLAYERS = 8;
 
 const MAX_ROUNDS = 10;
 
-const SPEAKING_SECONDS = 30;
 
 /* =========================
    🔐 QUERY AUTH
@@ -315,13 +314,32 @@ export const startClassicGameInternal =
       );
     }
 
-    /* =========================
-       🎤 FIRST SPEAKER
-    ========================= */
+/* =========================
+   🎲 RANDOM ROUND-1 SPEAKER
+========================= */
 
-    const firstSpeaker =
-      orderedPlayers[0];
+const randomStartIndex =
+  Math.floor(
+    Math.random() *
+      orderedPlayers.length
+  );
 
+const randomizedOrderedPlayers = [
+  ...orderedPlayers.slice(
+    randomStartIndex
+  ),
+  ...orderedPlayers.slice(
+    0,
+    randomStartIndex
+  ),
+];
+
+/* =========================
+   🎤 FIRST SPEAKER
+========================= */
+
+const firstSpeaker =
+  randomizedOrderedPlayers[0];
     /* =========================
        ⏱️ MATCH START
     ========================= */
@@ -460,8 +478,8 @@ spyPlayerId:
        🎮 CREATE ROUND 1
     ========================= */
 
-    const speakerOrder =
-      orderedPlayers.map(
+  const speakerOrder =
+  randomizedOrderedPlayers.map(
         (player) => {
           const roomPlayer =
             roomPlayers.find(
@@ -561,8 +579,8 @@ roundIntroEndsAt,
       roundNumber:
         1,
 
-      phase:
-        "speaking",
+    phase:
+  "roundIntro",
 
       currentSpeakerUserId:
         firstSpeaker.userId,
@@ -656,6 +674,282 @@ export const startClassicGame =
     },
   });
 
+
+  /* =========================
+   🧪 DEV RESTART CLASSIC GAME
+========================= */
+
+export const devRestartClassicGame =
+  mutation({
+    args: {
+      roomId:
+        v.id("gameRooms"),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      const user =
+        await getAuthenticatedUser(
+          ctx
+        );
+
+      const room =
+        await ctx.db.get(
+          args.roomId
+        );
+
+      if (!room) {
+        throw new Error(
+          "Room not found"
+        );
+      }
+
+      /* 👑 HOST ONLY */
+      if (
+        room.hostId !==
+        user._id
+      ) {
+        throw new Error(
+          "Only the host can restart the game"
+        );
+      }
+
+      /* =========================
+         👥 PLAYERS
+      ========================= */
+
+      const players =
+        await ctx.db
+          .query(
+            "gameRoomPlayers"
+          )
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                room._id
+              )
+          )
+          .collect();
+
+      /* =========================
+         🗑️ DELETE OLD ROUNDS
+      ========================= */
+
+      const rounds =
+        await ctx.db
+          .query(
+            "gameRounds"
+          )
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                room._id
+              )
+          )
+          .collect();
+
+      for (
+        const round of
+        rounds
+      ) {
+        const votes =
+          await ctx.db
+            .query(
+              "gameRoundVotes"
+            )
+            .withIndex(
+              "by_round",
+              (q) =>
+                q.eq(
+                  "roundId",
+                  round._id
+                )
+            )
+            .collect();
+
+        for (
+          const vote of
+          votes
+        ) {
+          await ctx.db.delete(
+            vote._id
+          );
+        }
+
+        const tieVotes =
+          await ctx.db
+            .query(
+              "gameTieBreakVotes"
+            )
+            .withIndex(
+              "by_round",
+              (q) =>
+                q.eq(
+                  "roundId",
+                  round._id
+                )
+            )
+            .collect();
+
+        for (
+          const vote of
+          tieVotes
+        ) {
+          await ctx.db.delete(
+            vote._id
+          );
+        }
+
+        await ctx.db.delete(
+          round._id
+        );
+      }
+
+      /* =========================
+         🔐 DELETE OLD SECRETS
+      ========================= */
+
+      const secrets =
+        await ctx.db
+          .query(
+            "gamePlayerSecrets"
+          )
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                room._id
+              )
+          )
+          .collect();
+
+      for (
+        const secret of
+        secrets
+      ) {
+        await ctx.db.delete(
+          secret._id
+        );
+      }
+
+      /* =========================
+   🗂️ DELETE OLD CATEGORY VOTES
+========================= */
+
+const categoryVotes =
+  await ctx.db
+    .query(
+      "gameClassicCategoryVotes"
+    )
+    .withIndex(
+      "by_room",
+      (q) =>
+        q.eq(
+          "roomId",
+          room._id
+        )
+    )
+    .collect();
+
+for (
+  const vote of
+  categoryVotes
+) {
+  await ctx.db.delete(
+    vote._id
+  );
+}
+
+      /* =========================
+         🎮 DELETE OLD MATCHES
+      ========================= */
+
+      const matches =
+        await ctx.db
+          .query(
+            "gameMatches"
+          )
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                room._id
+              )
+          )
+          .collect();
+
+      for (
+        const match of
+        matches
+      ) {
+        await ctx.db.delete(
+          match._id
+        );
+      }
+
+      /* =========================
+         ❤️ RESET PLAYERS
+      ========================= */
+
+      for (
+        const player of
+        players
+      ) {
+        await ctx.db.patch(
+          player._id,
+          {
+            isAlive: true,
+            eliminatedAt:
+              undefined,
+          }
+        );
+      }
+
+      /* =========================
+         🏠 RESET ROOM
+      ========================= */
+
+      const now =
+        Date.now();
+
+      await ctx.db.patch(
+        room._id,
+        {
+          status: "lobby",
+
+          playerListLocked:
+            false,
+
+          selectedCategory:
+            undefined,
+
+          categoryOptions:
+            undefined,
+
+          categorySelectionEndsAt:
+            undefined,
+
+          updatedAt: now,
+        }
+      );
+
+      return {
+        success: true,
+        roomId: room._id,
+        playerCount:
+          players.length,
+      };
+    },
+  });
+  
 /* =========================
    🔐 GET MY SECRET
 ========================= */

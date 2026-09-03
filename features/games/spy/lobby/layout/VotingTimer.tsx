@@ -1,80 +1,248 @@
-import { StyleSheet, Text, View } from "react-native";
+import React, {
+  useEffect,
+} from "react";
+
+import {
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import { Image } from "expo-image";
+
+import Svg, {
+  Circle,
+} from "react-native-svg";
+
+import Reanimated, {
+  Easing,
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+
+const AnimatedCircle =
+  Reanimated.createAnimatedComponent(
+    Circle
+  );
 
 type Props = {
   visible: boolean;
   remaining: number | null;
+  turnEndsAt?: number;
 };
 
 export default function VotingTimer({
   visible,
   remaining,
+  turnEndsAt,
 }: Props) {
-  if (!visible || remaining === null) {
+  const progress =
+    useSharedValue(1);
+
+  /* =========================
+     ⏱️ SMOOTH PROGRESS
+  ========================= */
+
+  useEffect(() => {
+    if (
+      !visible ||
+      !turnEndsAt
+    ) {
+      progress.value = 1;
+      return;
+    }
+
+    const duration =
+      Math.max(
+        0,
+        turnEndsAt -
+          Date.now()
+      );
+
+    progress.value = 1;
+
+    progress.value =
+      withTiming(
+        0,
+        {
+          duration,
+          easing:
+            Easing.linear,
+        }
+      );
+  }, [
+    visible,
+    turnEndsAt,
+  ]);
+
+  /* =========================
+     ⭕ TIMER ARC
+  ========================= */
+const radius = 18.4;
+
+const circumference =
+  2 * Math.PI * radius;
+
+
+  const animatedProps =
+    useAnimatedProps(
+      () => ({
+        strokeDashoffset:
+          circumference *
+          (1 - progress.value),
+      })
+    );
+
+  if (
+    !visible ||
+    remaining === null
+  ) {
     return null;
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>
-        VOTE
-      </Text>
+    <View
+      style={styles.container}
+    >
+      {/* =========================
+          ⏱️ STOPWATCH
+      ========================= */}
 
-      <Text style={styles.timer}>
-        {remaining}s
-      </Text>
+      <View
+        style={styles.timerVisual}
+      >
+      <Svg
+  width={45}
+  height={45}
+  viewBox="0 0 45 45"
+  style={styles.progressRing}
+>
+  <Circle
+    cx={22.5}
+    cy={22.5}
+    r={18.4}
+    fill="none"
+    stroke="rgba(242,169,0,0.12)"
+    strokeWidth={2}
+  />
+
+  <AnimatedCircle
+    cx={22.5}
+    cy={22.5}
+    r={18.4}
+    fill="none"
+    stroke="#D99A00"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeDasharray={`${circumference} ${circumference}`}
+    rotation="-90"
+    origin="22.5, 22.5"
+    animatedProps={animatedProps}
+  />
+</Svg>
+
+        {/* =========================
+            TRANSPARENT STOPWATCH
+        ========================= */}
+
+        <Image
+          source={require(
+            "@/assets/images/icons/timer.webp"
+          )}
+          contentFit="contain"
+          style={styles.stopwatch}
+        />
+      </View>
+
+      {/* =========================
+          SECONDS
+      ========================= */}
+
+      <View
+        style={styles.secondsRow}
+      >
+        <Text
+          style={styles.seconds}
+        >
+          {remaining}
+        </Text>
+
+        <Text
+          style={styles.sec}
+        >
+          SEC
+        </Text>
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
+const styles =
+  StyleSheet.create({
+    container: {
+      position: "absolute",
 
-    top: 10,
-    right: 12,
+      top: 64,
 
-    minWidth: 48,
-    height: 28,
+      right: 16,
 
-    paddingHorizontal: 8,
+      alignItems: "center",
 
-    borderRadius: 14,
+      zIndex: 100,
+    },
 
-    alignItems: "center",
-    justifyContent: "center",
+   timerVisual: {
+  width: 45,
+  height: 45,
 
-    flexDirection: "row",
-    gap: 4,
+  alignItems: "center",
+  justifyContent: "center",
+},
 
-    backgroundColor:
-      "rgba(8,8,12,0.78)",
+stopwatch: {
+  width: 30,
+  height: 30,
+  opacity: 0.9,
+},
 
-    borderWidth: 1,
+secondsRow: {
+  marginTop: -4,
 
-    borderColor:
-      "rgba(242,169,0,0.55)",
+  flexDirection: "row",
+  alignItems: "baseline",
+  justifyContent: "center",
 
-    zIndex: 100,
-    elevation: 100,
-  },
+  gap: 2,
+},
 
-  label: {
-    color: "#D2A62A",
+seconds: {
+  color: "#F2A900",
 
-    fontSize: 7,
+  fontSize: 12, // unchanged
+  fontWeight: "900",
 
-    fontWeight: "900",
+  letterSpacing: 0.2,
+},
 
-    letterSpacing: 0.7,
-  },
+sec: {
+  color:
+    "rgba(255,255,255,0.48)",
 
-  timer: {
-    color: "#FFFFFF",
+  fontSize: 6, // unchanged
+  fontWeight: "800",
 
-    fontSize: 11,
+  marginLeft: 2,
 
-    fontWeight: "900",
+  letterSpacing: 0.8,
+},
 
-    letterSpacing: 0.2,
-  },
-});
+    progressRing: {
+      position: "absolute",
+
+      top: 0,
+      left: 0,
+    },
+
+
+  });

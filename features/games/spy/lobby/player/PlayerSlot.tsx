@@ -222,9 +222,10 @@ export default function PlayerSlot({
           NAME / VOTE
       ========================= */}
 
-      {votingStarted &&
-      !isEliminated &&
-      !isSelf ? (
+   {votingStarted &&
+ !hasVoted &&
+ !isEliminated &&
+ !isSelf ? (
         <VotingControls
           visible={
             true
@@ -250,18 +251,26 @@ export default function PlayerSlot({
             styles.nameChip
           }
         >
-          <Text
-            numberOfLines={1}
-            style={
-              styles.name
-            }
-          >
+<Text
+  numberOfLines={1}
+ style={[
+  styles.name,
+
+  !isPlaying &&
+    isSelf &&
+    !player.isHost &&
+    styles.selfName,
+
+  isEliminated &&
+    styles.eliminatedName,
+]}
+>
   {!isPlaying && isSelf && !player.isHost
-  ? "YOU"
-  : player.name.length > 14
+    ? "YOU"
+    : player.name.length > 14
     ? `${player.name.slice(0, 14)}...`
     : player.name}
-          </Text>
+</Text>
         </View>
       )}
     </View>
@@ -464,16 +473,23 @@ const styles =
         "rgba(255,255,255,0.06)",
     },
 
-    name: {
-      color: "#FFF",
+ name: {
+  color: "#FFF",
 
-      fontSize: 9,
+  fontSize: 9,
 
-      fontWeight: "700",
+  fontWeight: "700",
 
-      textAlign:
-        "center",
+  textAlign: "center",
 
-      letterSpacing: 0.1,
-    },
+  letterSpacing: 0.1,
+},
+
+selfName: {
+  color: "#d49800",
+},
+
+eliminatedName: {
+  opacity: 0.55,
+},
   });

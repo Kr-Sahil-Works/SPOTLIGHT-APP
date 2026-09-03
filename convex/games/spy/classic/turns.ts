@@ -109,9 +109,6 @@ export const advanceClassicTurn =
         );
       }
 
-      const isHost =
-  room.hostId ===
-  user._id;
 
 const isCurrentSpeaker =
   currentPlayer.userId ===
@@ -121,10 +118,14 @@ if (
   args.force &&
   !isCurrentSpeaker
 ) {
-  throw new Error(
-    "Only the current speaker can skip their turn"
-  );
+  return {
+    success: false,
+    advanced: false,
+    reason:
+      "NOT_CURRENT_SPEAKER",
+  };
 }
+
 
 /* =========================
    ⏱️ TIMER

@@ -69,7 +69,8 @@ if (
           "Round is not in result phase"
         );
       }
-
+const now =
+  Date.now();
       /* =========================
          🏠 ROOM
       ========================= */
@@ -246,8 +247,6 @@ if (
         eliminatedRole ===
         "spy"
       ) {
-        const now =
-          Date.now();
 
         await ctx.db.patch(
           match._id,
@@ -308,12 +307,7 @@ if (
          🕵️ SPY STILL ALIVE
       ========================= */
 
-      const aliveSpy =
-        spyPlayer.isAlive;
-
-      if (!aliveSpy) {
-        const now =
-          Date.now();
+   if (!spyPlayer.isAlive) {
 
         await ctx.db.patch(
           match._id,
@@ -368,36 +362,14 @@ if (
          👥 COUNT ALIVE ROLES
       ========================= */
 
-      let aliveSpies =
-        0;
+  const aliveSpies =
+  spyPlayer.isAlive
+    ? 1
+    : 0;
 
-      let aliveVillagers =
-        0;
-
-      for (
-        const player of
-        alivePlayers
-      ) {
-        const secret =
-          secrets.find(
-            (item) =>
-              item.playerId ===
-              player._id
-          );
-
-        if (!secret) {
-          continue;
-        }
-
-        if (
-          secret.role ===
-          "spy"
-        ) {
-          aliveSpies++;
-        } else {
-          aliveVillagers++;
-        }
-      }
+const aliveVillagers =
+  alivePlayers.length -
+  aliveSpies;
 
       /* =========================
          🕵️ SPY PARITY WIN
@@ -407,8 +379,6 @@ if (
         aliveSpies >=
         aliveVillagers
       ) {
-        const now =
-          Date.now();
 
         await ctx.db.patch(
           match._id,
@@ -470,17 +440,6 @@ if (
   round.roundNumber >=
   match.maxRounds
 ) {
-  const now =
-    Date.now();
-
-  /*
-   * If maximum rounds are reached
-   * while the spy is still alive,
-   * villagers did not eliminate the
-   * spy in time.
-   *
-   * Spy wins.
-   */
 
   await ctx.db.patch(
     match._id,

@@ -165,22 +165,22 @@ export default function ClassicGameScreen() {
             onVote={async (
               category
             ) => {
-              try {
-                await castCategoryVote({
-                  roomId:
-                    validRoomId,
+            try {
+  await castCategoryVote({
+    roomId:
+      validRoomId,
 
-                  categoryId:
-                    category,
-                });
-              } catch (
-                error
-              ) {
-                console.error(
-                  "CATEGORY VOTE ERROR:",
-                  error
-                );
-              }
+    categoryId:
+      category,
+  });
+} catch (
+  error
+) {
+  console.error(
+    "CATEGORY VOTE ERROR:",
+    error
+  );
+}
             }}
 
             onFinalize={async () => {

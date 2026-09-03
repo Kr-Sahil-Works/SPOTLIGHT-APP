@@ -135,7 +135,16 @@ return (
   }}
 />
 
-     <View style={styles.content}>
+     <View
+  style={[
+    styles.content,
+    {
+      paddingTop: isOnline
+        ? insets.top
+        : 0,
+    },
+  ]}
+>
       {/* HEADER */}
     <ChatHeader
   isOnline={isOnline}

@@ -204,135 +204,116 @@ if (
         );
       }
 
-      /* =========================
-         🔀 CREATE SPEAKING ORDER
-      ========================= */
+/* =========================
+   🔀 CREATE SPEAKING ORDER
+========================= */
 
-      /*
-       * Keep the original room
-       * order but remove eliminated
-       * players.
-       */
+/*
+ * Keep only alive players from
+ * the previous speaking order.
+ */
 
-      const aliveIds =
-        new Set(
-          alivePlayers.map(
-            (player) =>
-              player._id.toString()
-          )
-        );
+const aliveIds =
+  new Set(
+    alivePlayers.map(
+      (player) =>
+        player._id.toString()
+    )
+  );
 
-      const previousOrder =
-        currentRound.speakerOrder;
+const nextSpeakerOrder =
+  currentRound.speakerOrder.filter(
+    (playerId) =>
+      aliveIds.has(
+        playerId.toString()
+      )
+  );
 
-      const nextSpeakerOrder =
-        previousOrder.filter(
-          (playerId) =>
-            aliveIds.has(
-              playerId.toString()
-            )
-        );
+/*
+ * Safety:
+ * Add any alive player missing
+ * from the previous order.
+ */
 
-      /*
-       * Safety:
-       * Any alive player missing
-       * from the previous order is
-       * appended.
-       */
+for (
+  const player of alivePlayers
+) {
+  const alreadyIncluded =
+    nextSpeakerOrder.some(
+      (playerId) =>
+        playerId ===
+        player._id
+    );
 
-      for (
-        const player of
-        alivePlayers
-      ) {
-        const alreadyIncluded =
-          nextSpeakerOrder.some(
-            (playerId) =>
-              playerId ===
-              player._id
-          );
+  if (!alreadyIncluded) {
+    nextSpeakerOrder.push(
+      player._id
+    );
+  }
+}
 
-        if (
-          !alreadyIncluded
-        ) {
-          nextSpeakerOrder.push(
-            player._id
-          );
-        }
-      }
+if (
+  nextSpeakerOrder.length <
+  2
+) {
+  throw new Error(
+    "Unable to create speaking order"
+  );
+}
 
-      if (
-        nextSpeakerOrder.length <
-        2
-      ) {
-        throw new Error(
-          "Unable to create speaking order"
-        );
-      }
+/* =========================
+   🎲 RANDOMIZE ORDER
+========================= */
 
-      /* =========================
-         🎲 ROTATE ORDER
-      ========================= */
+/*
+ * Shuffle the order so the
+ * first speaker is random.
+ *
+ * After that, turns proceed
+ * sequentially through this order.
+ */
 
-      /*
-       * Start from the player
-       * after the previous round's
-       * first speaker.
-       */
+for (
+  let i =
+    nextSpeakerOrder.length - 1;
+  i > 0;
+  i--
+) {
+  const j =
+    Math.floor(
+      Math.random() *
+        (i + 1)
+    );
 
-      const previousFirst =
-        currentRound
-          .speakerOrder[0];
+  [
+    nextSpeakerOrder[i],
+    nextSpeakerOrder[j],
+  ] = [
+    nextSpeakerOrder[j],
+    nextSpeakerOrder[i],
+  ];
+}
 
-      const previousFirstIndex =
-        nextSpeakerOrder.findIndex(
-          (playerId) =>
-            playerId ===
-            previousFirst
-        );
+const finalSpeakerOrder =
+  nextSpeakerOrder;
 
-      let finalSpeakerOrder =
-        nextSpeakerOrder;
+/* =========================
+   🎤 FIRST SPEAKER
+========================= */
 
-      if (
-        previousFirstIndex !==
-        -1
-      ) {
-        const rotateBy =
-          (
-            previousFirstIndex +
-            1
-          ) %
-          nextSpeakerOrder.length;
+const firstSpeakerId =
+  finalSpeakerOrder[0];
 
-        finalSpeakerOrder = [
-          ...nextSpeakerOrder.slice(
-            rotateBy
-          ),
-          ...nextSpeakerOrder.slice(
-            0,
-            rotateBy
-          ),
-        ];
-      }
+const firstSpeaker =
+  await ctx.db.get(
+    firstSpeakerId
+  );
 
-      /* =========================
-         🎤 FIRST SPEAKER
-      ========================= */
-
-      const firstSpeakerId =
-        finalSpeakerOrder[0];
-
-      const firstSpeaker =
-        await ctx.db.get(
-          firstSpeakerId
-        );
-
-      if (!firstSpeaker) {
-        throw new Error(
-          "First speaker not found"
-        );
-      }
-
+if (!firstSpeaker) {
+  throw new Error(
+    "First speaker not found"
+  );
+}
 /* =========================
    ⏱️ ROUND INTRO TIMER
 ========================= */

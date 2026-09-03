@@ -18,7 +18,7 @@ type Props = {
   onRules?: () => void;
   onVolume?: () => void;
   onExit?: () => void;
-
+turnEndsAt?: number;
   votingStarted?: boolean;
 votingRemaining?: number | null;
 
@@ -34,6 +34,7 @@ export default function LobbyHeader({
   onRules,
   onVolume,
   onExit,
+  turnEndsAt,
   word,
 roomCode,
 isHost = false,
@@ -115,10 +116,18 @@ votingRemaining = null,
         ]}
       >
 
-        <VotingTimer
+<VotingTimer
   visible={votingStarted}
   remaining={votingRemaining}
+ turnEndsAt={turnEndsAt}
 />
+  
+  {/* <VotingTimer
+  visible={true}
+  remaining={20}
+  turnEndsAt={Date.now() + 20000}
+/> */}
+  
         {/* =========================
             📹 CCTV / MENU
         ========================= */}

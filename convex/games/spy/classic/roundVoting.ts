@@ -1,8 +1,7 @@
 import {
   mutation,
   query,
-  type MutationCtx,
-  type QueryCtx,
+  type QueryCtx
 } from "../../../_generated/server";
 
 import { v } from "convex/values";
@@ -60,21 +59,6 @@ const getAuthenticatedUserForQuery =
 
     return user;
   };
-
-/* =========================
-   🔎 GET ROUND
-========================= */
-
-const getRound = async (
-  ctx: MutationCtx,
-  roundId: Parameters<
-    typeof ctx.db.get
-  >[0]
-) => {
-  return await ctx.db.get(
-    roundId as any
-  );
-};
 
 /* =========================
    🚀 START VOTING
@@ -223,14 +207,14 @@ export const castRoundVote =
         );
       }
 
-   if (
-  round.phase !== "voting" &&
-  round.phase !== "tieBreak"
-) {
-  throw new Error(
-    "Voting is not active"
-  );
-}
+      if (
+        round.phase !== "voting" &&
+        round.phase !== "tieBreak"
+      ) {
+        throw new Error(
+          "Voting is not active"
+        );
+      }
 
       if (
         round.votingEndsAt ===
@@ -313,11 +297,6 @@ export const castRoundVote =
             (id) =>
               id.toString()
           );
-
-        /*
-         * During tie-break only
-         * tied players can be voted.
-         */
       }
 
       /* =========================
@@ -381,10 +360,12 @@ export const castRoundVote =
       }
 
       /* =========================
-         ⏭️ SKIP
+         ⏭️ SAVE SKIP
       ========================= */
 
-      if (args.skipped) {
+      if (
+        args.skipped
+      ) {
         if (
           round.isTieBreak
         ) {
@@ -434,150 +415,229 @@ export const castRoundVote =
             }
           );
         }
-
-        return {
-          success: true,
-          skipped: true,
-          isTieBreak:
-            round.isTieBreak,
-        };
-      }
-
-      /* =========================
-         🎯 TARGET REQUIRED
-      ========================= */
-
-      if (
-        !args.targetPlayerId
-      ) {
-        throw new Error(
-          "Select a player or skip"
-        );
-      }
-
-      /* =========================
-         🚫 SELF VOTE
-      ========================= */
-
-      if (
-        args.targetPlayerId ===
-        voter._id
-      ) {
-        throw new Error(
-          "You cannot vote for yourself"
-        );
-      }
-
-      /* =========================
-         🎯 TIE-BREAK RESTRICTION
-      ========================= */
-
-      if (
-        round.isTieBreak &&
-        allowedTargetIds &&
-        !allowedTargetIds.includes(
-          args.targetPlayerId.toString()
-        )
-      ) {
-        throw new Error(
-          "You can only vote for a tied player"
-        );
-      }
-
-      /* =========================
-         👤 FIND TARGET
-      ========================= */
-
-      const target =
-        await ctx.db.get(
-          args.targetPlayerId
-        );
-
-      if (!target) {
-        throw new Error(
-          "Target player not found"
-        );
-      }
-
-      if (
-        target.roomId !==
-        round.roomId
-      ) {
-        throw new Error(
-          "Target player is not in this room"
-        );
-      }
-
-      if (!target.isAlive) {
-        throw new Error(
-          "You cannot vote for an eliminated player"
-        );
-      }
-
-      /* =========================
-         💾 SAVE VOTE
-      ========================= */
-
-      if (
-        round.isTieBreak
-      ) {
-        await ctx.db.insert(
-          "gameTieBreakVotes",
-          {
-            roundId:
-              round._id,
-
-            roomId:
-              round.roomId,
-
-            voterId:
-              voter._id,
-
-            targetId:
-              target._id,
-
-            skipped:
-              false,
-
-            createdAt:
-              now,
-          }
-        );
       } else {
-        await ctx.db.insert(
-          "gameRoundVotes",
-          {
-            roundId:
-              round._id,
+        /* =========================
+           🎯 TARGET REQUIRED
+        ========================= */
 
-            roomId:
-              round.roomId,
+        if (
+          !args.targetPlayerId
+        ) {
+          throw new Error(
+            "Select a player or skip"
+          );
+        }
 
-            voterId:
-              voter._id,
+        /* =========================
+           🚫 SELF VOTE
+        ========================= */
 
-            targetId:
-              target._id,
+        if (
+          args.targetPlayerId ===
+          voter._id
+        ) {
+          throw new Error(
+            "You cannot vote for yourself"
+          );
+        }
 
-            skipped:
-              false,
+        /* =========================
+           🎯 TIE-BREAK RESTRICTION
+        ========================= */
 
-            createdAt:
-              now,
-          }
-        );
+        if (
+          round.isTieBreak &&
+          allowedTargetIds &&
+          !allowedTargetIds.includes(
+            args.targetPlayerId.toString()
+          )
+        ) {
+          throw new Error(
+            "You can only vote for a tied player"
+          );
+        }
+
+        /* =========================
+           👤 FIND TARGET
+        ========================= */
+
+        const target =
+          await ctx.db.get(
+            args.targetPlayerId
+          );
+
+        if (!target) {
+          throw new Error(
+            "Target player not found"
+          );
+        }
+
+        if (
+          target.roomId !==
+          round.roomId
+        ) {
+          throw new Error(
+            "Target player is not in this room"
+          );
+        }
+
+        if (
+          !target.isAlive
+        ) {
+          throw new Error(
+            "You cannot vote for an eliminated player"
+          );
+        }
+
+        /* =========================
+           💾 SAVE VOTE
+        ========================= */
+
+        if (
+          round.isTieBreak
+        ) {
+          await ctx.db.insert(
+            "gameTieBreakVotes",
+            {
+              roundId:
+                round._id,
+
+              roomId:
+                round.roomId,
+
+              voterId:
+                voter._id,
+
+              targetId:
+                target._id,
+
+              skipped:
+                false,
+
+              createdAt:
+                now,
+            }
+          );
+        } else {
+          await ctx.db.insert(
+            "gameRoundVotes",
+            {
+              roundId:
+                round._id,
+
+              roomId:
+                round.roomId,
+
+              voterId:
+                voter._id,
+
+              targetId:
+                target._id,
+
+              skipped:
+                false,
+
+              createdAt:
+                now,
+            }
+          );
+        }
       }
+
+      /* =========================
+         🗳️ CHECK IF EVERYONE VOTED
+      ========================= */
+
+      const alivePlayers =
+        await ctx.db
+          .query(
+            "gameRoomPlayers"
+          )
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                round.roomId
+              )
+          )
+          .collect();
+
+      const eligibleVoters =
+        alivePlayers.filter(
+          (player) =>
+            player.isAlive
+        );
+
+      /* =========================
+         📊 GET CURRENT VOTES
+      ========================= */
+
+      const votes =
+        round.isTieBreak
+          ? await ctx.db
+              .query(
+                "gameTieBreakVotes"
+              )
+              .withIndex(
+                "by_round",
+                (q) =>
+                  q.eq(
+                    "roundId",
+                    round._id
+                  )
+              )
+              .collect()
+          : await ctx.db
+              .query(
+                "gameRoundVotes"
+              )
+              .withIndex(
+                "by_round",
+                (q) =>
+                  q.eq(
+                    "roundId",
+                    round._id
+                  )
+              )
+              .collect();
+
+      const votedPlayers =
+        new Set(
+          votes.map(
+            (vote) =>
+              vote.voterId.toString()
+          )
+        );
+
+      const allPlayersVoted =
+        eligibleVoters.every(
+          (player) =>
+            votedPlayers.has(
+              player._id.toString()
+            )
+        );
+
+      /* =========================
+         ✅ RETURN COMPLETION STATE
+      ========================= */
 
       return {
         success: true,
 
-        skipped: false,
+        skipped:
+          args.skipped,
 
         isTieBreak:
           round.isTieBreak,
 
         targetPlayerId:
-          target._id,
+          args.targetPlayerId,
+
+        allPlayersVoted,
+
+        shouldFinalize:
+          allPlayersVoted,
       };
     },
   });
@@ -730,14 +790,15 @@ export const finalizeRoundVoting =
           "Round not found"
         );
       }
-
- if (
+if (
   round.phase !== "voting" &&
   round.phase !== "tieBreak"
 ) {
-  throw new Error(
-    "Voting is not active"
-  );
+  return {
+    success: false,
+    alreadyFinalized: true,
+    reason: "VOTING_NOT_ACTIVE",
+  };
 }
 
       if (
@@ -748,81 +809,87 @@ export const finalizeRoundVoting =
           "Voting has not started"
         );
       }
+const now =
+  Date.now();
 
-      const now =
-        Date.now();
+/* =========================
+   🗳️ CHECK VOTING COMPLETION
+========================= */
 
-      if (
-        now <
-        round.votingEndsAt
-      ) {
-        throw new Error(
-          "Voting is still active"
-        );
-      }
+const alivePlayers =
+  await ctx.db
+    .query("gameRoomPlayers")
+    .withIndex(
+      "by_room",
+      (q) =>
+        q.eq(
+          "roomId",
+          round.roomId
+        )
+    )
+    .collect();
 
-      /* =========================
-         👤 VERIFY PLAYER
-      ========================= */
+const eligibleVoters =
+  alivePlayers.filter(
+    (player) =>
+      player.isAlive
+  );
 
-      const caller =
-        await ctx.db
-          .query(
-            "gameRoomPlayers"
-          )
-          .withIndex(
-            "by_room_user",
-            (q) =>
-              q
-                .eq(
-                  "roomId",
-                  round.roomId
-                )
-                .eq(
-                  "userId",
-                  user._id
-                )
-          )
-          .unique();
+/* =========================
+   🗳️ GET VOTES
+========================= */
 
-      if (!caller) {
-        throw new Error(
-          "You are not a player in this room"
-        );
-      }
+const votes =
+  round.isTieBreak
+    ? await ctx.db
+        .query("gameTieBreakVotes")
+        .withIndex(
+          "by_round",
+          (q) =>
+            q.eq(
+              "roundId",
+              round._id
+            )
+        )
+        .collect()
+    : await ctx.db
+        .query("gameRoundVotes")
+        .withIndex(
+          "by_round",
+          (q) =>
+            q.eq(
+              "roundId",
+              round._id
+            )
+        )
+        .collect();
 
-      /* =========================
-         🗳️ GET VOTES
-      ========================= */
+const allPlayersVoted =
+  eligibleVoters.every((player) =>
+    votes.some(
+      (vote) =>
+        vote.voterId === player._id
+    )
+  );
 
-      const votes =
-        round.isTieBreak
-          ? await ctx.db
-              .query(
-                "gameTieBreakVotes"
-              )
-              .withIndex(
-                "by_round",
-                (q) =>
-                  q.eq(
-                    "roundId",
-                    round._id
-                  )
-              )
-              .collect()
-          : await ctx.db
-              .query(
-                "gameRoundVotes"
-              )
-              .withIndex(
-                "by_round",
-                (q) =>
-                  q.eq(
-                    "roundId",
-                    round._id
-                  )
-              )
-              .collect();
+const timerExpired =
+  now >= round.votingEndsAt;
+
+/*
+ * Voting completes when:
+ * 1. Every alive player voted/skipped
+ * OR
+ * 2. Timer expired
+ */
+
+if (
+  !allPlayersVoted &&
+  !timerExpired
+) {
+  throw new Error(
+    "Voting is still active"
+  );
+}
 
       /* =========================
          📊 COUNT VOTES
@@ -858,6 +925,35 @@ export const finalizeRoundVoting =
         );
       }
 
+      const votersByTarget =
+  new Map<
+    string,
+    Id<"gameRoomPlayers">[]
+  >();
+
+for (const vote of votes) {
+  if (
+    vote.skipped ||
+    !vote.targetId
+  ) {
+    continue;
+  }
+
+  const key =
+    vote.targetId.toString();
+
+  const existing =
+    votersByTarget.get(key) ?? [];
+
+  existing.push(
+    vote.voterId
+  );
+
+  votersByTarget.set(
+    key,
+    existing
+  );
+}
       /* =========================
          ⏭️ NO TARGET
       ========================= */
@@ -897,21 +993,10 @@ export const finalizeRoundVoting =
          🏆 HIGHEST COUNT
       ========================= */
 
-      let highest =
-        0;
-
-      for (
-        const count of
-        voteCounts.values()
-      ) {
-        if (
-          count >
-          highest
-        ) {
-          highest =
-            count;
-        }
-      }
+   const highest =
+  Math.max(
+    ...voteCounts.values()
+  );
 
     /* =========================
    🏆 GET LEADERS
@@ -1205,41 +1290,6 @@ return {
     }});
 
 /* =========================
-   🔀 SHUFFLE
-========================= */
-
-const shuffleIds = (
-  ids: Id<"gameRoomPlayers">[]
-): Id<"gameRoomPlayers">[] => {
-  const result =
-    [...ids];
-
-  for (
-    let i =
-      result.length - 1;
-    i > 0;
-    i--
-  ) {
-    const j =
-      Math.floor(
-        Math.random() *
-          (i + 1)
-      );
-
-    [
-      result[i],
-      result[j],
-    ] = [
-      result[j],
-      result[i],
-    ];
-  }
-
-  return result;
-};
-
-
-/* =========================
    📊 VOTING RESULT
 ========================= */
 
@@ -1328,28 +1378,50 @@ export const getRoundVotingResult =
         );
       }
 
-      const skippedVotes =
-        votes.filter(
-          (vote) =>
-            vote.skipped
-        ).length;
+        const votersByTarget =
+  new Map<
+    string,
+    Id<"gameRoomPlayers">[]
+  >();
 
-     let eliminatedPlayer = undefined;
+for (const vote of votes) {
+  if (
+    vote.skipped ||
+    !vote.targetId
+  ) {
+    continue;
+  }
 
-if (round.eliminatedPlayerId) {
-  eliminatedPlayer = await ctx.db.get(
-    round.eliminatedPlayerId
+  const key =
+    vote.targetId.toString();
+
+  const existing =
+    votersByTarget.get(key) ?? [];
+
+  existing.push(
+    vote.voterId
+  );
+
+  votersByTarget.set(
+    key,
+    existing
   );
 }
 
+const eliminatedPlayer =
+  round.eliminatedPlayerId
+    ? await ctx.db.get(
+        round.eliminatedPlayerId
+      )
+    : null;
+
 if (!eliminatedPlayer) {
-  return {
-    roundId: round._id,
-    eliminatedPlayer: null,
-    voteCount: 0,
-    skippedVotes,
-    role: undefined,
-  };
+ return {
+  roundId: round._id,
+  eliminatedPlayer: null,
+  voteCount: 0,
+  role: undefined,
+};
 }
 
 /* =========================
@@ -1369,47 +1441,36 @@ if (
     roundId: round._id,
     eliminatedPlayer: null,
     voteCount: 0,
-    skippedVotes,
     role: undefined,
   };
 }
 
 /* =========================
-   🎮 ACTIVE MATCH
-========================= */
-
-const match =
-  await ctx.db
-    .query("gameMatches")
-    .withIndex(
-      "by_room_status",
-      (q) =>
-        q
-          .eq(
-            "roomId",
-            round.roomId
-          )
-          .eq(
-            "status",
-            "playing"
-          )
-    )
-    .first();
-
-/* =========================
    🕵️ ROLE
 ========================= */
 
-const role:
-  | "spy"
-  | "villager"
-  | undefined =
-  match
-    ? match.spyPlayerId ===
-      eliminatedPlayer._id
-      ? "spy"
-      : "villager"
-    : undefined;
+const eliminatedSecret =
+  await ctx.db
+    .query("gamePlayerSecrets")
+    .withIndex(
+      "by_room",
+      (q) =>
+        q.eq(
+          "roomId",
+          round.roomId
+        )
+    )
+    .filter(
+      (q) =>
+        q.eq(
+          q.field("playerId"),
+          eliminatedPlayer._id
+        )
+    )
+    .first();
+
+const role =
+  eliminatedSecret?.role;
 
 return {
   roundId:
@@ -1429,13 +1490,16 @@ return {
       eliminatedUser.image,
   },
 
-  voteCount:
-    voteCounts.get(
-      eliminatedPlayer._id.toString()
-    ) ?? 0,
+voteCount:
+  voteCounts.get(
+    eliminatedPlayer._id.toString()
+  ) ?? 0,
 
-  skippedVotes,
+voterIds:
+  votersByTarget.get(
+    eliminatedPlayer._id.toString()
+  ) ?? [],
 
-  role,
+role,
 };}
   });

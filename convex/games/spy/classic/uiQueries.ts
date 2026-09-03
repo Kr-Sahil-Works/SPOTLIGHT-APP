@@ -195,28 +195,28 @@ export const getClassicGameState =
          👤 SAFE PLAYER DATA
       ========================= */
 
-      const safePlayers =
-        players.map(
-          (player) => ({
-            playerId:
-              player._id,
+ const safePlayers =
+  players.map(
+    (player) => ({
+      playerId:
+        player._id,
 
-            userId:
-              player.userId,
+      userId:
+        player.userId,
 
-            isHost:
-              player.isHost,
+      isHost:
+        player.isHost,
 
-            isAlive:
-              player.isAlive,
+      isAlive:
+        player.isAlive,
 
-            isConnected:
-              player.isConnected,
+      isConnected:
+        player.isConnected,
 
-            joinedAt:
-              player.joinedAt,
-          })
-        );
+      joinedAt:
+        player.joinedAt,
+    })
+  );
 
       /* =========================
          🎤 CURRENT SPEAKER
@@ -286,11 +286,15 @@ export const getClassicGameState =
       let hasVoted =
         false;
 
-      if (
-        round &&
-        round.phase ===
-          "voting"
-      ) {
+    if (
+  round &&
+  (
+    round.phase ===
+      "voting" ||
+    round.phase ===
+      "tieBreak"
+  )
+) {
         if (
           round.isTieBreak
         ) {
@@ -346,9 +350,11 @@ export const getClassicGameState =
          ⚖️ TIE-BREAK PLAYERS
       ========================= */
 
-      const tieBreakPlayers =
-        round?.tieBreakOrder ??
-        [];
+   const tieBreakPlayers =
+  round?.isTieBreak
+    ? round.tieBreakOrder ??
+      []
+    : [];
 
 
         

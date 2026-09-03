@@ -40,39 +40,35 @@ export default function SpeakingTurnSkipButton({
 const styles = StyleSheet.create({
   button: {
     minWidth: 68,
-    height: 25,
+    height: 28,
 
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
 
-    borderRadius: 13,
+    borderRadius: 14,
 
     alignItems: "center",
     justifyContent: "center",
 
     backgroundColor:
-      "rgba(255,255,255,0.07)",
+      "rgba(255,255,255,0.065)",
 
     borderWidth: 1,
+
     borderColor:
-      "rgba(242,169,0,0.30)",
+      "rgba(242,169,0,0.24)",
 
-    shadowColor: "#000",
-
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-
-    elevation: 2,
+    transform: [
+      {
+        translateY: 8,
+      },
+    ],
   },
 
   text: {
     color: "#D09A00",
 
-    fontSize: 7.5,
+    fontSize: 8,
+
     fontWeight: "900",
 
     letterSpacing: 0.8,
@@ -82,6 +78,9 @@ const styles = StyleSheet.create({
     opacity: 0.7,
 
     transform: [
+      {
+        translateY: 8,
+      },
       {
         scale: 0.94,
       },

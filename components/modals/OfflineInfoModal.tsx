@@ -14,6 +14,10 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 
+import {
+  LinearGradient,
+} from "expo-linear-gradient";
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -25,24 +29,8 @@ export default function OfflineInfoModal({
 }: Props) {
   const translateY =
     useRef(
-      new Animated.Value(120)
+      new Animated.Value(80)
     ).current;
-
-    const pulse =
-  useRef(
-    new Animated.Value(0)
-  ).current;
-
-const ring =
-  useRef(
-    new Animated.Value(0)
-  ).current;
-
-  const wifiBlink =
-  useRef(
-    new Animated.Value(1)
-  ).current;
-
 
   const progress =
     useRef(
@@ -50,94 +38,35 @@ const ring =
     ).current;
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      return;
+    }
 
+    translateY.setValue(80);
     progress.setValue(0);
 
-    Animated.parallel([
-      Animated.spring(
-        translateY,
-        {
-          toValue: 0,
-          tension: 90,
-          friction: 10,
-          useNativeDriver: true,
-        }
-      ),
-
-      Animated.timing(
-        progress,
-        {
-          toValue: 100,
-          duration: 12000,
-          useNativeDriver: false,
-        }
-      ),
-    ]).start();
-
-    Animated.loop(
-  Animated.sequence([
-    Animated.timing(
-      pulse,
-      {
-        toValue: 1,
-        duration: 1400,
-        useNativeDriver: true,
-      }
-    ),
-    Animated.timing(
-      pulse,
+    Animated.spring(
+      translateY,
       {
         toValue: 0,
-        duration: 1400,
-        useNativeDriver: true,
-      }
-    ),
-  ])
-).start();
 
-Animated.loop(
-  Animated.sequence([
-    Animated.timing(
-      ring,
-      {
-        toValue: 1,
-        duration: 1800,
-        useNativeDriver: true,
-      }
-    ),
-    Animated.timing(
-      ring,
-      {
-        toValue: 0,
-        duration: 0,
-        useNativeDriver: true,
-      }
-    ),
-  ])
-).start();
+        tension: 75,
+        friction: 12,
 
-Animated.loop(
-  Animated.sequence([
-    Animated.timing(
-      wifiBlink,
-      {
-        toValue: 0.25,
-        duration: 700,
         useNativeDriver: true,
       }
-    ),
+    ).start();
 
     Animated.timing(
-      wifiBlink,
+      progress,
       {
-        toValue: 1,
-        duration: 700,
-        useNativeDriver: true,
+        toValue: 100,
+
+        duration: 12000,
+
+        useNativeDriver: false,
       }
-    ),
-  ])
-).start();
+    ).start();
 
     const timer =
       setTimeout(() => {
@@ -146,190 +75,212 @@ Animated.loop(
 
     return () =>
       clearTimeout(timer);
-  }, [visible]);
+  }, [
+    visible,
+    onClose,
+    translateY,
+    progress,
+  ]);
 
-  if (!visible)
+  if (!visible) {
     return null;
+  }
 
   return (
     <Pressable
       onPress={onClose}
       style={{
         position: "absolute",
+
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
+
         zIndex: 99999,
+
+        justifyContent:
+          "flex-end",
+
+        paddingHorizontal: 12,
+        paddingBottom: 18,
+
+        /*
+         * Very subtle red atmosphere.
+         */
+        backgroundColor:
+          "rgba(70,0,4,0.035)",
       }}
     >
       <Animated.View
         style={{
-          position: "absolute",
-
-          left: 16,
-          right: 16,
-          bottom: 24,
-
           transform: [
             {
               translateY,
             },
           ],
 
+          width: "100%",
+
+          paddingHorizontal: 15,
+          paddingTop: 13,
+          paddingBottom: 11,
+
+          borderRadius: 18,
+
+          /*
+           * Almost-black glass.
+           */
           backgroundColor:
-            "#0d0d0d",
+            "rgba(3,3,4,0.98)",
 
-          borderRadius: 24,
-
-          borderWidth: 1,
+          borderWidth: 0.6,
 
           borderColor:
-            "rgba(255,77,79,0.35)",
+            "rgba(255,70,75,0.12)",
 
-          padding: 16,
-
+          /*
+           * Very restrained
+           * red backlight.
+           */
           shadowColor:
-  "#ff4d4f",
+            "#ff3038",
 
-shadowOpacity: 0.25,
+          shadowOpacity: 0.08,
 
-shadowRadius: 25,
+          shadowRadius: 10,
 
-elevation: 16,
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+
+          elevation: 8,
         }}
       >
-        {/* TOP */}
+        {/* =========================
+            HEADER
+        ========================= */}
+
         <View
           style={{
             flexDirection: "row",
+
             alignItems: "center",
           }}
         >
-         <Animated.View
-  style={{
-    position: "absolute",
+          {/* ICON */}
 
-    width: 36,
-    height: 36,
+          <View
+            style={{
+              width: 31,
+              height: 31,
 
-    borderRadius: 999,
+              borderRadius: 10,
 
-    borderWidth: 2,
-    marginLeft: -10,
+              alignItems:
+                "center",
 
-borderColor:
-  "#ff4d4f",
-    opacity:
-      ring.interpolate({
-        inputRange: [0,1],
-        outputRange: [0.8,0],
-      }),
+              justifyContent:
+                "center",
 
-    transform: [
-      {
-        scale:
-          ring.interpolate({
-            inputRange: [0,1],
-            outputRange: [0.8,2],
-          }),
-      },
-    ],
-  }}
-/>
+              backgroundColor:
+                "rgba(255,55,60,0.07)",
 
-<Animated.View
-  style={{
-    opacity: wifiBlink,
+              borderWidth: 0.5,
 
-    transform: [
-      {
-        scale:
-          wifiBlink.interpolate({
-            inputRange: [
-              0.25,
-              0.8,
-            ],
-            outputRange: [
-              0.8,
-              0.9,
-            ],
-          }),
-      },
-    ],
-  }}
->
-  <Ionicons
-    name="wifi-outline"
-    size={26}
-    color="#ff4d4f"
-  />
-</Animated.View>
+              borderColor:
+                "rgba(255,70,75,0.10)",
+            }}
+          >
+            <Ionicons
+              name="wifi-outline"
+              size={21}
+              color="#c9363e"
+            />
+          </View>
+
+          {/* TITLE */}
 
           <View
             style={{
               flex: 1,
-              marginLeft: 12,
+
+              marginLeft: 10,
             }}
           >
             <Text
               style={{
-                color: "#fff",
-                fontSize: 16,
-                fontWeight: "700",
-              }}
-            >
-              Offline Mode
-            </Text>
+                color: "#c9363e",
 
-            <Text
-              style={{
-                color: "#9ca3af",
-                marginTop: 2,
-                fontSize: 13,
+                fontSize: 14,
+
+                fontWeight: "700",
+
+                letterSpacing: 0.1,
               }}
             >
-              Viewing cached content
+              No Internet Connection
             </Text>
           </View>
         </View>
 
-        {/* INFO */}
-        <View
+        {/* =========================
+            INFO
+        ========================= */}
+
+        <Text
           style={{
-            marginTop: 14,
+            color: "#a5a5aa",
+
+            fontSize: 10,
+
+            lineHeight: 18,
+
+            marginTop: 11,
+
+               textAlign: "center",
           }}
         >
-          <Text
-            style={{
-              color: "#d1d5db",
-              fontSize: 13,
-              lineHeight: 20,
-            }}
-          >
-      Some features may be unavailable
-until your Reconnects to Internet.
+          You are not connected to the internet.
+  {"\n"}
+  Make sure Wi-Fi is on, Airplane Mode is off
+  {"\n"}
+  and try again.
+        </Text>
+<Text
+  style={{
+    color: "#66666c",
 
-{"\n\n"}
+    fontSize: 10.5,
 
-If a screen feels freezed,
-close and reopen MilesSpot.
-          </Text>
-        </View>
+    lineHeight: 15,
 
-        {/* PROGRESS */}
+    marginTop: 6,
+
+    textAlign: "center",
+  }}
+>
+          If still screen feels frozen,
+          close and reopen MilesSpot.
+        </Text>
+
+        {/* =========================
+            PROGRESS
+        ========================= */}
+
         <View
           style={{
-            marginTop: 14,
+            marginTop: 12,
 
-            height: 4,
+            height: 3,
 
-            borderRadius: 999,
+            borderRadius: 99,
 
             overflow: "hidden",
 
             backgroundColor:
-              "rgba(255,255,255,0.06)",
+              "rgba(255,255,255,0.055)",
           }}
         >
           <Animated.View
@@ -342,16 +293,35 @@ close and reopen MilesSpot.
                     0,
                     100,
                   ],
+
                   outputRange: [
                     "0%",
                     "100%",
                   ],
                 }),
-
-      backgroundColor:
-  "#ff4d4f",
             }}
-          />
+          >
+            <LinearGradient
+              colors={[
+                "#520006",
+                "#a40010",
+                "#e8323d",
+              ]}
+              start={{
+                x: 0,
+                y: 0.5,
+              }}
+              end={{
+                x: 1,
+                y: 0.5,
+              }}
+              style={{
+                flex: 1,
+
+                borderRadius: 99,
+              }}
+            />
+          </Animated.View>
         </View>
       </Animated.View>
     </Pressable>

@@ -49,16 +49,10 @@ export default function LobbyPlayersSection({
       8
     );
 
-  const visiblePlayers =
-    players.slice(
-      0,
-      safeMaxPlayers
-    );
-
   if (advancedRoom) {
     return (
       <AdvancedSeatLayout
-        players={visiblePlayers}
+  players={players}
         maxPlayers={
           safeMaxPlayers
         }
@@ -74,7 +68,7 @@ export default function LobbyPlayersSection({
 
   return (
     <DefaultSeatLayout
-  players={visiblePlayers}
+  players={players}
   maxPlayers={safeMaxPlayers}
   isPlaying={isPlaying}
   votingStarted={votingStarted}
