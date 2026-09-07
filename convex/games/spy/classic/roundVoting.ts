@@ -4,12 +4,16 @@ import {
   type QueryCtx
 } from "../../../_generated/server";
 
-import { v } from "convex/values";
+import {
+  transitionToTieBreak,
+} from "./tieBreakVoting";
 
+import { v } from "convex/values";
 import { Id } from "../../../_generated/dataModel";
 import { getAuthenticatedUser } from "../../../users/users.core";
 
 const VOTING_SECONDS = 20;
+const MAX_TIE_ROUNDS = 15;
 
 /* =========================
    🔐 QUERY AUTH
@@ -91,9 +95,8 @@ export const startRoundVoting =
         );
       }
 
-    if (
-  round.phase !== "voting" &&
-  round.phase !== "tieBreak"
+if (
+  round.phase !== "voting"
 ) {
   throw new Error(
     "Voting is not active"
@@ -208,11 +211,11 @@ export const castRoundVote =
       }
 
       if (
-        round.phase !== "voting" &&
-        round.phase !== "tieBreak"
+        round.phase !== "voting" ||
+        round.isTieBreak
       ) {
         throw new Error(
-          "Voting is not active"
+          "Normal round voting is not active"
         );
       }
 
@@ -274,147 +277,68 @@ export const castRoundVote =
       }
 
       /* =========================
-         🎯 TIE-BREAK TARGETS
+         🚫 ONE IMMUTABLE VOTE
       ========================= */
 
-      let allowedTargetIds:
-        string[] | undefined =
-        undefined;
+      const existingVote =
+        await ctx.db
+          .query(
+            "gameRoundVotes"
+          )
+          .withIndex(
+            "by_round_voter",
+            (q) =>
+              q
+                .eq(
+                  "roundId",
+                  round._id
+                )
+                .eq(
+                  "voterId",
+                  voter._id
+                )
+          )
+          .unique();
 
-      if (
-        round.isTieBreak
-      ) {
-        if (
-          !round.tieBreakOrder
-        ) {
-          throw new Error(
-            "Tie-break players are missing"
-          );
-        }
-
-        allowedTargetIds =
-          round.tieBreakOrder.map(
-            (id) =>
-              id.toString()
-          );
-      }
-
-      /* =========================
-         🔒 ONE VOTE
-      ========================= */
-
-      if (
-        round.isTieBreak
-      ) {
-        const existingVote =
-          await ctx.db
-            .query(
-              "gameTieBreakVotes"
-            )
-            .withIndex(
-              "by_round_voter",
-              (q) =>
-                q
-                  .eq(
-                    "roundId",
-                    round._id
-                  )
-                  .eq(
-                    "voterId",
-                    voter._id
-                  )
-            )
-            .unique();
-
-        if (existingVote) {
-          throw new Error(
-            "You have already voted in the tie-break"
-          );
-        }
-      } else {
-        const existingVote =
-          await ctx.db
-            .query(
-              "gameRoundVotes"
-            )
-            .withIndex(
-              "by_round_voter",
-              (q) =>
-                q
-                  .eq(
-                    "roundId",
-                    round._id
-                  )
-                  .eq(
-                    "voterId",
-                    voter._id
-                  )
-            )
-            .unique();
-
-        if (existingVote) {
-          throw new Error(
-            "You have already voted"
-          );
-        }
+      if (existingVote) {
+        return {
+          success: true,
+          alreadyVoted: true,
+          skipped:
+            existingVote.skipped,
+          targetPlayerId:
+            existingVote.targetId,
+          allPlayersVoted: false,
+          shouldFinalize: false,
+        };
       }
 
       /* =========================
          ⏭️ SAVE SKIP
       ========================= */
 
-      if (
-        args.skipped
-      ) {
-        if (
-          round.isTieBreak
-        ) {
-          await ctx.db.insert(
-            "gameTieBreakVotes",
-            {
-              roundId:
-                round._id,
+      if (args.skipped) {
+        await ctx.db.insert(
+          "gameRoundVotes",
+          {
+            roundId:
+              round._id,
 
-              roomId:
-                round.roomId,
+            roomId:
+              round.roomId,
 
-              voterId:
-                voter._id,
+            voterId:
+              voter._id,
 
-              targetId:
-                undefined,
+            targetId:
+              undefined,
 
-              skipped:
-                true,
+            skipped: true,
 
-              createdAt:
-                now,
-            }
-          );
-        } else {
-          await ctx.db.insert(
-            "gameRoundVotes",
-            {
-              roundId:
-                round._id,
-
-              roomId:
-                round.roomId,
-
-              voterId:
-                voter._id,
-
-              targetId:
-                undefined,
-
-              skipped:
-                true,
-
-              createdAt:
-                now,
-            }
-          );
-        }
+            createdAt:
+              now,
+          }
+        );
       } else {
         /* =========================
            🎯 TARGET REQUIRED
@@ -438,22 +362,6 @@ export const castRoundVote =
         ) {
           throw new Error(
             "You cannot vote for yourself"
-          );
-        }
-
-        /* =========================
-           🎯 TIE-BREAK RESTRICTION
-        ========================= */
-
-        if (
-          round.isTieBreak &&
-          allowedTargetIds &&
-          !allowedTargetIds.includes(
-            args.targetPlayerId.toString()
-          )
-        ) {
-          throw new Error(
-            "You can only vote for a tied player"
           );
         }
 
@@ -493,55 +401,27 @@ export const castRoundVote =
            💾 SAVE VOTE
         ========================= */
 
-        if (
-          round.isTieBreak
-        ) {
-          await ctx.db.insert(
-            "gameTieBreakVotes",
-            {
-              roundId:
-                round._id,
+        await ctx.db.insert(
+          "gameRoundVotes",
+          {
+            roundId:
+              round._id,
 
-              roomId:
-                round.roomId,
+            roomId:
+              round.roomId,
 
-              voterId:
-                voter._id,
+            voterId:
+              voter._id,
 
-              targetId:
-                target._id,
+            targetId:
+              args.targetPlayerId,
 
-              skipped:
-                false,
+            skipped: false,
 
-              createdAt:
-                now,
-            }
-          );
-        } else {
-          await ctx.db.insert(
-            "gameRoundVotes",
-            {
-              roundId:
-                round._id,
-
-              roomId:
-                round.roomId,
-
-              voterId:
-                voter._id,
-
-              targetId:
-                target._id,
-
-              skipped:
-                false,
-
-              createdAt:
-                now,
-            }
-          );
-        }
+            createdAt:
+              now,
+          }
+        );
       }
 
       /* =========================
@@ -574,33 +454,19 @@ export const castRoundVote =
       ========================= */
 
       const votes =
-        round.isTieBreak
-          ? await ctx.db
-              .query(
-                "gameTieBreakVotes"
+        await ctx.db
+          .query(
+            "gameRoundVotes"
+          )
+          .withIndex(
+            "by_round",
+            (q) =>
+              q.eq(
+                "roundId",
+                round._id
               )
-              .withIndex(
-                "by_round",
-                (q) =>
-                  q.eq(
-                    "roundId",
-                    round._id
-                  )
-              )
-              .collect()
-          : await ctx.db
-              .query(
-                "gameRoundVotes"
-              )
-              .withIndex(
-                "by_round",
-                (q) =>
-                  q.eq(
-                    "roundId",
-                    round._id
-                  )
-              )
-              .collect();
+          )
+          .collect();
 
       const votedPlayers =
         new Set(
@@ -618,10 +484,6 @@ export const castRoundVote =
             )
         );
 
-      /* =========================
-         ✅ RETURN COMPLETION STATE
-      ========================= */
-
       return {
         success: true,
 
@@ -629,7 +491,7 @@ export const castRoundVote =
           args.skipped,
 
         isTieBreak:
-          round.isTieBreak,
+          false,
 
         targetPlayerId:
           args.targetPlayerId,
@@ -671,6 +533,13 @@ export const getMyRoundVote =
         return null;
       }
 
+      if (
+        round.phase !== "voting" ||
+        round.isTieBreak
+      ) {
+        return null;
+      }
+
       const voter =
         await ctx.db
           .query(
@@ -695,45 +564,25 @@ export const getMyRoundVote =
         return null;
       }
 
-  const vote =
-  round.isTieBreak
-    ? await ctx.db
-        .query(
-          "gameTieBreakVotes"
-        )
-        .withIndex(
-          "by_round_voter",
-          (q) =>
-            q
-              .eq(
-                "roundId",
-                round._id
-              )
-              .eq(
-                "voterId",
-                voter._id
-              )
-        )
-        .unique()
-    : await ctx.db
-        .query(
-          "gameRoundVotes"
-        )
-        .withIndex(
-          "by_round_voter",
-          (q) =>
-            q
-              .eq(
-                "roundId",
-                round._id
-              )
-              .eq(
-                "voterId",
-                voter._id
-              )
-        )
-        .unique();
-        
+      const vote =
+        await ctx.db
+          .query(
+            "gameRoundVotes"
+          )
+          .withIndex(
+            "by_round_voter",
+            (q) =>
+              q
+                .eq(
+                  "roundId",
+                  round._id
+                )
+                .eq(
+                  "voterId",
+                  voter._id
+                )
+          )
+          .unique();
 
       if (!vote) {
         return {
@@ -790,14 +639,16 @@ export const finalizeRoundVoting =
           "Round not found"
         );
       }
-if (
-  round.phase !== "voting" &&
-  round.phase !== "tieBreak"
+
+
+      if (
+  round.phase !== "voting" ||
+  round.isTieBreak
 ) {
   return {
     success: false,
     alreadyFinalized: true,
-    reason: "VOTING_NOT_ACTIVE",
+    reason: "NORMAL_VOTING_NOT_ACTIVE",
   };
 }
 
@@ -809,8 +660,37 @@ if (
           "Voting has not started"
         );
       }
-const now =
+
+      const now =
   Date.now();
+
+/* =========================
+   🎮 MATCH
+========================= */
+
+const match =
+  await ctx.db
+    .query("gameMatches")
+    .withIndex(
+      "by_room_status",
+      (q) =>
+        q
+          .eq(
+            "roomId",
+            round.roomId
+          )
+          .eq(
+            "status",
+            "playing"
+          )
+    )
+    .first();
+
+if (!match) {
+  throw new Error(
+    "Active Classic match not found"
+  );
+}
 
 /* =========================
    🗳️ CHECK VOTING COMPLETION
@@ -835,34 +715,23 @@ const eligibleVoters =
       player.isAlive
   );
 
+  
 /* =========================
    🗳️ GET VOTES
 ========================= */
 
 const votes =
-  round.isTieBreak
-    ? await ctx.db
-        .query("gameTieBreakVotes")
-        .withIndex(
-          "by_round",
-          (q) =>
-            q.eq(
-              "roundId",
-              round._id
-            )
+  await ctx.db
+    .query("gameRoundVotes")
+    .withIndex(
+      "by_round",
+      (q) =>
+        q.eq(
+          "roundId",
+          round._id
         )
-        .collect()
-    : await ctx.db
-        .query("gameRoundVotes")
-        .withIndex(
-          "by_round",
-          (q) =>
-            q.eq(
-              "roundId",
-              round._id
-            )
-        )
-        .collect();
+    )
+    .collect();
 
 const allPlayersVoted =
   eligibleVoters.every((player) =>
@@ -925,35 +794,6 @@ if (
         );
       }
 
-      const votersByTarget =
-  new Map<
-    string,
-    Id<"gameRoomPlayers">[]
-  >();
-
-for (const vote of votes) {
-  if (
-    vote.skipped ||
-    !vote.targetId
-  ) {
-    continue;
-  }
-
-  const key =
-    vote.targetId.toString();
-
-  const existing =
-    votersByTarget.get(key) ?? [];
-
-  existing.push(
-    vote.voterId
-  );
-
-  votersByTarget.set(
-    key,
-    existing
-  );
-}
       /* =========================
          ⏭️ NO TARGET
       ========================= */
@@ -961,22 +801,31 @@ for (const vote of votes) {
       if (
         voteCounts.size === 0
       ) {
-        await ctx.db.patch(
-          round._id,
-          {
-            phase:
-              "result",
+     await ctx.db.patch(
+  round._id,
+  {
+    phase:
+      "result",
 
-            eliminatedPlayerId:
-              undefined,
+    resolution:
+      "no_elimination",
 
-            votingEndsAt:
-              undefined,
+    tiedPlayerIds:
+      undefined,
 
-            updatedAt:
-              now,
-          }
-        );
+    tieRoundCount:
+      match.tieRoundCount,
+
+    eliminatedPlayerId:
+      undefined,
+
+    votingEndsAt:
+      undefined,
+
+    updatedAt:
+      now,
+  }
+);
 
         return {
           success: true,
@@ -984,8 +833,6 @@ for (const vote of votes) {
           result:
             "no_elimination",
 
-          isTieBreak:
-            round.isTieBreak,
         };
       }
 
@@ -1065,14 +912,45 @@ if (leaders.length > 1) {
      Nobody is eliminated.
   ========================= */
 
+if (
+  allAlivePlayersTied
+) {
+  const nextTieRoundCount =
+    match.tieRoundCount + 1;
+
+  /* =========================
+     ☠️ 16TH TIE → SPY WINS
+  ========================= */
+
   if (
-    allAlivePlayersTied
+    nextTieRoundCount >
+    MAX_TIE_ROUNDS
   ) {
+    await ctx.db.patch(
+      match._id,
+      {
+        tieRoundCount:
+          nextTieRoundCount,
+
+        status:
+          "finished",
+
+        winner:
+          "spy",
+
+        finishedAt:
+          now,
+
+        updatedAt:
+          now,
+      }
+    );
+
     await ctx.db.patch(
       round._id,
       {
         phase:
-          "result",
+          "finished",
 
         eliminatedPlayerId:
           undefined,
@@ -1088,51 +966,11 @@ if (leaders.length > 1) {
       }
     );
 
-    return {
-      success: true,
-
-      result:
-        "all_players_tied",
-
-      isTieBreak:
-        round.isTieBreak,
-
-      eliminatedPlayerId:
-        undefined,
-
-      tiedPlayerIds:
-        leaders,
-    };
-  }
-
-  /* =========================
-     🔁 NORMAL TIE → TIE-BREAK
-  ========================= */
-
-  if (
-    !round.isTieBreak
-  ) {
     await ctx.db.patch(
-      round._id,
+      round.roomId,
       {
-   phase:
-  "tieBreak",
-
-isTieBreak:
-  true,
-
-tieBreakOrder:
-  leaders,
-
-tieBreakSpeakerIndex:
-  undefined,
-
-votingEndsAt:
-  now +
-  VOTING_SECONDS * 1000,
-
-        turnEndsAt:
-          undefined,
+        status:
+          "finished",
 
         updatedAt:
           now,
@@ -1141,36 +979,63 @@ votingEndsAt:
 
     return {
       success: true,
-
       result:
-        "tie_break",
+        "tie_limit_reached",
+      winner:
+        "spy",
 
-      tiedPlayerIds:
-        leaders,
+        resolution:
+  "tie_limit_reached",
+
+tiedPlayerIds:
+  leaders,
+
+tieRoundCount:
+  nextTieRoundCount,
     };
   }
 
   /* =========================
-     ⚖️ TIE-BREAK STILL TIED
+     ⏭️ SUPER-TIE
   ========================= */
+
+  await ctx.db.patch(
+    match._id,
+    {
+      tieRoundCount:
+        nextTieRoundCount,
+
+      updatedAt:
+        now,
+    }
+  );
 
   await ctx.db.patch(
     round._id,
     {
-      phase:
-        "result",
+    phase:
+  "result",
 
-      eliminatedPlayerId:
-        undefined,
+resolution:
+  "super_tie",
 
-      votingEndsAt:
-        undefined,
+tiedPlayerIds:
+  leaders,
 
-      turnEndsAt:
-        undefined,
+tieRoundCount:
+  nextTieRoundCount,
 
-      updatedAt:
-        now,
+eliminatedPlayerId:
+  undefined,
+
+votingEndsAt:
+  undefined,
+
+turnEndsAt:
+  undefined,
+
+updatedAt:
+  now,
     }
   );
 
@@ -1178,17 +1043,37 @@ votingEndsAt:
     success: true,
 
     result:
-      "tie_break_no_elimination",
+      "all_players_tied",
 
     isTieBreak:
-      true,
+      round.isTieBreak,
 
     eliminatedPlayerId:
       undefined,
 
     tiedPlayerIds:
       leaders,
+
+    tieRoundCount:
+      nextTieRoundCount,
   };
+}
+/* =========================
+   🔁 NORMAL TIE → TIE-BREAK
+========================= */
+
+const tieBreakResult =
+  await transitionToTieBreak(
+    ctx,
+    round,
+    match,
+    leaders,
+  );
+
+return {
+  success: true,
+  ...tieBreakResult,
+};
 }
 
 /* =========================
@@ -1252,6 +1137,78 @@ await ctx.db.patch(
 );
 
 /* =========================
+   🏁 CHECK GAME OVER
+========================= */
+
+const remainingPlayers =
+  await ctx.db
+    .query("gameRoomPlayers")
+    .withIndex(
+      "by_room",
+      (q) =>
+        q.eq(
+          "roomId",
+          round.roomId
+        )
+    )
+    .collect();
+
+const remainingAlivePlayers =
+  remainingPlayers.filter(
+    (player) =>
+      player.isAlive &&
+      player._id !==
+        eliminatedPlayer._id
+  );
+
+const spyEliminated =
+  match.spyPlayerId ===
+  eliminatedPlayer._id;
+
+const gameOver =
+  spyEliminated ||
+  remainingAlivePlayers.length <= 2;
+
+if (gameOver) {
+  const winner =
+    spyEliminated
+      ? "villagers"
+      : "spy";
+
+  await ctx.db.patch(
+    round._id,
+    {
+      phase:
+        "result",
+
+      eliminatedPlayerId:
+        eliminatedPlayer._id,
+
+      votingEndsAt:
+        undefined,
+
+      turnEndsAt:
+        undefined,
+
+      updatedAt:
+        now,
+    }
+  );
+
+  return {
+    success: true,
+
+    result:
+      "game_over",
+
+    winner,
+
+    eliminatedPlayerId:
+      eliminatedPlayer._id,
+  };
+}
+
+/* =========================
    🏁 ROUND RESULT
 ========================= */
 
@@ -1313,41 +1270,37 @@ export const getRoundVotingResult =
         return null;
       }
 
-      if (
-        round.phase !==
-        "result"
-      ) {
-        return null;
-      }
+    if (
+  round.phase !== "result" &&
+  round.phase !== "finished"
+) {
+  return null;
+}
 
-      const votes =
-        round.isTieBreak
-          ? await ctx.db
-              .query(
-                "gameTieBreakVotes"
-              )
-              .withIndex(
-                "by_round",
-                (q) =>
-                  q.eq(
-                    "roundId",
-                    round._id
-                  )
-              )
-              .collect()
-          : await ctx.db
-              .query(
-                "gameRoundVotes"
-              )
-              .withIndex(
-                "by_round",
-                (q) =>
-                  q.eq(
-                    "roundId",
-                    round._id
-                  )
-              )
-              .collect();
+ const votes =
+  round.isTieBreak
+    ? await ctx.db
+        .query("gameTieBreakVotes")
+        .withIndex(
+          "by_round",
+          (q) =>
+            q.eq(
+              "roundId",
+              round._id
+            )
+        )
+        .collect()
+    : await ctx.db
+        .query("gameRoundVotes")
+        .withIndex(
+          "by_round",
+          (q) =>
+            q.eq(
+              "roundId",
+              round._id
+            )
+        )
+        .collect();
 
       const voteCounts =
         new Map<
@@ -1416,12 +1369,13 @@ const eliminatedPlayer =
     : null;
 
 if (!eliminatedPlayer) {
- return {
-  roundId: round._id,
-  eliminatedPlayer: null,
-  voteCount: 0,
-  role: undefined,
-};
+  return {
+    roundId: round._id,
+    eliminatedPlayer: null,
+    voteCount: 0,
+    voterIds: [],
+    role: undefined,
+  };
 }
 
 /* =========================

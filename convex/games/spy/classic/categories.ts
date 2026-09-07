@@ -80,7 +80,7 @@ export function getRandomClassicCategories() {
     ];
   }
 
-  return shuffled.slice(0, 8);
+  return shuffled.slice(0, 6);
 }
 
 /* =========================

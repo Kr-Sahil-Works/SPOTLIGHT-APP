@@ -115,26 +115,31 @@ if (!match) {
   );
 }
 
+/* =========================
+   🔒 MATCH / ROUND SYNC
+========================= */
+
 if (
-  match.status !==
-  "playing"
+  match.currentRound !==
+  currentRound.roundNumber
 ) {
   throw new Error(
-    "Game has already finished"
+    "Round is no longer the current match round"
   );
 }
-      /* =========================
-         🔢 MAX ROUNDS
-      ========================= */
 
-      if (
-        match.currentRound >=
-        match.maxRounds
-      ) {
-        throw new Error(
-          "Maximum rounds reached"
-        );
-      }
+/* =========================
+   🏁 GAME ALREADY FINISHED
+========================= */
+
+if (
+  currentRound.resolution ===
+  "tie_limit_reached"
+) {
+  throw new Error(
+    "Game is already finished"
+  );
+}
 
       /* =========================
          👥 GET PLAYERS
@@ -261,42 +266,10 @@ if (
   );
 }
 
-/* =========================
-   🎲 RANDOMIZE ORDER
-========================= */
-
-/*
- * Shuffle the order so the
- * first speaker is random.
- *
- * After that, turns proceed
- * sequentially through this order.
- */
-
-for (
-  let i =
-    nextSpeakerOrder.length - 1;
-  i > 0;
-  i--
-) {
-  const j =
-    Math.floor(
-      Math.random() *
-        (i + 1)
-    );
-
-  [
-    nextSpeakerOrder[i],
-    nextSpeakerOrder[j],
-  ] = [
-    nextSpeakerOrder[j],
-    nextSpeakerOrder[i],
-  ];
-}
-
 const finalSpeakerOrder =
   nextSpeakerOrder;
 
+  
 /* =========================
    🎤 FIRST SPEAKER
 ========================= */
@@ -318,11 +291,8 @@ if (!firstSpeaker) {
    ⏱️ ROUND INTRO TIMER
 ========================= */
 
-const now =
-  Date.now();
-
-const ROUND_INTRO_SECONDS = 8;
-
+const now = Date.now();
+const ROUND_INTRO_SECONDS = 5;
 const roundIntroEndsAt =
   now +
   ROUND_INTRO_SECONDS * 1000;

@@ -59,6 +59,9 @@ if (
 
     alreadyProcessed:
       true,
+
+    gameFinished:
+      true,
   };
 }
       if (
@@ -123,11 +126,72 @@ const now =
           )
           .first();
 
-      if (!match) {
-        throw new Error(
-          "Active game match not found"
-        );
-      }
+  if (!match) {
+  throw new Error(
+    "Active game match not found"
+  );
+}
+
+/* =========================
+   ☠️ TIE LIMIT → SPY WINS
+========================= */
+
+if (
+  round.resolution ===
+  "tie_limit_reached"
+) {
+  await ctx.db.patch(
+    match._id,
+    {
+      status:
+        "finished",
+
+      winner:
+        "spy",
+
+      finishedAt:
+        now,
+
+      updatedAt:
+        now,
+    }
+  );
+
+  await ctx.db.patch(
+    room._id,
+    {
+      status:
+        "finished",
+
+      updatedAt:
+        now,
+    }
+  );
+
+  await ctx.db.patch(
+    round._id,
+    {
+      phase:
+        "finished",
+
+      updatedAt:
+        now,
+    }
+  );
+
+  return {
+    success: true,
+
+    gameFinished:
+      true,
+
+    winner:
+      "spy",
+
+    tieLimitReached:
+      true,
+  };
+}
 
       /* =========================
          👥 ALL PLAYERS
@@ -432,73 +496,6 @@ const aliveVillagers =
         };
       }
 
-/* =========================
-   🔢 MAX ROUND CHECK
-========================= */
-
-if (
-  round.roundNumber >=
-  match.maxRounds
-) {
-
-  await ctx.db.patch(
-    match._id,
-    {
-      status:
-        "finished",
-
-      winner:
-        "spy",
-
-      finishedAt:
-        now,
-
-      updatedAt:
-        now,
-    }
-  );
-await ctx.db.patch(
-  round._id,
-  {
-    phase:
-      "finished",
-
-    updatedAt:
-      now,
-  }
-);
-  await ctx.db.patch(
-    room._id,
-    {
-      status:
-        "finished",
-
-      updatedAt:
-        now,
-    }
-  );
-  
-
-  return {
-    success: true,
-
-    gameFinished:
-      true,
-
-    winner:
-      "spy",
-
-    reason:
-      "max_rounds_reached",
-
-    roundNumber:
-      round.roundNumber,
-
-    aliveSpies,
-
-    aliveVillagers,
-  };
-}
 
 /* =========================
    🎮 GAME CONTINUES

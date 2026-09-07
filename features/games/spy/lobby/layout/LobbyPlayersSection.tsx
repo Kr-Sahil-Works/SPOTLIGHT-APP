@@ -23,6 +23,12 @@ type Props = {
 
   allOtherPlayersReady?: boolean;
 
+isTieBreak?: boolean;
+
+isTieBreakVoting?: boolean;
+
+tieBreakPlayerIds?: string[];
+
   onVote?: (
     playerId: string
   ) => void;
@@ -40,7 +46,12 @@ export default function LobbyPlayersSection({
   currentPlayerId,
   hasVoted = false,
   allOtherPlayersReady = false,
-  onVote,
+
+isTieBreak = false,
+isTieBreakVoting = false,
+tieBreakPlayerIds = [],
+
+onVote,
   onSkipVote,
 }: Props) {
   const safeMaxPlayers =
@@ -87,9 +98,17 @@ export default function LobbyPlayersSection({
   onSkipVote={
     onSkipVote
   }
-  allOtherPlayersReady={
+allOtherPlayersReady={
   allOtherPlayersReady
 }
+
+isTieBreak={
+  isTieBreak
+}
+
+isTieBreakVoting={isTieBreakVoting}
+
+tieBreakPlayerIds={tieBreakPlayerIds}
 />
   );
 }

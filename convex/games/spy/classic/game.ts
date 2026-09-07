@@ -27,9 +27,6 @@ import {
 const MIN_PLAYERS = 4;
 const MAX_PLAYERS = 8;
 
-const MAX_ROUNDS = 10;
-
-
 /* =========================
    🔐 QUERY AUTH
 ========================= */
@@ -344,15 +341,16 @@ const firstSpeaker =
        ⏱️ MATCH START
     ========================= */
 
-    const now =
-      Date.now();
+   const now = Date.now();
 
- 
-const ROUND_INTRO_SECONDS = 2;
+const ROUND_1_PRE_INTRO_SECONDS = 9.2;
+const ROUND_1_INTRO_SECONDS = 3;
 
 const roundIntroEndsAt =
   now +
-  ROUND_INTRO_SECONDS * 1000;
+  (ROUND_1_PRE_INTRO_SECONDS +
+    ROUND_1_INTRO_SECONDS) *
+    1000;
 
     /* =========================
        🎮 CREATE MATCH
@@ -377,8 +375,8 @@ const roundIntroEndsAt =
           currentRound:
             1,
 
-          maxRounds:
-            MAX_ROUNDS,
+        tieRoundCount:
+            0,
 
           winner:
             undefined,
@@ -679,7 +677,7 @@ export const startClassicGame =
    🧪 DEV RESTART CLASSIC GAME
 ========================= */
 
-export const devRestartClassicGame =
+export const restartClassicGame =
   mutation({
     args: {
       roomId:
@@ -716,6 +714,15 @@ export const devRestartClassicGame =
         );
       }
 
+      if (
+        room.status !==
+        "finished"
+      ) {
+        throw new Error(
+          "Only a finished game can be restarted"
+        );
+      }
+
       /* =========================
          👥 PLAYERS
       ========================= */
@@ -736,7 +743,181 @@ export const devRestartClassicGame =
           .collect();
 
       /* =========================
+         🎮 FINISHED MATCH
+      ========================= */
+
+      const match =
+        await ctx.db
+          .query(
+            "gameMatches"
+          )
+          .withIndex(
+            "by_room_status",
+            (q) =>
+              q
+                .eq(
+                  "roomId",
+                  room._id
+                )
+                .eq(
+                  "status",
+                  "finished"
+                )
+          )
+          .order("desc")
+          .first();
+
+      if (!match) {
+        throw new Error(
+          "Finished Classic match not found"
+        );
+      }
+
+      if (
+        !match.winner ||
+        !match.finishedAt
+      ) {
+        throw new Error(
+          "Finished match is missing final result"
+        );
+      }
+
+      /* =========================
+         📊 BUILD MATCH HISTORY
+      ========================= */
+
+      const historyPlayers =
+        await Promise.all(
+          players.map(
+            async (player) => {
+              const secret =
+                await ctx.db
+                  .query(
+                    "gamePlayerSecrets"
+                  )
+                  .withIndex(
+                    "by_player",
+                    (q) =>
+                      q.eq(
+                        "playerId",
+                        player._id
+                      )
+                  )
+                  .first();
+
+              /*
+               * Find the round in which
+               * this player was eliminated.
+               */
+              const rounds =
+                await ctx.db
+                  .query(
+                    "gameRounds"
+                  )
+                  .withIndex(
+                    "by_room",
+                    (q) =>
+                      q.eq(
+                        "roomId",
+                        room._id
+                      )
+                  )
+                  .collect();
+
+              const eliminatedRound =
+                player.eliminatedAt
+                  ? rounds
+                      .filter(
+                        (round) =>
+                          round.eliminatedPlayerId ===
+                          player._id
+                      )
+                      .sort(
+                        (a, b) =>
+                          a.roundNumber -
+                          b.roundNumber
+                      )[0]
+                      ?.roundNumber
+                  : undefined;
+
+              return {
+                playerId:
+                  player._id,
+
+                userId:
+                  player.userId,
+
+                role:
+                  secret?.role ??
+                  (
+                    match.spyPlayerId ===
+                    player._id
+                      ? "spy"
+                      : "villager"
+                  ),
+
+                isAlive:
+                  player.isAlive,
+
+                eliminatedRound,
+
+                eliminatedAt:
+                  player.eliminatedAt,
+              };
+            }
+          )
+        );
+
+      /* =========================
+         💾 SAVE COMPLETE MATCH
+      ========================= */
+
+      await ctx.db.insert(
+        "gameMatchHistory",
+        {
+          matchId:
+            match._id,
+
+          roomId:
+            room._id,
+
+          gameMode:
+            match.gameMode,
+
+          category:
+            match.category,
+
+          winner:
+            match.winner,
+
+          villagerWord:
+            match.villagerWord ??
+            "",
+
+          spyWord:
+            match.spyWord ??
+            "",
+
+          spyPlayerId:
+            match.spyPlayerId!,
+
+          currentRound:
+            match.currentRound,
+
+          tieRoundCount:
+            match.tieRoundCount,
+
+          completedAt:
+            match.finishedAt,
+
+          players:
+            historyPlayers,
+        }
+      );
+
+      /* =========================
          🗑️ DELETE OLD ROUNDS
+         ONLY EPHEMERAL DATA
       ========================= */
 
       const rounds =
@@ -755,8 +936,7 @@ export const devRestartClassicGame =
           .collect();
 
       for (
-        const round of
-        rounds
+        const round of rounds
       ) {
         const votes =
           await ctx.db
@@ -774,8 +954,7 @@ export const devRestartClassicGame =
             .collect();
 
         for (
-          const vote of
-          votes
+          const vote of votes
         ) {
           await ctx.db.delete(
             vote._id
@@ -798,8 +977,7 @@ export const devRestartClassicGame =
             .collect();
 
         for (
-          const vote of
-          tieVotes
+          const vote of tieVotes
         ) {
           await ctx.db.delete(
             vote._id
@@ -831,8 +1009,7 @@ export const devRestartClassicGame =
           .collect();
 
       for (
-        const secret of
-        secrets
+        const secret of secrets
       ) {
         await ctx.db.delete(
           secret._id
@@ -840,41 +1017,13 @@ export const devRestartClassicGame =
       }
 
       /* =========================
-   🗂️ DELETE OLD CATEGORY VOTES
-========================= */
-
-const categoryVotes =
-  await ctx.db
-    .query(
-      "gameClassicCategoryVotes"
-    )
-    .withIndex(
-      "by_room",
-      (q) =>
-        q.eq(
-          "roomId",
-          room._id
-        )
-    )
-    .collect();
-
-for (
-  const vote of
-  categoryVotes
-) {
-  await ctx.db.delete(
-    vote._id
-  );
-}
-
-      /* =========================
-         🎮 DELETE OLD MATCHES
+         🗂️ DELETE OLD CATEGORY VOTES
       ========================= */
 
-      const matches =
+      const categoryVotes =
         await ctx.db
           .query(
-            "gameMatches"
+            "gameClassicCategoryVotes"
           )
           .withIndex(
             "by_room",
@@ -887,26 +1036,35 @@ for (
           .collect();
 
       for (
-        const match of
-        matches
+        const vote of categoryVotes
       ) {
         await ctx.db.delete(
-          match._id
+          vote._id
         );
       }
+
+      /*
+       * IMPORTANT:
+       *
+       * DO NOT DELETE gameMatches.
+       *
+       * Finished matches are now permanent
+       * match records. The next game gets a
+       * completely new matchId.
+       */
 
       /* =========================
          ❤️ RESET PLAYERS
       ========================= */
 
       for (
-        const player of
-        players
+        const player of players
       ) {
         await ctx.db.patch(
           player._id,
           {
             isAlive: true,
+
             eliminatedAt:
               undefined,
           }
@@ -923,7 +1081,8 @@ for (
       await ctx.db.patch(
         room._id,
         {
-          status: "lobby",
+          status:
+            "lobby",
 
           playerListLocked:
             false,
@@ -937,13 +1096,23 @@ for (
           categorySelectionEndsAt:
             undefined,
 
-          updatedAt: now,
+          updatedAt:
+            now,
         }
       );
 
       return {
         success: true,
-        roomId: room._id,
+
+        roomId:
+          room._id,
+
+        previousMatchId:
+          match._id,
+
+        historySaved:
+          true,
+
         playerCount:
           players.length,
       };
@@ -1091,9 +1260,6 @@ export const getActiveClassicMatch =
         currentRound:
           match.currentRound,
 
-        maxRounds:
-          match.maxRounds,
-
         winner:
           match.winner,
 
@@ -1132,6 +1298,152 @@ export const getActiveClassicMatch =
               }
             : null,
       };
+    },
+  });
+
+  /* =========================
+   🏁 GET FINISHED CLASSIC GAME
+========================= */
+
+export const getFinishedClassicGame =
+  query({
+    args: {
+      roomId:
+        v.id("gameRooms"),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      await getAuthenticatedUserForQuery(
+        ctx
+      );
+
+      const match =
+        await ctx.db
+          .query("gameMatches")
+          .withIndex(
+            "by_room_status",
+            (q) =>
+              q
+                .eq(
+                  "roomId",
+                  args.roomId
+                )
+                .eq(
+                  "status",
+                  "finished"
+                )
+          )
+          .order("desc")
+          .first();
+
+      if (!match) {
+        return null;
+      }
+
+      const players =
+        await ctx.db
+          .query("gameRoomPlayers")
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                args.roomId
+              )
+          )
+          .collect();
+
+      const resultPlayers =
+        await Promise.all(
+          players.map(
+            async (player) => {
+              const user =
+                await ctx.db.get(
+                  player.userId
+                );
+
+              const secret =
+                await ctx.db
+                  .query(
+                    "gamePlayerSecrets"
+                  )
+                  .withIndex(
+                    "by_room",
+                    (q) =>
+                      q.eq(
+                        "roomId",
+                        args.roomId
+                      )
+                  )
+                  .filter(
+                    (q) =>
+                      q.eq(
+                        q.field(
+                          "playerId"
+                        ),
+                        player._id
+                      )
+                  )
+                  .first();
+
+              return {
+                playerId:
+                  player._id,
+
+                userId:
+                  player.userId,
+
+                name:
+                  user?.username ??
+                  "Unknown",
+
+                avatar:
+                  user?.image,
+
+                isAlive:
+                  player.isAlive,
+
+                role:
+                  secret?.role,
+              };
+            }
+          )
+        );
+
+    return {
+  matchId:
+    match._id,
+
+  roomId:
+    match.roomId,
+
+  category:
+    match.category,
+
+  winner:
+    match.winner,
+
+  villagerWord:
+    match.villagerWord,
+
+  spyWord:
+    match.spyWord,
+
+  currentRound:
+    match.currentRound,
+
+  tieRoundCount:
+    match.tieRoundCount,
+
+  finishedAt:
+    match.finishedAt,
+
+  players:
+    resultPlayers,
+};
     },
   });
 

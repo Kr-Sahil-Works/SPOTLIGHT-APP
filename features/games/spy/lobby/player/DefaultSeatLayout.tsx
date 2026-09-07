@@ -24,6 +24,12 @@ type Props = {
   hasVoted?: boolean;
 
   allOtherPlayersReady?: boolean;
+
+isTieBreak?: boolean;
+
+isTieBreakVoting?: boolean;
+
+tieBreakPlayerIds?: string[];
   onVote?: (
     playerId: string
   ) => void;
@@ -39,8 +45,11 @@ export default function DefaultSeatLayout({
   isPlaying = false,
   currentPlayerId,
   hasVoted = false,
-  allOtherPlayersReady = false,
-  onVote,
+allOtherPlayersReady = false,
+isTieBreak = false,
+isTieBreakVoting = false,
+tieBreakPlayerIds = [],
+onVote,
   onSkipVote,
 }: Props) {
   const { width } = useWindowDimensions();
@@ -215,6 +224,18 @@ export default function DefaultSeatLayout({
 allOtherPlayersReady={
   allOtherPlayersReady
 }
+
+isTieBreak={
+  isTieBreak
+}
+
+isTieBreakVoting={
+  isTieBreakVoting
+}
+
+tieBreakPlayerIds={
+  tieBreakPlayerIds
+}
               />
             );
           }
@@ -228,15 +249,24 @@ allOtherPlayersReady={
       <View
         style={styles.center}
       >
-        <VotingSkipButton
-          visible={
-            votingStarted &&
-            !hasVoted
-          }
-          onPress={
-            onSkipVote
-          }
-        />
+      <VotingSkipButton
+visible={
+  votingStarted &&
+  !hasVoted &&
+  (
+    !isTieBreak ||
+    (
+      isTieBreakVoting &&
+      !tieBreakPlayerIds.includes(
+        currentPlayerId ?? ""
+      )
+    )
+  )
+}
+  onPress={
+    onSkipVote
+  }
+/>
       </View>
 
       {/* =========================
@@ -311,6 +341,18 @@ allOtherPlayersReady={
                 }
 allOtherPlayersReady={
   allOtherPlayersReady
+}
+
+isTieBreak={
+  isTieBreak
+}
+
+isTieBreakVoting={
+  isTieBreakVoting
+}
+
+tieBreakPlayerIds={
+  tieBreakPlayerIds
 }
               />
             );

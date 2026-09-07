@@ -11,9 +11,7 @@ export type ClassicWinResult = {
 };
 
 export const checkClassicWinCondition = (
-  players: WinCheckPlayer[],
-  roundNumber: number,
-  maxRounds = 10
+  players: WinCheckPlayer[]
 ): ClassicWinResult => {
   const alivePlayers =
     players.filter(
@@ -52,19 +50,6 @@ export const checkClassicWinCondition = (
   if (
     aliveSpy.length >= 1 &&
     aliveVillagers.length <= 1
-  ) {
-    return {
-      finished: true,
-      winner: "spy",
-    };
-  }
-
-  /*
-   * Spy survived all 10 rounds.
-   */
-
-  if (
-    roundNumber >= maxRounds
   ) {
     return {
       finished: true,

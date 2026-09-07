@@ -21,6 +21,7 @@ type Props = {
 turnEndsAt?: number;
   votingStarted?: boolean;
 votingRemaining?: number | null;
+isTieBreak?: boolean;
 
   word?: string;
 roomCode?: string;
@@ -41,6 +42,7 @@ isHost = false,
 gameStarted = false,
 votingStarted = false,
 votingRemaining = null,
+isTieBreak = false,
 }: Props) {
   const insets =
     useSafeAreaInsets();
@@ -117,9 +119,12 @@ votingRemaining = null,
       >
 
 <VotingTimer
-  visible={votingStarted}
+  visible={
+    votingStarted &&
+    !isTieBreak
+  }
   remaining={votingRemaining}
- turnEndsAt={turnEndsAt}
+  turnEndsAt={turnEndsAt}
 />
   
   {/* <VotingTimer

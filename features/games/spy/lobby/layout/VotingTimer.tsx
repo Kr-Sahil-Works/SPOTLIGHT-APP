@@ -148,7 +148,7 @@ const circumference =
 
         <Image
           source={require(
-            "@/assets/images/icons/timer.webp"
+            "@/assets/images/games/spy/icons/timer.webp"
           )}
           contentFit="contain"
           style={styles.stopwatch}

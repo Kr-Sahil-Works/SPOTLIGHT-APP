@@ -31,6 +31,12 @@ type Props = {
   hasVoted?: boolean;
   allOtherPlayersReady?: boolean;
 
+isTieBreak?: boolean;
+
+isTieBreakVoting?: boolean;
+
+tieBreakPlayerIds?: string[];
+
   onVote?: (
     playerId: string
   ) => void;
@@ -46,8 +52,11 @@ export default function PlayerSlot({
   isPlaying = false,
   currentPlayerId,
   hasVoted = false,
-  allOtherPlayersReady = false,
-  onVote,
+allOtherPlayersReady = false,
+isTieBreak = false,
+isTieBreakVoting = false,
+tieBreakPlayerIds = [],
+onVote,
 }: Props) {
   /*
    * =========================
@@ -71,12 +80,10 @@ export default function PlayerSlot({
         >
           {seatNumber !==
             undefined && (
-            <SeatBadge
-              number={
-                seatNumber
-              }
-              empty
-            />
+   <SeatBadge
+  number={seatNumber}
+  empty
+/>
           )}
 
           <EmptyPlayerSlot
@@ -102,11 +109,29 @@ export default function PlayerSlot({
     player.id ===
     currentPlayerId;
 
-  const canVote =
-    votingStarted &&
-    !hasVoted &&
-    !isEliminated &&
-    !isSelf;
+const isTieBreakVoter =
+  !isTieBreak ||
+  !tieBreakPlayerIds.includes(
+    currentPlayerId ?? ""
+  );
+
+const isValidTieBreakTarget =
+  !isTieBreak ||
+  tieBreakPlayerIds.includes(
+    player.id
+  );
+
+const canVote =
+  votingStarted &&
+  (
+    !isTieBreak ||
+    isTieBreakVoting
+  ) &&
+  !hasVoted &&
+  !isEliminated &&
+  !isSelf &&
+  isTieBreakVoter &&
+  isValidTieBreakTarget;
 
   /*
    * =========================
@@ -129,15 +154,19 @@ export default function PlayerSlot({
       >
         {seatNumber !==
           undefined && (
-          <SeatBadge
-            number={
-              seatNumber
-            }
-            active={
-              isCurrentSpeaker &&
-              !isEliminated
-            }
-          />
+       <SeatBadge
+  number={seatNumber}
+  active={
+    isCurrentSpeaker &&
+    !isEliminated
+  }
+  isTie={
+    isTieBreak &&
+    tieBreakPlayerIds.includes(
+      player.id
+    )
+  }
+/>
         )}
 
         {/* =========================
@@ -222,10 +251,11 @@ export default function PlayerSlot({
           NAME / VOTE
       ========================= */}
 
-   {votingStarted &&
+ {votingStarted &&
  !hasVoted &&
  !isEliminated &&
- !isSelf ? (
+ !isSelf &&
+ canVote ? (
         <VotingControls
           visible={
             true
@@ -285,10 +315,12 @@ function SeatBadge({
   number,
   empty = false,
   active = false,
+  isTie = false,
 }: {
   number: number;
   empty?: boolean;
   active?: boolean;
+  isTie?: boolean;
 }) {
   return (
     <View
@@ -296,18 +328,23 @@ function SeatBadge({
         styles.seatBadge,
         empty &&
           styles.emptySeatBadge,
-        active &&
-          styles.activeSeatBadge,
+    active &&
+  styles.activeSeatBadge,
+
+isTie &&
+  styles.tieSeatBadge,
       ]}
     >
       <Text
         style={[
-          styles.seatNumber,
+         styles.seatNumber,
           active &&
             styles.activeSeatNumber,
+          isTie &&
+            styles.tieSeatNumber,
         ]}
       >
-        {number}
+        {isTie ? "T" : number}
       </Text>
     </View>
   );
@@ -410,9 +447,37 @@ const styles =
       elevation: 6,
     },
 
-    activeSeatNumber: {
-      color: "#111111",
-    },
+   activeSeatNumber: {
+  color: "#111111",
+},
+
+tieSeatNumber: {
+  color: "#000000",
+},
+
+
+tieSeatBadge: {
+  backgroundColor:
+    "#FF3B30",
+
+  borderColor:
+    "#FF3B30",
+
+  shadowColor:
+    "#FF3B30",
+
+  shadowOpacity:
+    0.45,
+
+  shadowRadius: 3,
+
+  shadowOffset: {
+    width: 0,
+    height: 0,
+  },
+
+  elevation: 5,
+},
 
     seatNumber: {
       color: "#F2A900",

@@ -1,9 +1,16 @@
 import {
+  MutationCtx,
   mutation,
-  query
+  query,
 } from "../../../_generated/server";
 
-import { v } from "convex/values";
+import {
+  v,
+} from "convex/values";
+
+import {
+  Id,
+} from "../../../_generated/dataModel";
 
 import {
   getAuthenticatedUser,
@@ -11,6 +18,7 @@ import {
 
 import {
   CLASSIC_CATEGORIES,
+  getRandomClassicCategories,
 } from "./categories";
 
 import {
@@ -18,6 +26,130 @@ import {
 } from "./game";
 
 const MIN_PLAYERS = 4;
+
+/* =========================
+   🎲 START CATEGORY SELECTION
+   INTERNAL HELPER
+========================= */
+
+export const startCategorySelectionInternal =
+  async (
+    ctx: MutationCtx,
+    roomId: Id<"gameRooms">
+  ) => {
+    const room =
+      await ctx.db.get(roomId);
+
+    if (!room) {
+      throw new Error(
+        "Room not found"
+      );
+    }
+
+    if (
+      room.gameMode !== "spy"
+    ) {
+      throw new Error(
+        "Category selection is only available for Classic Spy mode"
+      );
+    }
+
+    if (
+      room.status !== "starting"
+    ) {
+      throw new Error(
+        "Room is not starting"
+      );
+    }
+
+    if (
+      room.selectedCategory !==
+      undefined
+    ) {
+      throw new Error(
+        "Category already selected"
+      );
+    }
+
+    if (
+      room.categorySelectionEndsAt !==
+      undefined
+    ) {
+      throw new Error(
+        "Category selection has already started"
+      );
+    }
+
+    const players =
+      await ctx.db
+        .query("gameRoomPlayers")
+        .withIndex(
+          "by_room",
+          (q) =>
+            q.eq(
+              "roomId",
+              roomId
+            )
+        )
+        .collect();
+
+    if (
+      players.length <
+      MIN_PLAYERS
+    ) {
+      throw new Error(
+        `At least ${MIN_PLAYERS} players are required`
+      );
+    }
+
+    if (
+      room.playerListLocked
+    ) {
+      throw new Error(
+        "Player list is already locked"
+      );
+    }
+
+    const selectedCategories =
+      getRandomClassicCategories();
+
+    const categoryOptions =
+      selectedCategories.map(
+        (category) =>
+          category.id
+      );
+
+    const now =
+      Date.now();
+
+   const categorySelectionEndsAt =
+  now + 8 * 1000;
+
+    await ctx.db.patch(
+      roomId,
+      {
+        status: "starting",
+
+        playerListLocked:
+          true,
+
+        categoryOptions,
+
+        selectedCategory:
+          undefined,
+
+        categorySelectionEndsAt,
+
+        updatedAt: now,
+      }
+    );
+
+    return {
+      categoryOptions,
+
+      categorySelectionEndsAt,
+    };
+  };
 
 /* =========================
    🔎 VALID CATEGORY

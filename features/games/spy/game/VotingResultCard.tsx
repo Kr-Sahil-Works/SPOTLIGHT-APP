@@ -11,7 +11,22 @@ type Voter = {
   avatar: string | number;
 };
 
+type ResultType =
+  | "no_elimination"
+  | "eliminated"
+  | "game_over"
+  | "tie_break"
+  | "super_tie"
+  | "tie_break_no_elimination"
+  | "tie_limit_reached";
+
 type Props = {
+  resultType?: ResultType;
+
+  tieRoundCount?: number;
+
+  tiedPlayerIds?: string[];
+
   playerName: string;
   playerAvatar?: string | number;
 
@@ -24,6 +39,9 @@ type Props = {
 };
 
 export default function VotingResultCard({
+  resultType,
+  tieRoundCount,
+  tiedPlayerIds = [],
   playerName,
   playerAvatar,
   voteCount,
@@ -42,12 +60,37 @@ const cardWidth = Math.min(
 const cardHeight =
   cardWidth / 1.72;
 
-  const roleIsSpy =
-    role === "spy";
+const illustrationScale =
+  resultType === "super_tie"
+    ? 0.80
+    : 1;
 
-    const noElimination =
-  voteCount === 0 ||
-  playerName === "NO ONE";
+const roleIsSpy =
+  role === "spy";
+
+const isTieResult =
+  resultType === "tie_break" ||
+  resultType === "super_tie" ||
+  resultType === "tie_break_no_elimination";
+
+const isSuperTie =
+  resultType === "super_tie";
+
+const isTieBreakNoElimination =
+  resultType ===
+  "tie_break_no_elimination";
+
+const isTieLimitReached =
+  resultType ===
+  "tie_limit_reached";
+
+const noElimination =
+  !isTieResult &&
+  !isTieLimitReached &&
+  (
+    voteCount === 0 ||
+    playerName === "NO ONE"
+  );
 
   return (
     <View
@@ -64,11 +107,20 @@ const cardHeight =
       ========================= */}
 
       <Image
-        source={require(
-          "@/assets/images/games/spy/boards/votedout.png"
-        )}
+      source={
+  resultType === "super_tie"
+    ? require("@/assets/images/games/spy/boards/super_tie.png")
+    : isTieResult
+      ? require("@/assets/images/games/spy/boards/tie_match.png")
+      : require("@/assets/images/games/spy/boards/votedout.png")
+}
         contentFit="fill"
-        style={styles.board}
+       style={[
+  styles.board,
+  resultType === "super_tie" && {
+    transform: [{ scale: illustrationScale }],
+  },
+]}
       />
 
       {/* =========================
@@ -80,20 +132,77 @@ const cardHeight =
     RESULT CONTENT
 ========================= */}
 
-{noElimination ? (
+{isTieResult ? null : isTieLimitReached ? (
+  <View style={styles.tieContent}>
+
+    <Text style={styles.tieRoundLabel}>
+      TIE ROUND {tieRoundCount ?? "—"}
+    </Text>
+
+    <Text style={styles.tieTitle}>
+      {isSuperTie
+        ? "SUPER TIE"
+        : isTieBreakNoElimination
+          ? "TIE MATCH"
+          : "TIE MATCH"}
+    </Text>
+
+    <Text style={styles.tieSubtitle}>
+      {isSuperTie
+        ? "EVERYONE IS TIED"
+        : isTieBreakNoElimination
+          ? "NO PLAYER WAS ELIMINATED"
+          : "TIE-BREAK REQUIRED"}
+    </Text>
+
+    <Text style={styles.tiePlayersCount}>
+      {tiedPlayerIds.length}{" "}
+      {tiedPlayerIds.length === 1
+        ? "PLAYER"
+        : "PLAYERS"}{" "}
+      TIED
+    </Text>
+
+  </View>
+) : isTieLimitReached ? (
+  <View style={styles.tieContent}>
+
+    <Text style={styles.tieRoundLabel}>
+      TIE ROUND {tieRoundCount ?? "—"}
+    </Text>
+
+    <Text style={styles.tieTitle}>
+      TIE LIMIT REACHED
+    </Text>
+
+    <Text style={styles.tieSubtitle}>
+      SPY WINS
+    </Text>
+
+  </View>
+) : noElimination ? (
   <>
-    {/* TITLE */}
-<Text
-  style={styles.noVoteTitle}
-  numberOfLines={2}
->
-  No Player
-  {"\n"}
-  Is <Text style={styles.noVoteEliminated}>Eliminated</Text>
-</Text>
+    <Text
+      style={styles.noVoteTitle}
+      numberOfLines={2}
+    >
+      No Player
+      {"\n"}
+      Is{" "}
+      <Text style={styles.noVoteEliminated}>
+        Eliminated
+      </Text>
+    </Text>
+
+    <View style={styles.noVotePlate}>
+      <Text style={styles.noVoteCount}>
+        0 VOTES
+      </Text>
+    </View>
   </>
 ) : (
   <>
+
 
 
   {/* PLAYER */}
@@ -222,16 +331,16 @@ const cardHeight =
     )}
   </View>
 )}
-    {!showRole ? (
-      <Text
-        style={styles.votes}
-      >
-        Got {voteCount}{" "}
-        {voteCount === 1
-          ? "vote"
-          : "votes"}
-      </Text>
-    ) : (
+  {!showRole ? (
+  <View style={styles.votesPill}>
+    <Text style={styles.votes}>
+      Got {voteCount}{" "}
+      {voteCount === 1
+        ? "vote"
+        : "votes"}
+    </Text>
+  </View>
+) : (
       <View
         style={[
           styles.rolePlate,
@@ -509,17 +618,35 @@ voterSeventh: {
 },
 
     
-    votes: {
-      marginTop: 3,
+  votesPill: {
+  marginTop: 4,
 
-      color: "#D09A00",
+  paddingHorizontal: 9,
+  paddingVertical: 3,
 
-      fontSize: 10,
+  borderRadius: 10,
 
-      fontWeight: "700",
+  backgroundColor:
+    "rgba(242,169,0,0.10)",
 
-      letterSpacing: 0.3,
-    },
+  borderWidth: 1,
+  borderColor:
+    "rgba(242,169,0,0.28)",
+
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+votes: {
+  color: "#C99618",
+
+  fontSize: 8.5,
+
+  fontWeight: "800",
+
+  letterSpacing: 0.25,
+},
+
 
 noVoteTitle: {
   color: "#83817e",
@@ -581,6 +708,63 @@ noVoteCount: {
 
   letterSpacing: 1,
 },
+
+tieContent: {
+  width: "100%",
+  height: "100%",
+
+  alignItems: "center",
+  justifyContent: "center",
+
+  paddingHorizontal: 20,
+},
+
+tieRoundLabel: {
+  color: "#D09A00",
+
+  fontSize: 9,
+  fontWeight: "900",
+
+  letterSpacing: 1.5,
+
+  marginBottom: 8,
+},
+
+tieTitle: {
+  color: "#E3E4D3",
+
+  fontSize: 21,
+  fontWeight: "900",
+
+  letterSpacing: 1.2,
+
+  textAlign: "center",
+},
+
+tieSubtitle: {
+  marginTop: 7,
+
+  color: "#705B46",
+
+  fontSize: 11,
+  fontWeight: "900",
+
+  letterSpacing: 1,
+
+  textAlign: "center",
+},
+
+tiePlayersCount: {
+  marginTop: 14,
+
+  color: "#D09A00",
+
+  fontSize: 9,
+  fontWeight: "900",
+
+  letterSpacing: 1.2,
+},
+
 
    rolePlate: {
   position: "absolute",

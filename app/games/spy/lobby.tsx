@@ -31,6 +31,7 @@ import { useMutation, useQuery } from "convex/react";
 
 import RoundIntroCard from "@/features/games/spy/components/RoundIntroCard";
 import CategorySelection from "@/features/games/spy/game/CategorySelection";
+import GameOverBoard from "@/features/games/spy/game/GameOverBoard";
 import PrivateWordReveal from "@/features/games/spy/game/PrivateWordReveal";
 import VotingResultCard from "@/features/games/spy/game/VotingResultCard";
 import LobbyOverlay from "@/features/games/spy/lobby/layout/LobbyOverlay";
@@ -151,8 +152,8 @@ const {
   isLoading: playersLoading,
 } = useLobbyPlayers(roomId);
 
-const devRestartClassicGame = useMutation(
-  api.games.spy.classic.game.devRestartClassicGame
+const restartClassicGame = useMutation(
+  api.games.spy.classic.game.restartClassicGame
 );
 
 const currentPlayer =
@@ -207,6 +208,18 @@ const classicGame =
   useQuery(
     api.games.spy.classic.uiQueries
       .getClassicGameState,
+    validRoomId
+      ? {
+          roomId:
+            validRoomId,
+        }
+      : "skip"
+  );
+
+  const finishedClassicGame =
+  useQuery(
+    api.games.spy.classic.game
+      .getFinishedClassicGame,
     validRoomId
       ? {
           roomId:
@@ -308,9 +321,14 @@ const votingResult =
   );
 
   
-  const [
+const [
   showVotingResult,
   setShowVotingResult,
+] = useState(false);
+
+const [
+  showFinalGameBoard,
+  setShowFinalGameBoard,
 ] = useState(false);
 
 const [
@@ -326,7 +344,7 @@ const [
     null
   );
 
-  /* =========================
+ /* =========================
    🏁 FINALIZE ROUND VOTING
 ========================= */
 
@@ -336,10 +354,16 @@ const finalizeRoundVoting =
       .finalizeRoundVoting
   );
 
-  const processRoundResult =
+const processRoundResult =
   useMutation(
     api.games.spy.classic.result
       .processRoundResult
+  );
+
+const startNextRound =
+  useMutation(
+    api.games.spy.classic.nextRound
+      .startNextRound
   );
 
 const shownResultRoundRef =
@@ -349,14 +373,112 @@ useEffect(() => {
   const roundId =
     classicGame?.round?.roundId;
 
+  const phase =
+    classicGame?.round?.phase;
+
+  const resolution =
+    classicGame?.round?.resolution;
+
   if (
-    classicGame?.round?.phase !==
-      "result" ||
     !roundId ||
+    !resolution
+  ) {
+    return;
+  }
+
+  const isTieBreakIntro =
+    phase === "tieBreak" &&
+    resolution === "tie_break";
+
+  const isFinalResult =
+    (phase === "result" ||
+      phase === "finished") &&
+    (
+      resolution === "no_elimination" ||
+      resolution === "eliminated" ||
+      resolution === "game_over" ||
+      resolution === "super_tie" ||
+      resolution === "tie_break_no_elimination" ||
+      resolution === "tie_limit_reached"
+    );
+
+  if (
+    !isTieBreakIntro &&
+    !isFinalResult
+  ) {
+    return;
+  }
+
+  /*
+   * Normal elimination results need
+   * votingResult data.
+   *
+   * The tie-break intro does not, because
+   * the card only needs the tie resolution.
+   */
+  if (
+    isFinalResult &&
     !votingResult
   ) {
     return;
   }
+
+  const resultKey =
+    `${roundId}:${resolution}`;
+
+  if (
+    shownResultRoundRef.current ===
+    resultKey
+  ) {
+    return;
+  }
+
+  shownResultRoundRef.current =
+    resultKey;
+
+  setDisplayVotingResult(
+    votingResult ?? null
+  );
+
+  setShowVotingRole(false);
+  setShowVotingResult(true);
+}, [
+  classicGame?.round?.roundId,
+  classicGame?.round?.phase,
+  classicGame?.round?.resolution,
+  votingResult,
+]);
+
+useEffect(() => {
+  const roundId =
+    classicGame?.round?.roundId;
+
+  const phase =
+    classicGame?.round?.phase;
+
+  if (
+    !roundId ||
+    (phase !== "result" &&
+      phase !== "finished")
+  ) {
+    return;
+}
+
+ /*
+ * Show a result card for every completed
+ * voting outcome:
+ *
+ * - normal elimination
+ * - no elimination / nobody voted
+ * - super tie
+ * - tie-break no elimination
+ *
+ * The result query may legitimately have
+ * eliminatedPlayer === null.
+ */
+if (!votingResult) {
+  return;
+}
 
   if (
     shownResultRoundRef.current ===
@@ -375,29 +497,10 @@ useEffect(() => {
   setShowVotingRole(false);
   setShowVotingResult(true);
 }, [
-  classicGame?.round?.phase,
   classicGame?.round?.roundId,
-  votingResult?.roundId,
+  classicGame?.round?.phase,
+  votingResult,
 ]);
-
-
-
-// useEffect(() => {
-//   if (!showVotingResult) {
-//     return;
-//   }
-
-//   setShowVotingRole(false);
-
-//   const roleTimer =
-//     setTimeout(() => {
-//       setShowVotingRole(true);
-//     }, 2500);
-
-//   return () => {
-//     clearTimeout(roleTimer);
-//   };
-// }, [showVotingResult]);
 
 useEffect(() => {
   if (!showVotingResult) {
@@ -411,23 +514,38 @@ useEffect(() => {
   const hideResultTimer = setTimeout(() => {
     setShowVotingResult(false);
     setShowVotingRole(false);
+
+    /*
+     * If this result ended the match,
+     * reveal the final game board immediately
+     * after the voting result + role reveal.
+     */
+    if (
+      classicGame?.room?.status ===
+        "finished"
+    ) {
+      setShowFinalGameBoard(true);
+    }
   }, 5000);
 
   return () => {
     clearTimeout(roleTimer);
     clearTimeout(hideResultTimer);
   };
-}, [showVotingResult]);
+}, [
+  showVotingResult,
+  classicGame?.room?.status,
+]);
 
 useEffect(() => {
   const roundId =
     classicGame?.round?.roundId;
 
- if (
+if (
   !currentPlayer?.isHost ||
+  classicGame?.room?.status !== "playing" ||
   classicGame?.round?.phase !== "result" ||
   !roundId ||
-  !votingResult ||
   !validRoomId
 ) {
   return;
@@ -437,26 +555,42 @@ useEffect(() => {
 
   const processResult = async () => {
     try {
-      /*
-       * Wait for the result card + role reveal
-       * to finish before processing the round.
-       */
-      await new Promise((resolve) =>
-        setTimeout(resolve, 3200)
-      );
+    /*
+ * Let the complete voting result card
+ * remain visible for its full 5 seconds.
+ */
+await new Promise((resolve) =>
+  setTimeout(resolve, 5000)
+);
 
       if (cancelled) {
         return;
       }
 
-      const result =
-        await processRoundResult({
-          roundId,
-        });
+   const result =
+  await processRoundResult({
+    roundId,
+  });
 
-      if (cancelled) {
-        return;
-      }
+if (cancelled) {
+  return;
+}
+
+if (
+  result?.gameFinished
+) {
+  return;
+}
+
+if (
+  result?.success &&
+  result?.gameFinished === false
+) {
+  await startNextRound({
+    roundId,
+  });
+}
+
     } catch (error) {
       if (!cancelled) {
         console.error(
@@ -474,13 +608,14 @@ useEffect(() => {
   };
 }, [
   currentPlayer?.isHost,
+  classicGame?.room?.status,
   classicGame?.round?.phase,
   classicGame?.round?.roundId,
-  votingResult,
+  classicGame?.round?.resolution,
   validRoomId,
   processRoundResult,
+  startNextRound,
 ]);
-
 
 /* =========================
    🗳️ CATEGORY VOTE
@@ -511,7 +646,7 @@ const advanceClassicTurn =
       .advanceClassicTurn
   );
 
-  const handleSkipTurn = async () => {
+const handleSkipTurn = async () => {
   if (
     !classicGame?.round?.roundId ||
     !currentPlayer
@@ -519,37 +654,84 @@ const advanceClassicTurn =
     return;
   }
 
+  const round =
+    classicGame.round;
+
+  /*
+   * =========================
+   * 🎤 NORMAL SPEAKING
+   * =========================
+   */
+
   if (
-    classicGame.round.phase !==
+    round.phase ===
     "speaking"
   ) {
+    const currentSpeakerId =
+      round.speakerOrder[
+        round.currentSpeakerIndex
+      ];
+
+    if (
+      currentSpeakerId !==
+      currentPlayer.playerId
+    ) {
+      return;
+    }
+
+    try {
+      await advanceClassicTurn({
+        roundId:
+          round.roundId,
+        force: true,
+      });
+    } catch (error) {
+      console.error(
+        "SKIP TURN ERROR:",
+        error
+      );
+    }
+
     return;
   }
 
-const currentSpeakerId =
-  classicGame.round.speakerOrder[
-    classicGame.round.currentSpeakerIndex
-  ];
+  /*
+   * =========================
+   * ⚖️ TIE-BREAK SPEAKING
+   * =========================
+   */
 
-if (
-  currentSpeakerId !==
-  currentPlayer.playerId
-) {
-  return;
-}
+  if (
+    round.phase ===
+      "tieBreak" &&
+    round.tieBreakSpeakerIndex !==
+      undefined &&
+    round.tieBreakOrder
+  ) {
+    const currentTieSpeakerId =
+      round.tieBreakOrder[
+        round.tieBreakSpeakerIndex
+      ];
 
-  try {
-await advanceClassicTurn({
-  roundId:
-    classicGame.round.roundId,
+    if (
+      currentTieSpeakerId !==
+      currentPlayer.playerId
+    ) {
+      return;
+    }
 
-  force: true,
-});
-  } catch (error) {
-    console.error(
-      "SKIP TURN ERROR:",
-      error
-    );
+    try {
+      await advanceTieBreakTurn({
+        roundId:
+          round.roundId,
+        force: true,
+      });
+    } catch (error) {
+      console.error(
+        "SKIP TIE-BREAK TURN ERROR:",
+        error
+      );
+    }
   }
 };
 
@@ -559,18 +741,46 @@ const castRoundVote =
       .castRoundVote
   );
 
+const castTieBreakVote =
+  useMutation(
+    api.games.spy.classic.tieBreakVoting
+      .castTieBreakVote
+  );
+
 const myRoundVote =
   useQuery(
     api.games.spy.classic.roundVoting
       .getMyRoundVote,
-    classicGame?.round?.phase === "voting" ||
-classicGame?.round?.phase === "tieBreak"
+    classicGame?.round?.phase ===
+      "voting" &&
+    classicGame?.round?.isTieBreak !== true
       ? {
           roundId:
             classicGame.round.roundId,
         }
       : "skip"
   );
+
+const myTieBreakVote =
+  useQuery(
+    api.games.spy.classic.tieBreakVoting
+      .getMyTieBreakVote,
+    classicGame?.round?.phase ===
+      "voting" &&
+    classicGame?.round?.isTieBreak === true
+      ? {
+          roundId:
+            classicGame.round.roundId,
+        }
+      : "skip"
+  );
+
+const finalizeTieBreakVoting =
+  useMutation(
+    api.games.spy.classic.tieBreakVoting
+      .finalizeTieBreakVoting
+  );
+
 
 const handlePlayerVote = async (
   targetPlayerId: string
@@ -583,12 +793,15 @@ const handlePlayerVote = async (
     return;
   }
 
-  if (
-    classicGame.round.phase !== "voting" &&
-    classicGame.round.phase !== "tieBreak"
-  ) {
-    return;
-  }
+if (
+  classicGame.round.phase !==
+  "voting"
+) {
+  return;
+}
+
+const isTieBreakVoting =
+  classicGame.round.isTieBreak === true;
 
   if (
     !players.some(
@@ -601,11 +814,15 @@ const handlePlayerVote = async (
     return;
   }
 
-  if (
-    myRoundVote?.hasVoted
-  ) {
-    return;
-  }
+if (
+  (
+    isTieBreakVoting
+      ? myTieBreakVote?.hasVoted
+      : myRoundVote?.hasVoted
+  )
+) {
+  return;
+}
 
   if (
     targetPlayerId ===
@@ -615,15 +832,42 @@ const handlePlayerVote = async (
   }
 
 try {
-  const result = await castRoundVote({
-    roundId:
-      classicGame.round.roundId,
+if (isTieBreakVoting) {
+  const result =
+    await castTieBreakVote({
+      roundId:
+        classicGame.round.roundId,
 
-    targetPlayerId:
-      targetPlayerId as Id<"gameRoomPlayers">,
+      targetPlayerId:
+        targetPlayerId as Id<"gameRoomPlayers">,
 
-    skipped: false,
-  });
+      skipped: false,
+    });
+
+  if (result.shouldFinalize) {
+    try {
+      await finalizeTieBreakVoting({
+        roundId:
+          classicGame.round.roundId,
+      });
+    } catch (finalizeError) {
+      console.error(
+        "FINALIZE TIE-BREAK VOTE ERROR:",
+        finalizeError
+      );
+    }
+  }
+} else {
+  const result =
+    await castRoundVote({
+      roundId:
+        classicGame.round.roundId,
+
+      targetPlayerId:
+        targetPlayerId as Id<"gameRoomPlayers">,
+
+      skipped: false,
+    });
 
   if (result.shouldFinalize) {
     try {
@@ -638,6 +882,7 @@ try {
       );
     }
   }
+}
 } catch (error) {
   console.error(
     "CAST VOTE ERROR:",
@@ -655,12 +900,11 @@ const handleSkipVote = async () => {
     return;
   }
 
-  if (
-    classicGame.round.phase !== "voting" &&
-    classicGame.round.phase !== "tieBreak"
-  ) {
-    return;
-  }
+if (
+  classicGame.round.phase !== "voting"
+) {
+  return;
+}
 
   if (
     !players.some(
@@ -673,22 +917,58 @@ const handleSkipVote = async () => {
     return;
   }
 
-  if (
-    myRoundVote?.hasVoted
-  ) {
-    return;
-  }
+const isTieBreakVoting =
+  classicGame.round.isTieBreak === true;
+
+if (
+  (
+    isTieBreakVoting
+      ? myTieBreakVote?.hasVoted
+      : myRoundVote?.hasVoted
+  )
+) {
+  return;
+}
 
  try {
-  const result = await castRoundVote({
-    roundId:
-      classicGame.round.roundId,
+ if (
+  classicGame.round.isTieBreak === true
+) {
+  const result =
+    await castTieBreakVote({
+      roundId:
+        classicGame.round.roundId,
 
-    targetPlayerId:
-      undefined,
+      targetPlayerId:
+        undefined,
 
-    skipped: true,
-  });
+      skipped: true,
+    });
+
+  if (result.shouldFinalize) {
+    try {
+      await finalizeTieBreakVoting({
+        roundId:
+          classicGame.round.roundId,
+      });
+    } catch (finalizeError) {
+      console.error(
+        "FINALIZE TIE-BREAK SKIP ERROR:",
+        finalizeError
+      );
+    }
+  }
+} else {
+  const result =
+    await castRoundVote({
+      roundId:
+        classicGame.round.roundId,
+
+      targetPlayerId:
+        undefined,
+
+      skipped: true,
+    });
 
   if (result.shouldFinalize) {
     try {
@@ -703,6 +983,7 @@ const handleSkipVote = async () => {
       );
     }
   }
+}
 } catch (error) {
   console.error(
     "SKIP VOTE ERROR:",
@@ -717,67 +998,19 @@ const handleSkipVote = async () => {
       .startClassicSpeaking
   );
 
-
-  /* =========================
-   🎬 START SPEAKING AFTER
-   ROUND INTRO
-========================= */
-
-useEffect(() => {
-  if (
-    !validRoomId ||
-    !classicGame?.round?.roundId ||
-    classicGame.round.phase !== "roundIntro" ||
-    !classicGame.round.roundIntroEndsAt
-  ) {
-    return;
-  }
-
-  let cancelled = false;
-
-  const startSpeaking = async () => {
-    if (cancelled) return;
-
-    try {
-      await startClassicSpeaking({
-        roundId: classicGame.round!.roundId,
-      });
-    } catch (error) {
-      if (!cancelled) {
-        console.error(
-          "START CLASSIC SPEAKING ERROR:",
-          error
-        );
-      }
-    }
-  };
-
-  const remaining = Math.max(
-    0,
-    classicGame.round.roundIntroEndsAt -
-      Date.now()
+  const startTieBreakSpeaking =
+  useMutation(
+    api.games.spy.classic.turns
+      .startTieBreakSpeaking
   );
 
- const timer = setTimeout(
-  startSpeaking,
-  remaining
-);
+const advanceTieBreakTurn =
+  useMutation(
+    api.games.spy.classic.turns
+      .advanceTieBreakTurn
+  );
 
-  return () => {
-    cancelled = true;
-    clearTimeout(timer);
-  };
-}, [
-  validRoomId,
-  classicGame?.round?.roundId,
-  classicGame?.round?.phase,
-  classicGame?.round?.roundIntroEndsAt,
-  startClassicSpeaking,
-]);
-
-
-
-/* =========================
+  /* =========================
    🎬 CATEGORY RESULT DELAY
 ========================= */
 
@@ -868,9 +1101,24 @@ useEffect(() => {
 
 const votingStarted =
   classicGame?.round?.phase ===
-    "voting" ||
+  "voting";
+
+const isTieBreakVoting =
   classicGame?.round?.phase ===
-    "tieBreak";
+    "voting" &&
+  classicGame?.round?.isTieBreak ===
+    true;
+    
+const isTieBreak =
+  classicGame?.round?.isTieBreak === true;
+
+const tieBreakPlayerIds =
+  classicGame?.round?.tieBreakOrder ??
+  [];
+
+
+
+
 
 const showPrivateReveal =
   classicGame?.room?.status ===
@@ -879,6 +1127,75 @@ const showPrivateReveal =
   !showCategoryResult &&
   !secretReady &&
   !!classicGame?.mySecret;
+
+
+
+  /* =========================
+   🎬 START SPEAKING AFTER
+   ROUND INTRO
+========================= */
+
+useEffect(() => {
+  if (
+    !validRoomId ||
+    !classicGame?.round?.roundId ||
+    classicGame.round.phase !== "roundIntro" ||
+    !classicGame.round.roundIntroEndsAt ||
+    !categoryRevealStarted ||
+    !secretReady ||
+    showCategoryResult ||
+    showPrivateReveal
+  ) {
+    return;
+  }
+
+  let cancelled = false;
+
+  const startSpeaking = async () => {
+    if (cancelled) {
+      return;
+    }
+
+    try {
+      await startClassicSpeaking({
+        roundId: classicGame.round!.roundId,
+      });
+    } catch (error) {
+      if (!cancelled) {
+        console.error(
+          "START CLASSIC SPEAKING ERROR:",
+          error
+        );
+      }
+    }
+  };
+
+const remainingMs =
+  classicGame.round.roundIntroEndsAt -
+  Date.now();
+
+const timer = setTimeout(
+  startSpeaking,
+  Math.max(remainingMs, 100)
+);
+  return () => {
+    cancelled = true;
+    clearTimeout(timer);
+  };
+}, [
+  validRoomId,
+  classicGame?.round?.roundId,
+  classicGame?.round?.phase,
+  classicGame?.round?.roundIntroEndsAt,
+  categoryRevealStarted,
+  secretReady,
+  showCategoryResult,
+  showPrivateReveal,
+  startClassicSpeaking,
+]);
+
+
+
 
 
 
@@ -897,8 +1214,10 @@ useEffect(() => {
     classicGame?.round?.turnEndsAt;
 
   if (
+  classicGame?.round?.phase !==
+      "speaking" &&
     classicGame?.round?.phase !==
-      "speaking" ||
+      "tieBreak" ||
     !endsAt
   ) {
     setSpeakingRemaining(null);
@@ -942,6 +1261,66 @@ const remaining =
 
 
 /* =========================
+   ⚖️ START TIE-BREAK SPEAKING
+========================= */
+
+useEffect(() => {
+  if (
+    !validRoomId ||
+    !classicGame?.round?.roundId ||
+    classicGame.round.phase !== "tieBreak" ||
+   classicGame.round.tieBreakSpeakerIndex !== undefined ||
+(
+  !classicGame.myPlayer?.isHost &&
+  classicGame.round.tieBreakOrder?.[0] !==
+    currentPlayer?.playerId
+)
+  ) {
+    return;
+  }
+
+  let cancelled = false;
+
+  const startTieBreak = async () => {
+    if (cancelled) {
+      return;
+    }
+
+    try {
+      await startTieBreakSpeaking({
+        roundId:
+          classicGame.round!.roundId,
+      });
+    } catch (error) {
+      if (!cancelled) {
+        console.error(
+          "START TIE-BREAK SPEAKING ERROR:",
+          error
+        );
+      }
+    }
+  };
+
+
+ const timer = setTimeout(
+  startTieBreak,
+  5000
+);
+
+  return () => {
+    cancelled = true;
+    clearTimeout(timer);
+  };
+}, [
+  validRoomId,
+  classicGame?.round?.roundId,
+  classicGame?.round?.phase,
+  classicGame?.round?.tieBreakSpeakerIndex,
+  startTieBreakSpeaking,
+]);
+
+
+/* =========================
    🗳️ VOTING TIMER
 ========================= */
 
@@ -949,14 +1328,23 @@ useEffect(() => {
   const endsAt =
     classicGame?.round?.votingEndsAt;
 
-  if (
-  classicGame?.round?.phase !== "voting" &&
-classicGame?.round?.phase !== "tieBreak" ||
-    !endsAt
-  ) {
-    setVotingRemaining(null);
-    return;
-  }
+  const phase =
+    classicGame?.round?.phase;
+
+  const isVotingPhase =
+    phase === "voting";
+
+ const isVoting =
+  classicGame?.round?.phase ===
+  "voting";
+
+if (
+  !isVoting ||
+  !endsAt
+) {
+  setVotingRemaining(null);
+  return;
+}
 
   const updateTimer = () => {
     const remaining = Math.max(
@@ -987,6 +1375,78 @@ classicGame?.round?.phase !== "tieBreak" ||
 
 
 /* =========================
+   ⚖️ AUTO ADVANCE TIE-BREAK
+========================= */
+
+useEffect(() => {
+ const tieBreakSpeakerIndex =
+  classicGame?.round?.tieBreakSpeakerIndex;
+
+const tieBreakSpeakerId =
+  tieBreakSpeakerIndex !== undefined
+    ? classicGame?.round?.tieBreakOrder?.[
+        tieBreakSpeakerIndex
+      ]
+    : undefined;
+
+if (
+  !validRoomId ||
+  !classicGame?.round?.roundId ||
+  classicGame.round.phase !== "tieBreak" ||
+  tieBreakSpeakerIndex === undefined ||
+  speakingRemaining !== 0 ||
+  (
+    !classicGame.myPlayer?.isHost &&
+    tieBreakSpeakerId !==
+      currentPlayer?.playerId
+  )
+) {
+  return;
+}
+
+  let cancelled = false;
+
+  const advanceTieBreak = async () => {
+    if (cancelled) {
+      return;
+    }
+
+    try {
+      await advanceTieBreakTurn({
+        roundId:
+          classicGame.round!.roundId,
+      });
+    } catch (error) {
+      if (!cancelled) {
+        console.error(
+          "AUTO ADVANCE TIE-BREAK ERROR:",
+          error
+        );
+      }
+    }
+  };
+
+  const timer = setTimeout(
+    advanceTieBreak,
+    500
+  );
+
+  return () => {
+    cancelled = true;
+    clearTimeout(timer);
+  };
+}, [
+  validRoomId,
+  classicGame?.round?.roundId,
+  classicGame?.round?.phase,
+  classicGame?.round?.tieBreakSpeakerIndex,
+  speakingRemaining,
+  advanceTieBreakTurn,
+]);
+
+
+
+/* =========================
    🏁 AUTO FINALIZE VOTING
 ========================= */
 
@@ -994,8 +1454,8 @@ useEffect(() => {
   if (
     !validRoomId ||
     !classicGame?.round?.roundId ||
-  classicGame.round.phase !== "voting" &&
-classicGame.round.phase !== "tieBreak" ||
+    classicGame.round.phase !==
+      "voting" ||
     votingRemaining !== 0
   ) {
     return;
@@ -1006,10 +1466,20 @@ classicGame.round.phase !== "tieBreak" ||
   const finalizeVoting =
     async () => {
       try {
-        await finalizeRoundVoting({
-          roundId:
-            classicGame.round!.roundId,
-        });
+        if (
+          classicGame.round!.isTieBreak ===
+          true
+        ) {
+          await finalizeTieBreakVoting({
+            roundId:
+              classicGame.round!.roundId,
+          });
+        } else {
+          await finalizeRoundVoting({
+            roundId:
+              classicGame.round!.roundId,
+          });
+        }
       } catch (error) {
         if (!cancelled) {
           console.error(
@@ -1020,11 +1490,6 @@ classicGame.round.phase !== "tieBreak" ||
       }
     };
 
-  /*
-   * Small delay gives the client
-   * timer and server timestamp a
-   * moment to converge.
-   */
   const timer = setTimeout(
     finalizeVoting,
     150
@@ -1038,10 +1503,11 @@ classicGame.round.phase !== "tieBreak" ||
   validRoomId,
   classicGame?.round?.roundId,
   classicGame?.round?.phase,
+  classicGame?.round?.isTieBreak,
   votingRemaining,
   finalizeRoundVoting,
+  finalizeTieBreakVoting,
 ]);
-
 
 
 
@@ -1194,8 +1660,51 @@ useEffect(() => {
 )}
 
 {/* =========================
-        🗳️ VOTING RESULT
-    ========================= */}
+    🏆 FINAL GAME OVER
+========================= */}
+
+{room?.status === "finished" &&
+  finishedClassicGame &&
+  showFinalGameBoard && (
+    <LobbyOverlay
+      visible={true}
+      contentStyle={styles.gameOverOverlay}
+      onClose={() => {}}
+    >
+      <GameOverBoard
+        winner={
+          finishedClassicGame.winner ??
+          "villagers"
+        }
+      villagerWord={
+  finishedClassicGame.villagerWord ?? ""
+}
+spyWord={
+  finishedClassicGame.spyWord ?? ""
+}
+        players={
+          finishedClassicGame.players.map(
+            (player) => ({
+              playerId:
+                player.playerId,
+              name:
+                player.name,
+              avatar:
+                player.avatar,
+              role:
+                player.role,
+              isAlive:
+                player.isAlive,
+            })
+          )
+        }
+      />
+    </LobbyOverlay>
+  )}
+
+{/* =========================
+         🗳️ VOTING RESULT
+     ========================= */}
 
     {showVotingResult && (
       <LobbyOverlay
@@ -1204,6 +1713,19 @@ useEffect(() => {
         onClose={() => {}}
       >
         <VotingResultCard
+        resultType={
+  classicGame?.round?.resolution
+}
+
+tieRoundCount={
+  classicGame?.round?.tieRoundCount ??
+  classicGame?.match?.tieRoundCount
+}
+
+tiedPlayerIds={
+  classicGame?.round?.tiedPlayerIds ??
+  []
+}
         playerName={
   displayVotingResult
     ?.eliminatedPlayer?.name ??
@@ -1264,26 +1786,26 @@ showRole={
   onRules={() => {}}
   onVolume={() => {}}
   onExit={() => {}}
+isTieBreak={isTieBreak}
+roomCode={
+  room?.roomCode ?? ""
+}
 
-  roomCode={
-    room?.roomCode
-  }
+isHost={
+  currentPlayer?.isHost === true
+}
 
-  isHost={
-    currentPlayer?.isHost === true
-  }
-
-  word={
-    classicGame?.mySecret?.word
-  }
+word={
+  classicGame?.mySecret?.word ?? ""
+}
 
   gameStarted={
     room?.status === "playing"
   }
 
-  votingStarted={
-  classicGame?.round?.phase === "voting" ||
-  classicGame?.round?.phase === "tieBreak"
+votingStarted={
+  classicGame?.round?.phase ===
+    "voting"
 }
 turnEndsAt={
   classicGame?.round?.votingEndsAt
@@ -1333,27 +1855,54 @@ votingRemaining={
   currentPlayerId={
     currentPlayer?.playerId
   }
-  hasVoted={
-    myRoundVote?.hasVoted ??
-    false
-  }
+ hasVoted={
+  (
+    classicGame?.round?.isTieBreak
+      ? myTieBreakVote?.hasVoted
+      : myRoundVote?.hasVoted
+  ) ??
+  false
+}
   onVote={
     handlePlayerVote
   }
   onSkipVote={
     handleSkipVote
   }
-  allOtherPlayersReady={
-    allOtherPlayersReady
-  }
+allOtherPlayersReady={
+  allOtherPlayersReady
+}
+
+isTieBreak={
+  isTieBreak
+}
+
+isTieBreakVoting={
+  isTieBreak &&
+  classicGame?.round?.phase === "voting"
+}
+
+tieBreakPlayerIds={
+  tieBreakPlayerIds
+}
 />
 
 <LobbyTurnIndicator
-  visible={
-    classicGame?.round?.phase === "speaking" &&
-    !showCategoryResult &&
-    !showPrivateReveal
-  }
+isTieBreak={
+  classicGame?.round?.phase === "tieBreak"
+}
+visible={
+  (
+    classicGame?.round?.phase === "speaking" ||
+    (
+      classicGame?.round?.phase === "tieBreak" &&
+      classicGame?.round?.tieBreakSpeakerIndex !== undefined
+    )
+  ) &&
+  !showCategoryResult &&
+  !showPrivateReveal &&
+  !showVotingResult
+}
 
 isMyTurn={
   currentSpeakerPlayer?.id ===
@@ -1393,7 +1942,8 @@ turnEndsAt={
 
 {room?.status === "lobby" && (
   <View style={styles.waitingInfoInside}>
-    <LobbyInfoPanel
+   {!showFinalGameBoard && (
+  <LobbyInfoPanel
       currentPlayers={players.length}
       maxPlayers={
         room?.maxPlayers ?? 4
@@ -1418,6 +1968,7 @@ turnEndsAt={
           : handleReady
       }
     />
+   )}
   </View>
 )}
 </View>
@@ -1673,23 +2224,22 @@ turnEndsAt={
     );
   }}
 
-  onReset={async () => {
-    if (!validRoomId) {
-      return;
-    }
+ onReset={async () => {
+  if (!validRoomId) {
+    return;
+  }
 
-    try {
-      await devRestartClassicGame({
-        roomId:
-          validRoomId,
-      });
-    } catch (error) {
-      console.error(
-        "DEV RESTART ERROR:",
-        error
-      );
-    }
-  }}
+  try {
+    await restartClassicGame({
+      roomId: validRoomId,
+    });
+  } catch (error) {
+    console.error(
+      "RESTART CLASSIC GAME ERROR:",
+      error
+    );
+  }
+}}
 
   onMore={() => {
   }}
@@ -1703,6 +2253,17 @@ const styles = StyleSheet.create({
   /* =========================
    CATEGORY RESULT
 ========================= */
+
+gameOverOverlay: {
+  zIndex: 5000,
+  elevation: 5000,
+
+  alignItems: "center",
+  justifyContent: "center",
+
+  paddingHorizontal: 4,
+  paddingVertical: 4,
+},
 
 categoryResultOverlay: {
   zIndex: 3000,

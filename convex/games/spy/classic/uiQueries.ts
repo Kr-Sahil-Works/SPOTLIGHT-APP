@@ -222,36 +222,63 @@ export const getClassicGameState =
          🎤 CURRENT SPEAKER
       ========================= */
 
-      let currentSpeaker =
-        null;
+   let currentSpeaker = null;
 
-      if (
-        round &&
-        round.phase ===
-          "speaking"
-      ) {
-        const speakerId =
-          round.speakerOrder[
-            round.currentSpeakerIndex
-          ];
+if (
+  round &&
+  round.phase === "speaking"
+) {
+  const speakerId =
+    round.speakerOrder[
+      round.currentSpeakerIndex
+    ];
 
-        if (speakerId) {
-          const speaker =
-            await ctx.db.get(
-              speakerId
-            );
+  if (speakerId) {
+    const speaker =
+      await ctx.db.get(
+        speakerId
+      );
 
-          if (speaker) {
-            currentSpeaker = {
-              playerId:
-                speaker._id,
+    if (speaker) {
+      currentSpeaker = {
+        playerId:
+          speaker._id,
 
-              userId:
-                speaker.userId,
-            };
-          }
-        }
-      }
+        userId:
+          speaker.userId,
+      };
+    }
+  }
+}
+
+if (
+  round &&
+  round.phase === "tieBreak" &&
+  round.tieBreakOrder &&
+  round.tieBreakSpeakerIndex !== undefined
+) {
+  const speakerId =
+    round.tieBreakOrder[
+      round.tieBreakSpeakerIndex
+    ];
+
+  if (speakerId) {
+    const speaker =
+      await ctx.db.get(
+        speakerId
+      );
+
+    if (speaker) {
+      currentSpeaker = {
+        playerId:
+          speaker._id,
+
+        userId:
+          speaker.userId,
+      };
+    }
+  }
+}
 
       /* =========================
          🔐 MY SECRET
@@ -394,8 +421,7 @@ export const getClassicGameState =
               currentRound:
                 match.currentRound,
 
-              maxRounds:
-                match.maxRounds,
+             tieRoundCount: match.tieRoundCount,
 
               winner:
                 match.winner,
@@ -446,8 +472,18 @@ export const getClassicGameState =
               tieBreakSpeakerIndex:
                 round.tieBreakSpeakerIndex,
 
-              eliminatedPlayerId:
-                round.eliminatedPlayerId,
+            resolution:
+  round.resolution,
+
+tiedPlayerIds:
+  round.tiedPlayerIds,
+
+tieRoundCount:
+  round.tieRoundCount,
+
+eliminatedPlayerId:
+  round.eliminatedPlayerId,
+  
             }
           : null,
 

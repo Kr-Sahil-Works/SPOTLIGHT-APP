@@ -6,7 +6,7 @@ import { getAuthenticatedUser } from "../../users/users.core";
 
 import {
   startCategorySelectionInternal,
-} from "./classic/categoryVoting";
+} from "./classic/categorySelection";
 
 const MIN_PLAYERS = 4;
 

@@ -166,7 +166,7 @@ useEffect(() => {
       () =>
         categories.slice(
           0,
-          8
+          6
         ),
       [categories]
     );
@@ -617,16 +617,16 @@ categories: {
 
   columnGap: 2,
 
-  rowGap: 4.8,
+  rowGap: 6,
 
   overflow: "visible",
-  marginTop:4,
+  marginTop: 12,
 },
 
 categoryButton: {
   width: "47%",
 
-  height: 31,
+  height: 34,
 
   borderRadius: 5,
 

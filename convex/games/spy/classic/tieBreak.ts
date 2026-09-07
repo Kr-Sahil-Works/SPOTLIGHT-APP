@@ -8,7 +8,7 @@ import {
   getAuthenticatedUser,
 } from "../../../users/users.core";
 
-const TIE_BREAK_SPEAKING_SECONDS = 30;
+const SPEAKING_SECONDS = 30;
 
 /* =========================
    ⚖️ START TIE-BREAK
@@ -175,7 +175,7 @@ export const startTieBreak =
 
       const turnEndsAt =
         now +
-        TIE_BREAK_SPEAKING_SECONDS *
+        SPEAKING_SECONDS *
           1000;
 
       await ctx.db.patch(
@@ -440,7 +440,7 @@ export const advanceTieBreakTurn =
 
       const turnEndsAt =
         now +
-        TIE_BREAK_SPEAKING_SECONDS *
+        SPEAKING_SECONDS *
           1000;
 
       await ctx.db.patch(

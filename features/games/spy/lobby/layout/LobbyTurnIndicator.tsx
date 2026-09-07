@@ -20,8 +20,10 @@ import Reanimated, {
 
 import { Image } from "expo-image";
 import Svg, {
+  Circle,
   Defs,
   LinearGradient,
+  RadialGradient,
   Rect,
   Stop,
 } from "react-native-svg";
@@ -38,6 +40,10 @@ const AnimatedRect =
     Rect
   );
 
+const AnimatedCircle =
+  Reanimated.createAnimatedComponent(
+    Circle
+  );
 
 /* =========================
    🎤 PROPS
@@ -56,15 +62,11 @@ type LobbyTurnIndicatorProps = {
 
   remaining: number | null;
 
-  /*
-   * Real server-side deadline.
-   *
-   * This is used for the smooth
-   * 60 FPS perimeter animation.
-   */
   turnEndsAt?: number;
 
   onSkipTurn?: () => void;
+
+  isTieBreak?: boolean;
 };
 
 
@@ -87,7 +89,9 @@ export default function LobbyTurnIndicator({
 
   turnEndsAt,
 
-  onSkipTurn,
+onSkipTurn,
+
+isTieBreak = false,
 }: LobbyTurnIndicatorProps) {
 
 
@@ -339,9 +343,184 @@ export default function LobbyTurnIndicator({
   ]);
 
 
-  /* =========================
-     ⏱️ BORDER ANIMATION
-  ========================= */
+/* =========================
+   🌌 SUBTLE AMBIENT GLOW
+========================= */
+
+const glow1X = useSharedValue(45);
+const glow1Y = useSharedValue(45);
+const glow1Opacity = useSharedValue(0.22);
+
+const glow2X = useSharedValue(175);
+const glow2Y = useSharedValue(105);
+const glow2Opacity = useSharedValue(0.18);
+
+const glow3X = useSharedValue(110);
+const glow3Y = useSharedValue(150);
+const glow3Opacity = useSharedValue(0.14);
+
+useEffect(() => {
+  if (!visible) {
+    return;
+  }
+
+  glow1X.value = withRepeat(
+    withSequence(
+      withTiming(75, {
+        duration: 4200,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(30, {
+        duration: 4200,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+  glow1Y.value = withRepeat(
+    withSequence(
+      withTiming(70, {
+        duration: 3600,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(35, {
+        duration: 3600,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+glow1Opacity.value = withRepeat(
+  withSequence(
+    withTiming(0.30, {
+      duration: 3000,
+      easing: Easing.inOut(Easing.sin),
+    }),
+    withTiming(0.10, {
+      duration: 3000,
+      easing: Easing.inOut(Easing.sin),
+    })
+  ),
+  -1,
+  true
+);
+
+  glow2X.value = withRepeat(
+    withSequence(
+      withTiming(145, {
+        duration: 5000,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(190, {
+        duration: 5000,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+  glow2Y.value = withRepeat(
+    withSequence(
+      withTiming(70, {
+        duration: 4200,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(115, {
+        duration: 4200,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+glow2Opacity.value = withRepeat(
+  withSequence(
+    withTiming(0.25, {
+      duration: 3600,
+      easing: Easing.inOut(Easing.sin),
+    }),
+    withTiming(0.07, {
+      duration: 3600,
+      easing: Easing.inOut(Easing.sin),
+    })
+  ),
+  -1,
+  true
+);
+
+  glow3X.value = withRepeat(
+    withSequence(
+      withTiming(135, {
+        duration: 6200,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(85, {
+        duration: 6200,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+  glow3Y.value = withRepeat(
+    withSequence(
+      withTiming(125, {
+        duration: 4800,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(155, {
+        duration: 4800,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+glow3Opacity.value = withRepeat(
+  withSequence(
+    withTiming(0.20, {
+      duration: 4200,
+      easing: Easing.inOut(Easing.sin),
+    }),
+    withTiming(0.05, {
+      duration: 4200,
+      easing: Easing.inOut(Easing.sin),
+    })
+  ),
+  -1,
+  true
+);
+}, [visible]);
+
+const glow1Props = useAnimatedProps(() => ({
+  cx: glow1X.value,
+  cy: glow1Y.value,
+  opacity: glow1Opacity.value,
+}));
+
+const glow2Props = useAnimatedProps(() => ({
+  cx: glow2X.value,
+  cy: glow2Y.value,
+  opacity: glow2Opacity.value,
+}));
+
+const glow3Props = useAnimatedProps(() => ({
+  cx: glow3X.value,
+  cy: glow3Y.value,
+  opacity: glow3Opacity.value,
+}));
+
+/* =========================
+   ⏱️ BORDER ANIMATION
+========================= */
 
   const animatedBorderProps =
     useAnimatedProps(
@@ -587,9 +766,120 @@ export default function LobbyTurnIndicator({
           🎴 CARD
       ========================= */}
 
-      <View
-        style={styles.card}
-      >
+   <View
+  style={styles.card}
+>
+  {/* =========================
+      🌌 AMBIENT DARK GRADIENT
+  ========================= */}
+
+  <View
+    pointerEvents="none"
+    style={styles.ambientGlow}
+  >
+    <Svg
+      width={224}
+      height={150}
+      viewBox="0 0 224 150"
+    >
+      <Defs>
+
+        <RadialGradient
+          id="glowBlue"
+          cx="50%"
+          cy="50%"
+          r="50%"
+        >
+        <Stop
+  offset="0%"
+  stopColor="#31558F"
+  stopOpacity={0.90}
+/>
+          <Stop
+            offset="55%"
+            stopColor="#17243D"
+            stopOpacity={0.20}
+          />
+          <Stop
+            offset="100%"
+            stopColor="#050507"
+            stopOpacity={0}
+          />
+        </RadialGradient>
+
+        <RadialGradient
+          id="glowGold"
+          cx="50%"
+          cy="50%"
+          r="50%"
+        >
+          <Stop
+            offset="0%"
+            stopColor="#8A6418"
+            stopOpacity={0.45}
+          />
+          <Stop
+            offset="55%"
+            stopColor="#4A350E"
+            stopOpacity={0.14}
+          />
+          <Stop
+            offset="100%"
+            stopColor="#050507"
+            stopOpacity={0}
+          />
+        </RadialGradient>
+
+        <RadialGradient
+          id="glowPurple"
+          cx="50%"
+          cy="50%"
+          r="50%"
+        >
+        <Stop
+  offset="0%"
+  stopColor="#604681"
+  stopOpacity={0.70}
+/>
+          <Stop
+            offset="60%"
+            stopColor="#211832"
+            stopOpacity={0.12}
+          />
+          <Stop
+            offset="100%"
+            stopColor="#050507"
+            stopOpacity={0}
+          />
+        </RadialGradient>
+
+      </Defs>
+
+      <AnimatedCircle
+        cx={45}
+        cy={45}
+        r={90}
+        fill="url(#glowBlue)"
+        animatedProps={glow1Props}
+      />
+
+      <AnimatedCircle
+        cx={175}
+        cy={105}
+      r={88}
+        fill="url(#glowGold)"
+        animatedProps={glow2Props}
+      />
+
+      <AnimatedCircle
+        cx={110}
+        cy={150}
+      r={82}
+        fill="url(#glowPurple)"
+        animatedProps={glow3Props}
+      />
+    </Svg>
+  </View>
 
         {/* =========================
             PLAYER NUMBER
@@ -639,9 +929,11 @@ export default function LobbyTurnIndicator({
               styles.headerText
             }
           >
-            {isMyTurn
-              ? "YOUR TURN"
-              : "SPEAKING"}
+          {isTieBreak
+  ? "TIE-BREAK"
+  : isMyTurn
+    ? "YOUR TURN"
+    : "SPEAKING"}
           </Text>
 
         </View>
@@ -826,13 +1118,21 @@ export default function LobbyTurnIndicator({
           ⏭️ SKIP TURN
       ========================= */}
 
-      {isMyTurn && (
-        <SpeakingTurnSkipButton
-          visible={true}
-          onPress={
-            onSkipTurn
-          }
-        />
+{isMyTurn && (
+  <View
+    style={{
+      transform: [
+        {
+          translateY: 8,
+        },
+      ],
+    }}
+  >
+    <SpeakingTurnSkipButton
+      visible={true}
+      onPress={onSkipTurn}
+    />
+  </View>
       )}
 
     </View>
@@ -843,7 +1143,7 @@ const styles = StyleSheet.create({
   container: {
     position: "absolute",
 
-    top: 115,
+    top: 132,
 
     left: 0,
     right: 0,
@@ -877,38 +1177,56 @@ timerBorder: {
 },
 
 
+ambientGlow: {
+  position: "absolute",
+
+  top: 0,
+  left: 0,
+
+  width: 224,
+  height: 150,
+
+  opacity: 1,
+
+  zIndex: 0,
+},
+
 card: {
   width: 224,
 
   height: 150,
 
-    paddingHorizontal: 15,
-    paddingTop: 12,
-    paddingBottom: 10,
+  overflow: "hidden",
 
-    borderRadius: 25,
+  paddingHorizontal: 15,
+  paddingTop: 12,
+  paddingBottom: 10,
 
-    backgroundColor:
-      "rgba(5,5,7,0.94)",
+  borderRadius: 25,
 
-    borderWidth: 1,
+  backgroundColor:
+    "rgba(5,5,7,0.94)",
 
-    borderColor:
-      "rgba(255,255,255,0.13)",
+  borderWidth: 1,
 
-    shadowColor: "#000",
+  borderColor:
+    "rgba(255,255,255,0.13)",
 
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
+  zIndex: 1,
 
-    shadowOpacity: 0.55,
+  shadowColor: "#000",
 
-    shadowRadius: 18,
-
-    elevation: 16,
+  shadowOffset: {
+    width: 0,
+    height: 10,
   },
+
+  shadowOpacity: 0.55,
+
+  shadowRadius: 18,
+
+  elevation: 16,
+},
 
   /* =========================
      PLAYER NUMBER

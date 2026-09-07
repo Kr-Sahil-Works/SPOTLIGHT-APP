@@ -522,23 +522,6 @@ gameRoomJoinAttempts: defineTable({
 
 
       /* =========================
-     🗳️ CLASSIC CATEGORY VOTES
-  ========================= */
-  gameCategoryVotes: defineTable({
-    roomId: v.id("gameRooms"),
-    userId: v.id("users"),
-
-    /* 🗂️ ONE CATEGORY PER PLAYER */
-    category: v.string(),
-
-    /* ⏱️ VOTE TIMESTAMP */
-    createdAt: v.number(),
-  })
-    .index("by_room", ["roomId"])
-    .index("by_room_user", ["roomId", "userId"]),
-
-
-      /* =========================
      🎮 CLASSIC GAME ROUNDS
   ========================= */
   gameRounds: defineTable({
@@ -585,12 +568,38 @@ roundIntroEndsAt:
     tieBreakSpeakerIndex:
       v.optional(v.number()),
 
-    /* 🏁 ROUND RESULT */
-    eliminatedPlayerId:
-      v.optional(v.id("gameRoomPlayers")),
+ /* 🏁 ROUND RESULT */
 
-    createdAt: v.number(),
-    updatedAt: v.number(),
+resolution:
+  v.optional(
+    v.union(
+      v.literal("no_elimination"),
+      v.literal("eliminated"),
+      v.literal("game_over"),
+      v.literal("tie_break"),
+      v.literal("super_tie"),
+      v.literal("tie_break_no_elimination"),
+      v.literal("tie_limit_reached")
+    )
+  ),
+
+tiedPlayerIds:
+  v.optional(
+    v.array(
+      v.id("gameRoomPlayers")
+    )
+  ),
+
+tieRoundCount:
+  v.optional(v.number()),
+
+eliminatedPlayerId:
+  v.optional(
+    v.id("gameRoomPlayers")
+  ),
+
+createdAt: v.number(),
+updatedAt: v.number(),
   })
     .index("by_room", ["roomId"])
     .index("by_room_round", [
@@ -750,7 +759,7 @@ gameTieBreakVotes: defineTable({
     /* 🔢 ROUND */
     currentRound: v.number(),
 
-    maxRounds: v.number(),
+    tieRoundCount: v.number(),
 
     /* 👑 WINNER */
     winner: v.optional(
@@ -797,121 +806,6 @@ spyPlayerId: v.optional(
       "status",
     ]),
 
-
-    /* =========================
-   🎮 CLASSIC SPY MATCHES
-========================= */
-
-gameClassicMatches: defineTable({
-  /* 🔗 ROOM */
-  roomId: v.id("gameRooms"),
-
-  /* 🗂️ CATEGORY */
-  category: v.string(),
-
-  /* 🧩 WORD PAIR */
-  wordPairId: v.string(),
-
-  /* 🔄 50% WORD SWAP */
-  wordsSwapped: v.boolean(),
-
-  /* 🔢 ROUND */
-  roundNumber: v.number(),
-
-  maxRounds: v.number(),
-
-  speakersCompleted: v.number(),
-  /* 🎮 PHASE */
-  phase: v.union(
-    v.literal("category"),
-    v.literal("speaking"),
-    v.literal("voting"),
-    v.literal("tieBreak"),
-    v.literal("finished")
-  ),
-
-  /* 🎤 CURRENT SPEAKER */
-  currentSpeakerUserId:
-    v.optional(v.id("users")),
-
-  turnStartedAt:
-    v.optional(v.number()),
-
-  turnEndsAt:
-    v.optional(v.number()),
-
-  /* 🏆 RESULT */
-  winner: v.optional(
-    v.union(
-      v.literal("villagers"),
-      v.literal("spy")
-    )
-  ),
-
-  status: v.union(
-    v.literal("active"),
-    v.literal("finished")
-  ),
-
-  createdAt: v.number(),
-
-  updatedAt: v.number(),
-})
-  .index("by_room", ["roomId"])
-  .index("by_status", ["status"])
-  .index(
-    "by_room_status",
-    ["roomId", "status"]
-  ),
-
-/* =========================
-   👥 CLASSIC MATCH PLAYERS
-========================= */
-
-gameClassicPlayers: defineTable({
-  /* 🔗 MATCH */
-  matchId: v.id(
-    "gameClassicMatches"
-  ),
-
-  /* 👤 USER */
-  userId: v.id("users"),
-
-  /* 🎭 SECRET ROLE */
-  role: v.union(
-    v.literal("villager"),
-    v.literal("spy")
-  ),
-
-  /* 🔐 PRIVATE WORD */
-  word: v.string(),
-
-  /* ❤️ ALIVE */
-  isAlive: v.boolean(),
-
-  /* 🎤 NORMAL SPEAKING ORDER */
-  speakingOrder: v.number(),
-
-  /* ❌ ELIMINATION */
-  eliminatedAt:
-    v.optional(v.number()),
-
-  /* ⏱️ JOIN */
-  joinedAt: v.number(),
-})
-  .index(
-    "by_match",
-    ["matchId"]
-  )
-  .index(
-    "by_match_user",
-    ["matchId", "userId"]
-  )
-  .index(
-    "by_match_alive",
-    ["matchId", "isAlive"]
-  ),
-
 /* =========================
    🗳️ CLASSIC CATEGORY VOTES
 ========================= */
@@ -939,17 +833,60 @@ gameClassicCategoryVotes: defineTable({
     "by_room_category",
     ["roomId", "categoryId"]
   ),
+gameMatchHistory: defineTable({
+  matchId: v.id("gameMatches"),
+  roomId: v.id("gameRooms"),
 
+  gameMode: v.string(),
 
+  category: v.string(),
 
+  winner: v.union(
+    v.literal("spy"),
+    v.literal("villagers")
+  ),
 
+  villagerWord: v.string(),
+  spyWord: v.string(),
 
+  spyPlayerId:
+    v.id("gameRoomPlayers"),
 
+  currentRound: v.number(),
 
+  tieRoundCount: v.number(),
 
+  completedAt: v.number(),
 
+  players: v.array(
+    v.object({
+      playerId:
+        v.id("gameRoomPlayers"),
 
+      userId:
+        v.id("users"),
 
+      role: v.union(
+        v.literal("spy"),
+        v.literal("villager")
+      ),
+
+      isAlive: v.boolean(),
+
+      eliminatedRound:
+        v.optional(v.number()),
+
+      eliminatedAt:
+        v.optional(v.number()),
+    })
+  ),
+})
+  .index("by_room", ["roomId"])
+  .index("by_match", ["matchId"])
+  .index("by_room_completed", [
+    "roomId",
+    "completedAt",
+  ]),
 
 });
 
