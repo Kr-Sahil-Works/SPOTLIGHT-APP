@@ -37,7 +37,7 @@ export default function RoundIntroCard({
     >
       {/* SPY + BOARD */}
       <Image
-        source={require("@/assets/images/games/spy/boards/round_intro.png")}
+        source={require("@/assets/images/games/spy/boards/round_intro.webp")}
         contentFit="contain"
         style={StyleSheet.absoluteFill}
       />

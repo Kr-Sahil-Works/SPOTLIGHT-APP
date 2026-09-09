@@ -34,7 +34,7 @@ export default function GameCard({
 const styles = StyleSheet.create({
   wrapper: {
     marginTop: 10,
-    paddingHorizontal: 18,
+    paddingHorizontal: 22,
   },
 
   card: {

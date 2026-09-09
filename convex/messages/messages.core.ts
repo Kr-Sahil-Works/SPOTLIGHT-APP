@@ -54,6 +54,9 @@ export const sendMessage = mutation({
         }
       );
 
+    const now =
+      Date.now();
+
     await ctx.db.insert(
       "messages",
       {
@@ -71,7 +74,7 @@ export const sendMessage = mutation({
         text: args.text,
 
         createdAt:
-          Date.now(),
+          now,
 
         type: "text",
 
@@ -87,17 +90,60 @@ export const sendMessage = mutation({
       }
     );
 
+    const conversation =
+      await ctx.db.get(
+        conversationId
+      );
+
+    const unreadCounts =
+      conversation?.unreadCounts
+        ? [...conversation.unreadCounts]
+        : [];
+
+    const receiverUnreadIndex =
+      unreadCounts.findIndex(
+        (item) =>
+          item.userId ===
+          args.receiverId
+      );
+
+    if (
+      receiverUnreadIndex >= 0
+    ) {
+      unreadCounts[
+        receiverUnreadIndex
+      ] = {
+        userId:
+          args.receiverId,
+        count:
+          unreadCounts[
+            receiverUnreadIndex
+          ].count + 1,
+      };
+    } else {
+      unreadCounts.push({
+        userId:
+          args.receiverId,
+        count: 1,
+      });
+    }
+
     await ctx.db.patch(
       conversationId,
       {
         lastMessage:
           args.text,
 
-        lastMessageAt:
-          Date.now(),
+              lastMessageAt:
+          now,
 
         lastMessageSenderId:
           current._id,
+
+        updatedAt:
+          now,
+
+        unreadCounts,
       }
     );
 
@@ -179,18 +225,19 @@ handler: async (ctx, args) => {
       )
       .order("desc")
       .take(200);
-      const unseen =
+      
+    const hasUndelivered =
   messages.some(
     (msg) =>
       msg.receiverId ===
         user._id &&
-      !msg.seen &&
+      msg.status ===
+        "sent" &&
       msg.senderId ===
         args.userId
   );
-  
 
-if (!unseen) {
+if (!hasUndelivered) {
   return;
 }
 
@@ -249,8 +296,9 @@ const conversationId =
       )
       .order("desc")
       .take(200);
-for (const msg of messages) {
+let markedCount = 0;
 
+for (const msg of messages) {
   if (
     msg.receiverId === user._id &&
     !msg.seen &&
@@ -264,7 +312,37 @@ for (const msg of messages) {
         status: "seen",
       }
     );
+
+    markedCount++;
   }
+}
+
+/* 🔔 reset unread counter */
+if (markedCount > 0) {
+  const unreadCounts =
+    conversation.unreadCounts
+      ? [...conversation.unreadCounts]
+      : [];
+
+  const unreadIndex =
+    unreadCounts.findIndex(
+      (item) =>
+        item.userId === user._id
+    );
+
+  if (unreadIndex >= 0) {
+    unreadCounts[unreadIndex] = {
+      userId: user._id,
+      count: 0,
+    };
+  }
+
+  await ctx.db.patch(
+    conversationId,
+    {
+      unreadCounts,
+    }
+  );
 }
   },
 });

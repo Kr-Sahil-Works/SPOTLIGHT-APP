@@ -5,10 +5,10 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View
 } from "react-native";
 import Animated, {
+  Easing,
   FadeInUp,
   useAnimatedStyle,
   useSharedValue,
@@ -41,7 +41,7 @@ export default function SpyHomeScreen() {
 
 const [selectedMode, setSelectedMode] = useState<
   "spy" | "wordless" | "master" | "y2" | null
->(null);
+>("spy");
 
 const [joinVisible, setJoinVisible] =
   useState(false);
@@ -58,7 +58,10 @@ const y2Rotation = useSharedValue(0);
 
 const createScale = useSharedValue(1);
 const joinScale = useSharedValue(1);
-const { width, height } = useWindowDimensions();
+
+const createOpacity = useSharedValue(0.8);
+const joinOpacity = useSharedValue(0.8);
+
 const [heroAnimating, setHeroAnimating] =
   useState(true);
 
@@ -183,6 +186,7 @@ const animateSelection = (
 };
 
 const createButtonAnimatedStyle = useAnimatedStyle(() => ({
+  opacity: createOpacity.value,
   transform: [
     { scale: createScale.value },
     {
@@ -193,6 +197,7 @@ const createButtonAnimatedStyle = useAnimatedStyle(() => ({
 }));
 
 const joinButtonAnimatedStyle = useAnimatedStyle(() => ({
+  opacity: joinOpacity.value,
   transform: [
     { scale: joinScale.value },
     {
@@ -206,10 +211,18 @@ const createPressIn = () => {
   createScale.value = withTiming(0.965, {
     duration: 70,
   });
+
+  createOpacity.value = withTiming(1, {
+    duration: 70,
+  });
 };
 
 const createPressOut = () => {
   createScale.value = withTiming(1, {
+    duration: 130,
+  });
+
+  createOpacity.value = withTiming(0.9, {
     duration: 130,
   });
 };
@@ -218,10 +231,18 @@ const joinPressIn = () => {
   joinScale.value = withTiming(0.965, {
     duration: 70,
   });
+
+  joinOpacity.value = withTiming(1, {
+    duration: 70,
+  });
 };
 
 const joinPressOut = () => {
   joinScale.value = withTiming(1, {
+    duration: 130,
+  });
+
+  joinOpacity.value = withTiming(0.9, {
     duration: 130,
   });
 };
@@ -243,34 +264,25 @@ const joinPressOut = () => {
   });
 };
 
-
-useEffect(() => {
+ useEffect(() => {
   if (!heroAnimating) return;
 
   heroScale.value = withRepeat(
-    withSequence(
-      withTiming(1.01, {
-        duration: 4000,
-      }),
-      withTiming(1, {
-        duration: 4000,
-      })
-    ),
+    withTiming(1.01, {
+      duration: 5000,
+      easing: Easing.inOut(Easing.sin),
+    }),
     -1,
-    false
+    true
   );
 
   heroOpacity.value = withRepeat(
-    withSequence(
-      withTiming(0.65, {
-        duration: 4000,
-      }),
-      withTiming(1, {
-        duration: 4000,
-      })
-    ),
+    withTiming(0.82, {
+      duration: 5000,
+      easing: Easing.inOut(Easing.sin),
+    }),
     -1,
-    false
+    true
   );
 }, [heroAnimating]);
 
@@ -290,8 +302,16 @@ const heroAnimatedStyle =
   style={styles.container}
   edges={["left", "right", "top"]}
 >
- <View style={styles.content}>
 
+  <View
+  style={[
+    styles.content,
+    {
+      zIndex: 1,
+      elevation: 1,
+    },
+  ]}
+>
   {/* =========================
       TOP 60% — HEADER + HERO
   ========================= */}
@@ -605,16 +625,13 @@ const heroAnimatedStyle =
   ]}
 >
   <Pressable
-    disabled={!selectedMode}
-    onPressIn={createPressIn}
+  onPressIn={createPressIn}
     onPressOut={createPressOut}
     style={styles.imageButton}
     android_ripple={{
       color: "#D99100",
     }}
     onPress={() => {
-      if (!selectedMode) return;
-
       router.push({
         pathname: "/games/spy/create",
         params: {
@@ -629,13 +646,6 @@ const heroAnimatedStyle =
     style={styles.buttonImage}
     contentFit="contain"
   />
-
-  {!selectedMode && (
-    <View
-      pointerEvents="none"
-      style={styles.disabledOverlay}
-    />
-  )}
 </View>
   </Pressable>
 </Animated.View>

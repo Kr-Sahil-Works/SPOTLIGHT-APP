@@ -21,7 +21,7 @@ import Animated, {
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import pincodeboard from "@/assets/images/games/spy/boards/round_intro.png";
+import pincodeboard from "@/assets/images/games/spy/boards/round_intro.webp";
 
 import PinDots from "@/shared/components/ui/PinDots";
 import PinKeypad from "@/shared/components/ui/PinKeypad";

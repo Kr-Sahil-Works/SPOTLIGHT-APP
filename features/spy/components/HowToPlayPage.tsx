@@ -1,10 +1,15 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { SafeAreaView } from "react-native-safe-area-context";
 import { HOW_TO_PLAY } from "../constants/rules";
 
 export default function HowToPlayPage() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView
+      style={styles.container}
+      edges={[ "left", "right", "top"]}
+    >
+      <View style={styles.content}>
       {HOW_TO_PLAY.map((step, index) => (
         <View
           key={step.id}
@@ -33,12 +38,19 @@ export default function HowToPlayPage() {
           </View>
         </View>
       ))}
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+container: {
+    flex: 1,
+
+    backgroundColor: "#000",
+  },
+
+  content: {
     flex: 1,
 
     justifyContent: "center",

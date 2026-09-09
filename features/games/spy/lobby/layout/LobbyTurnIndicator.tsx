@@ -99,9 +99,11 @@ isTieBreak = false,
      ⏱️ TIMER PROGRESS
   ========================= */
 
-  const timerProgress =
-    useSharedValue(1);
+const timerProgress =
+  useSharedValue(1);
 
+const dangerPulse =
+  useSharedValue(0);
 
   /* =========================
      🎤 VOICE WAVE VALUES
@@ -127,50 +129,62 @@ isTieBreak = false,
      ⏱️ SMOOTH TIMER ANIMATION
   ========================= */
 
-  useEffect(() => {
-    if (
-      !visible ||
-      !turnEndsAt
-    ) {
-      timerProgress.value = 1;
-      return;
-    }
-
-    const remainingMs =
-      Math.max(
-        0,
-        turnEndsAt -
-          Date.now()
-      );
-
-    /*
-     * Reset immediately when a
-     * new speaker/turn starts.
-     */
+useEffect(() => {
+  if (
+    !visible ||
+    !turnEndsAt
+  ) {
     timerProgress.value = 1;
+    dangerPulse.value = 0;
+    return;
+  }
 
-    /*
-     * Then continuously travel
-     * from 100% → 0%.
-     *
-     * Linear = analog timer feel.
-     */
-    timerProgress.value =
-      withTiming(
-        0,
-        {
-          duration:
-            remainingMs,
+  const remainingMs =
+    Math.max(
+      0,
+      turnEndsAt - Date.now()
+    );
 
-          easing:
-            Easing.linear,
-        }
-      );
-  }, [
-    visible,
-    turnEndsAt,
-  ]);
+  timerProgress.value = 1;
 
+  timerProgress.value =
+    withTiming(
+      0,
+      {
+        duration: remainingMs,
+        easing: Easing.linear,
+      }
+    );
+
+  /*
+   * Subtle danger breathing.
+   *
+   * It starts around 6 seconds and
+   * becomes more noticeable toward 2 seconds.
+   *
+   * This is intentionally slow so it
+   * feels like a warning glow rather
+   * than a flashing effect.
+   */
+  dangerPulse.value = 0;
+
+  dangerPulse.value =
+    withTiming(
+      1,
+      {
+        duration: Math.max(
+          1,
+          remainingMs - 2000
+        ),
+        easing: Easing.inOut(
+          Easing.sin
+        ),
+      }
+    );
+}, [
+  visible,
+  turnEndsAt,
+]);
 
   /* =========================
      🎤 BUTTERY VOICE WAVE
@@ -348,30 +362,66 @@ isTieBreak = false,
 ========================= */
 
 const glow1X = useSharedValue(45);
+
 const glow1Y = useSharedValue(45);
-const glow1Opacity = useSharedValue(0.22);
+
+const glow1Opacity = useSharedValue(0.32);
+
 
 const glow2X = useSharedValue(175);
+
 const glow2Y = useSharedValue(105);
-const glow2Opacity = useSharedValue(0.18);
+
+const glow2Opacity = useSharedValue(0.28);
+
 
 const glow3X = useSharedValue(110);
+
 const glow3Y = useSharedValue(150);
-const glow3Opacity = useSharedValue(0.14);
+
+const glow3Opacity = useSharedValue(0.23);
+
+
+const glow4X = useSharedValue(35);
+
+const glow4Y = useSharedValue(125);
+
+const glow4Opacity = useSharedValue(0.19);
+
+
+const glow5X = useSharedValue(195);
+
+const glow5Y = useSharedValue(35);
+
+const glow5Opacity = useSharedValue(0.18);
+
+
+const glow6X = useSharedValue(110);
+
+const glow6Y = useSharedValue(55);
+
+const glow6Opacity = useSharedValue(0.20);
+
+
+const glow7X = useSharedValue(165);
+
+const glow7Y = useSharedValue(135);
+
+const glow7Opacity = useSharedValue(0.17);
+
 
 useEffect(() => {
   if (!visible) {
     return;
   }
-
-  glow1X.value = withRepeat(
+  glow4X.value = withRepeat(
     withSequence(
       withTiming(75, {
-        duration: 4200,
+        duration: 5200,
         easing: Easing.inOut(Easing.sin),
       }),
-      withTiming(30, {
-        duration: 4200,
+      withTiming(25, {
+        duration: 5200,
         easing: Easing.inOut(Easing.sin),
       })
     ),
@@ -379,13 +429,73 @@ useEffect(() => {
     true
   );
 
-  glow1Y.value = withRepeat(
+  glow4Y.value = withRepeat(
+    withSequence(
+      withTiming(105, {
+        duration: 4300,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(140, {
+        duration: 4300,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+  glow4Opacity.value = withRepeat(
+    withSequence(
+      withTiming(0.16, {
+        duration: 3300,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(0.035, {
+        duration: 3300,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+  glow5X.value = withRepeat(
+    withSequence(
+      withTiming(155, {
+        duration: 5800,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(205, {
+        duration: 5800,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+  glow5Y.value = withRepeat(
     withSequence(
       withTiming(70, {
+        duration: 4700,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(25, {
+        duration: 4700,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+  glow5Opacity.value = withRepeat(
+    withSequence(
+      withTiming(0.14, {
         duration: 3600,
         easing: Easing.inOut(Easing.sin),
       }),
-      withTiming(35, {
+      withTiming(0.025, {
         duration: 3600,
         easing: Easing.inOut(Easing.sin),
       })
@@ -394,29 +504,14 @@ useEffect(() => {
     true
   );
 
-glow1Opacity.value = withRepeat(
-  withSequence(
-    withTiming(0.30, {
-      duration: 3000,
-      easing: Easing.inOut(Easing.sin),
-    }),
-    withTiming(0.10, {
-      duration: 3000,
-      easing: Easing.inOut(Easing.sin),
-    })
-  ),
-  -1,
-  true
-);
-
-  glow2X.value = withRepeat(
+  glow6X.value = withRepeat(
     withSequence(
       withTiming(145, {
-        duration: 5000,
+        duration: 6400,
         easing: Easing.inOut(Easing.sin),
       }),
-      withTiming(190, {
-        duration: 5000,
+      withTiming(75, {
+        duration: 6400,
         easing: Easing.inOut(Easing.sin),
       })
     ),
@@ -424,14 +519,14 @@ glow1Opacity.value = withRepeat(
     true
   );
 
-  glow2Y.value = withRepeat(
+  glow6Y.value = withRepeat(
     withSequence(
-      withTiming(70, {
-        duration: 4200,
+      withTiming(80, {
+        duration: 5100,
         easing: Easing.inOut(Easing.sin),
       }),
-      withTiming(115, {
-        duration: 4200,
+      withTiming(45, {
+        duration: 5100,
         easing: Easing.inOut(Easing.sin),
       })
     ),
@@ -439,29 +534,14 @@ glow1Opacity.value = withRepeat(
     true
   );
 
-glow2Opacity.value = withRepeat(
-  withSequence(
-    withTiming(0.25, {
-      duration: 3600,
-      easing: Easing.inOut(Easing.sin),
-    }),
-    withTiming(0.07, {
-      duration: 3600,
-      easing: Easing.inOut(Easing.sin),
-    })
-  ),
-  -1,
-  true
-);
-
-  glow3X.value = withRepeat(
+  glow6Opacity.value = withRepeat(
     withSequence(
-      withTiming(135, {
-        duration: 6200,
+      withTiming(0.15, {
+        duration: 3900,
         easing: Easing.inOut(Easing.sin),
       }),
-      withTiming(85, {
-        duration: 6200,
+      withTiming(0.025, {
+        duration: 3900,
         easing: Easing.inOut(Easing.sin),
       })
     ),
@@ -469,14 +549,14 @@ glow2Opacity.value = withRepeat(
     true
   );
 
-  glow3Y.value = withRepeat(
+  glow7X.value = withRepeat(
     withSequence(
       withTiming(125, {
-        duration: 4800,
+        duration: 7000,
         easing: Easing.inOut(Easing.sin),
       }),
-      withTiming(155, {
-        duration: 4800,
+      withTiming(185, {
+        duration: 7000,
         easing: Easing.inOut(Easing.sin),
       })
     ),
@@ -484,20 +564,36 @@ glow2Opacity.value = withRepeat(
     true
   );
 
-glow3Opacity.value = withRepeat(
-  withSequence(
-    withTiming(0.20, {
-      duration: 4200,
-      easing: Easing.inOut(Easing.sin),
-    }),
-    withTiming(0.05, {
-      duration: 4200,
-      easing: Easing.inOut(Easing.sin),
-    })
-  ),
-  -1,
-  true
-);
+  glow7Y.value = withRepeat(
+    withSequence(
+      withTiming(115, {
+        duration: 5400,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(145, {
+        duration: 5400,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
+  glow7Opacity.value = withRepeat(
+    withSequence(
+      withTiming(0.12, {
+        duration: 4200,
+        easing: Easing.inOut(Easing.sin),
+      }),
+      withTiming(0.02, {
+        duration: 4200,
+        easing: Easing.inOut(Easing.sin),
+      })
+    ),
+    -1,
+    true
+  );
+
 }, [visible]);
 
 const glow1Props = useAnimatedProps(() => ({
@@ -518,23 +614,132 @@ const glow3Props = useAnimatedProps(() => ({
   opacity: glow3Opacity.value,
 }));
 
+const glow4Props = useAnimatedProps(() => ({
+  cx: glow4X.value,
+  cy: glow4Y.value,
+  opacity: glow4Opacity.value,
+}));
+
+const glow5Props = useAnimatedProps(() => ({
+  cx: glow5X.value,
+  cy: glow5Y.value,
+  opacity: glow5Opacity.value,
+}));
+
+const glow6Props = useAnimatedProps(() => ({
+  cx: glow6X.value,
+  cy: glow6Y.value,
+  opacity: glow6Opacity.value,
+}));
+
+const glow7Props = useAnimatedProps(() => ({
+  cx: glow7X.value,
+  cy: glow7Y.value,
+  opacity: glow7Opacity.value,
+}));
+
 /* =========================
    ⏱️ BORDER ANIMATION
 ========================= */
+const animatedBorderProps =
+  useAnimatedProps(() => {
+    /*
+     * 30 sec → 0 sec
+     *
+     * timerProgress:
+     * 1 → 0
+     *
+     * At 8 sec:
+     * 8 / 30
+     *
+     * At 6 sec:
+     * 6 / 30
+     *
+     * This gives us a completely
+     * continuous danger transition.
+     */
 
-  const animatedBorderProps =
-    useAnimatedProps(
-      () => ({
-        strokeDashoffset:
-          720 *
-          (
-            1 -
-            timerProgress.value
-          ),
-      })
-    );
+    const remainingSeconds =
+      timerProgress.value * 30;
 
+    const dangerProgress =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          (8 - remainingSeconds) / 2
+        )
+      );
 
+    return {
+      strokeDashoffset:
+        720 *
+        (1 - timerProgress.value),
+
+      opacity:
+        1 - dangerProgress,
+    };
+  });
+
+const animatedDangerBorderProps =
+  useAnimatedProps(() => {
+    const remainingSeconds =
+      timerProgress.value * 30;
+
+    /*
+     * 8 → 6 sec:
+     * Gold → red.
+     */
+    const dangerProgress =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          (8 - remainingSeconds) / 2
+        )
+      );
+
+    /*
+     * 6 → 2 sec:
+     * gradually increase the
+     * intensity of the red.
+     */
+    const redIntensity =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          (6 - remainingSeconds) / 4
+        )
+      );
+
+    /*
+     * Subtle breathing effect.
+     * Never reaches a harsh flash.
+     */
+    const pulse =
+      dangerPulse.value *
+      (0.12 + redIntensity * 0.12);
+
+    return {
+      strokeDashoffset:
+        720 *
+        (1 - timerProgress.value),
+
+      /*
+       * Red becomes progressively
+       * stronger from 6 → 2 sec.
+       */
+      opacity:
+        Math.min(
+          1,
+          dangerProgress *
+            (0.72 +
+              redIntensity * 0.20 +
+              pulse)
+        ),
+    };
+  });
   /* =========================
      🎤 WAVE ANIMATED STYLES
   ========================= */
@@ -732,9 +937,10 @@ const glow3Props = useAnimatedProps(() => ({
           />
 
 
-          {/* =========================
-              🔥 LIVE TIMER PERIMETER
-          ========================= */}
+        {/* =========================
+    🟡 ROYAL GOLD TIMER
+========================= */}
+
 <AnimatedRect
   x={2}
   y={2}
@@ -743,18 +949,26 @@ const glow3Props = useAnimatedProps(() => ({
   rx={23}
   ry={23}
   fill="none"
-
   stroke="url(#timerGoldGradient)"
-
   strokeWidth={2.2}
-
   strokeLinecap="round"
-
   strokeDasharray="720 720"
+  animatedProps={animatedBorderProps}
+/>
 
-  animatedProps={
-    animatedBorderProps
-  }
+<AnimatedRect
+  x={2}
+  y={2}
+  width={220}
+  height={146}
+  rx={23}
+  ry={23}
+  fill="none"
+  stroke="#8F2028"
+  strokeWidth={2.2}
+  strokeLinecap="round"
+  strokeDasharray="720 720"
+  animatedProps={animatedDangerBorderProps}
 />
 
         </Svg>
@@ -783,6 +997,98 @@ const glow3Props = useAnimatedProps(() => ({
       viewBox="0 0 224 150"
     >
       <Defs>
+
+<RadialGradient
+  id="glowRed"
+  cx="50%"
+  cy="50%"
+  r="50%"
+>
+  <Stop
+    offset="0%"
+    stopColor="#8F3038"
+    stopOpacity={0.70}
+  />
+  <Stop
+    offset="55%"
+    stopColor="#4A1820"
+    stopOpacity={0.18}
+  />
+  <Stop
+    offset="100%"
+    stopColor="#050507"
+    stopOpacity={0}
+  />
+</RadialGradient>
+
+<RadialGradient
+  id="glowGreen"
+  cx="50%"
+  cy="50%"
+  r="50%"
+>
+  <Stop
+    offset="0%"
+    stopColor="#2F754F"
+    stopOpacity={0.65}
+  />
+  <Stop
+    offset="55%"
+    stopColor="#173D29"
+    stopOpacity={0.16}
+  />
+  <Stop
+    offset="100%"
+    stopColor="#050507"
+    stopOpacity={0}
+  />
+</RadialGradient>
+
+<RadialGradient
+  id="glowPink"
+  cx="50%"
+  cy="50%"
+  r="50%"
+>
+  <Stop
+    offset="0%"
+    stopColor="#8A426F"
+    stopOpacity={0.60}
+  />
+  <Stop
+    offset="55%"
+    stopColor="#421D38"
+    stopOpacity={0.14}
+  />
+  <Stop
+    offset="100%"
+    stopColor="#050507"
+    stopOpacity={0}
+  />
+</RadialGradient>
+
+<RadialGradient
+  id="glowViolet"
+  cx="50%"
+  cy="50%"
+  r="50%"
+>
+  <Stop
+    offset="0%"
+    stopColor="#60408F"
+    stopOpacity={0.65}
+  />
+  <Stop
+    offset="55%"
+    stopColor="#30204D"
+    stopOpacity={0.15}
+  />
+  <Stop
+    offset="100%"
+    stopColor="#050507"
+    stopOpacity={0}
+  />
+</RadialGradient>
 
         <RadialGradient
           id="glowBlue"
@@ -878,6 +1184,38 @@ const glow3Props = useAnimatedProps(() => ({
         fill="url(#glowPurple)"
         animatedProps={glow3Props}
       />
+
+      <AnimatedCircle
+  cx={35}
+  cy={125}
+  r={78}
+  fill="url(#glowRed)"
+  animatedProps={glow4Props}
+/>
+
+<AnimatedCircle
+  cx={195}
+  cy={35}
+  r={76}
+  fill="url(#glowGreen)"
+  animatedProps={glow5Props}
+/>
+
+<AnimatedCircle
+  cx={110}
+  cy={55}
+  r={72}
+  fill="url(#glowPink)"
+  animatedProps={glow6Props}
+/>
+
+<AnimatedCircle
+  cx={165}
+  cy={135}
+  r={80}
+  fill="url(#glowViolet)"
+  animatedProps={glow7Props}
+/>
     </Svg>
   </View>
 

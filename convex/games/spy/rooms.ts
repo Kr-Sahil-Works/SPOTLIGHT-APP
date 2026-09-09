@@ -1,6 +1,11 @@
 import { v } from "convex/values";
+import { internal } from "../../_generated/api";
 
-import { mutation, query } from "../../_generated/server";
+import {
+  internalMutation,
+  mutation,
+  query,
+} from "../../_generated/server";
 
 import { getAuthenticatedUser } from "../../users/users.core";
 
@@ -114,7 +119,7 @@ export const getRoomPlayers = query({
           id: player._id,
           userId: user._id,
 
-          name: user.username,
+          name: user.fullname,
 
           avatar: user.image,
 
@@ -561,43 +566,127 @@ export const joinRoom =
         };
       }
 
-      /* =========================
-         🔒 ROOM STATUS
-      ========================= */
+     /* =========================
+   🔄 EXISTING PLAYER / REJOIN
+========================= */
 
-      if (
-        room.status !==
-        "lobby"
-      ) {
-        return {
-          success: false as const,
-          reason:
-            "ROOM_NOT_JOINABLE" as const,
-        };
-      }
-if (room.playerListLocked) {
+const existingPlayer =
+  await ctx.db
+    .query("gameRoomPlayers")
+    .withIndex(
+      "by_room_user",
+      (q) =>
+        q
+          .eq("roomId", room._id)
+          .eq("userId", user._id)
+    )
+    .first();
+
+if (existingPlayer) {
+  /* -------------------------
+     GAME ALREADY FINISHED
+  ------------------------- */
+
+  if (
+    room.status ===
+    "finished"
+  ) {
+    return {
+      success: false as const,
+      reason:
+        "GAME_FINISHED" as const,
+    };
+  }
+
+  /* -------------------------
+     PLAYER WAS ALREADY ELIMINATED
+  ------------------------- */
+
+  if (
+    !existingPlayer.isAlive
+  ) {
+    return {
+      success: false as const,
+      reason:
+        "PLAYER_ELIMINATED" as const,
+    };
+  }
+
+  /*
+   * Same authenticated user,
+   * same room.
+   *
+   * This is the rejoin path.
+   */
+  await ctx.db.patch(
+    existingPlayer._id,
+    {
+      isConnected: true,
+      lastActiveAt:
+        Date.now(),
+    }
+  );
+
   return {
-    success: false,
-    reason: "PLAYER_LIST_LOCKED" as const,
+    success: true as const,
+    alreadyJoined: true,
+    rejoined: true,
+    roomId: room._id,
+    playerId:
+      existingPlayer._id,
+    roomCode:
+      room.roomCode,
+    maxPlayers:
+      room.maxPlayers,
+    playerCount:
+      await ctx.db
+        .query(
+          "gameRoomPlayers"
+        )
+        .withIndex(
+          "by_room",
+          (q) =>
+            q.eq(
+              "roomId",
+              room._id
+            )
+        )
+        .collect()
+        .then(
+          (players) =>
+            players.length
+        ),
   };
 }
-      /* =========================
-         🔐 PLAYER LIST LOCK
-      ========================= */
 
-      if (
-        room.playerListLocked
-      ) {
-        return {
-          success: false as const,
-          reason:
-            "ROOM_NOT_JOINABLE" as const,
-        };
-      }
+/* =========================
+   🔒 ROOM STATUS
+========================= */
 
-      /* =========================
-         👥 GET PLAYERS
-      ========================= */
+if (
+  room.status !==
+  "lobby"
+) {
+  return {
+    success: false as const,
+    reason:
+      "ROOM_NOT_JOINABLE" as const,
+  };
+}
+
+if (
+  room.playerListLocked
+) {
+  return {
+    success: false as const,
+    reason:
+      "PLAYER_LIST_LOCKED" as const,
+  };
+}
+
+/* =========================
+   👥 GET PLAYERS
+========================= */
 
       const players =
         await ctx.db
@@ -613,43 +702,6 @@ if (room.playerListLocked) {
               )
           )
           .collect();
-
-      /* =========================
-         👤 ALREADY JOINED
-      ========================= */
-
-      const existingPlayer =
-        players.find(
-          (player) =>
-            player.userId ===
-            user._id
-        );
-
-      if (
-        existingPlayer
-      ) {
-        return {
-          success: true as const,
-
-          alreadyJoined:
-            true,
-
-          roomId:
-            room._id,
-
-          playerId:
-            existingPlayer._id,
-
-          roomCode:
-            room.roomCode,
-
-          maxPlayers:
-            room.maxPlayers,
-
-          playerCount:
-            players.length,
-        };
-      }
 
       /* =========================
          🚫 ROOM FULL
@@ -818,6 +870,73 @@ if (room.playerListLocked) {
 
 
 /* =========================
+   ⚙️ UPDATE ROOM PLAYER LIMIT
+========================= */
+
+export const updateRoomMaxPlayers = mutation({
+  args: {
+    roomId: v.id("gameRooms"),
+    maxPlayers: v.number(),
+  },
+
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+
+    const room = await ctx.db.get(args.roomId);
+
+    if (!room) {
+      throw new Error("Room not found");
+    }
+
+    if (room.hostId !== user._id) {
+      throw new Error(
+        "Only the host can change room settings"
+      );
+    }
+
+    if (room.status !== "lobby") {
+      throw new Error(
+        "Player limit can only be changed before the game starts"
+      );
+    }
+
+    if (
+      !Number.isInteger(args.maxPlayers) ||
+      args.maxPlayers < 4 ||
+      args.maxPlayers > 8
+    ) {
+      throw new Error(
+        "Player limit must be between 4 and 8"
+      );
+    }
+
+    const players = await ctx.db
+      .query("gameRoomPlayers")
+      .withIndex("by_room", (q) =>
+        q.eq("roomId", args.roomId)
+      )
+      .collect();
+
+    if (players.length > args.maxPlayers) {
+      throw new Error(
+        `Cannot set the room to ${args.maxPlayers} players because ${players.length} players are already inside`
+      );
+    }
+
+    await ctx.db.patch(args.roomId, {
+      maxPlayers: args.maxPlayers,
+      updatedAt: Date.now(),
+    });
+
+    return {
+      success: true,
+      maxPlayers: args.maxPlayers,
+      playerCount: players.length,
+    };
+  },
+});
+
+/* =========================
    ▶️ START GAME
 ========================= */
 
@@ -910,23 +1029,11 @@ if (room.playerListLocked) {
          👥 PLAYER COUNT
       ========================= */
 
-      if (
-        players.length <
-        MIN_PLAYERS
-      ) {
-        throw new Error(
-          `At least ${MIN_PLAYERS} players are required`
-        );
-      }
-
-      if (
-        players.length >
-        room.maxPlayers
-      ) {
-        throw new Error(
-          "Room has too many players"
-        );
-      }
+ if (players.length !== room.maxPlayers) {
+  throw new Error(
+    `This room requires exactly ${room.maxPlayers} players`
+  );
+}
 
       /* =========================
          ✅ READY CHECK
@@ -995,5 +1102,746 @@ const result =
         categorySelectionEndsAt:
           result.categorySelectionEndsAt,
       };
+    },
+  });
+
+
+  /* =========================
+   🚪 LEAVE ROOM
+========================= */
+
+export const leaveRoom =
+  mutation({
+    args: {
+      roomId:
+        v.id("gameRooms"),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      const user =
+        await getAuthenticatedUser(
+          ctx
+        );
+
+      const room =
+        await ctx.db.get(
+          args.roomId
+        );
+
+      if (!room) {
+        return {
+          success: false,
+          reason:
+            "ROOM_NOT_FOUND" as const,
+        };
+      }
+
+      const player =
+        await ctx.db
+          .query(
+            "gameRoomPlayers"
+          )
+          .withIndex(
+            "by_room_user",
+            (q) =>
+              q
+                .eq(
+                  "roomId",
+                  room._id
+                )
+                .eq(
+                  "userId",
+                  user._id
+                )
+          )
+          .first();
+
+      if (!player) {
+        return {
+          success: false,
+          reason:
+            "NOT_IN_ROOM" as const,
+        };
+      }
+
+      /* =========================
+         🏁 FINISHED GAME
+      ========================= */
+
+      if (
+        room.status ===
+        "finished"
+      ) {
+        return {
+          success: true,
+          alreadyFinished: true,
+        };
+      }
+
+      const now =
+        Date.now();
+
+      /* =========================
+         🎮 ACTIVE GAME
+      ========================= */
+
+      if (
+        room.status ===
+        "playing"
+      ) {
+        /*
+         * DO NOT DELETE THE PLAYER.
+         *
+         * The result card and final
+         * game board still need this
+         * player's identity/role.
+         */
+        if (
+          !player.isAlive
+        ) {
+          return {
+            success: true,
+            alreadyEliminated:
+              true,
+          };
+        }
+
+        await ctx.db.patch(
+          player._id,
+          {
+            isAlive: false,
+            isConnected: false,
+            eliminatedAt: now,
+          }
+        );
+
+        /* -------------------------
+           HOST TRANSFER
+        ------------------------- */
+
+        if (
+          player.isHost
+        ) {
+          const remainingPlayers =
+            await ctx.db
+              .query(
+                "gameRoomPlayers"
+              )
+              .withIndex(
+                "by_room",
+                (q) =>
+                  q.eq(
+                    "roomId",
+                    room._id
+                  )
+              )
+              .collect();
+
+          const nextHost =
+            remainingPlayers
+              .filter(
+                (item) =>
+                  item._id !==
+                    player._id &&
+                  item.isAlive
+              )
+              .sort(
+                (a, b) =>
+                  a.joinedAt -
+                  b.joinedAt
+              )[0];
+
+          if (nextHost) {
+            await ctx.db.patch(
+              nextHost._id,
+              {
+                isHost: true,
+              }
+            );
+
+            await ctx.db.patch(
+              room._id,
+              {
+                hostId:
+                  nextHost.userId,
+                updatedAt:
+                  now,
+              }
+            );
+          }
+        }
+
+        /* -------------------------
+           CURRENT ROUND
+        ------------------------- */
+
+        const match =
+          await ctx.db
+            .query(
+              "gameMatches"
+            )
+            .withIndex(
+              "by_room_status",
+              (q) =>
+                q
+                  .eq(
+                    "roomId",
+                    room._id
+                  )
+                  .eq(
+                    "status",
+                    "playing"
+                  )
+            )
+            .first();
+
+        if (!match) {
+          return {
+            success: true,
+            eliminated:
+              true,
+            gameFinished:
+              false,
+          };
+        }
+
+        const round =
+          await ctx.db
+            .query(
+              "gameRounds"
+            )
+            .withIndex(
+              "by_room_round",
+              (q) =>
+                q
+                  .eq(
+                    "roomId",
+                    room._id
+                  )
+                  .eq(
+                    "roundNumber",
+                    match.currentRound
+                  )
+            )
+            .first();
+
+        if (round) {
+          /*
+           * Let the current round finish
+           * naturally.
+           *
+           * The scheduled resolver will
+           * show the elimination card
+           * after all alive speakers have
+           * completed their turns.
+           */
+          await ctx.scheduler.runAfter(
+            0,
+            internal.games.spy.rooms
+              .finalizePlayerExit,
+            {
+              roomId:
+                room._id,
+              roundId:
+                round._id,
+              playerId:
+                player._id,
+            }
+          );
+        }
+
+        return {
+          success: true,
+          eliminated: true,
+          gameFinished: false,
+        };
+      }
+
+      /* =========================
+         🏠 LOBBY / STARTING
+      ========================= */
+
+      /*
+       * Before the actual match,
+       * remove the player completely.
+       */
+
+      const categoryVote =
+        await ctx.db
+          .query(
+            "gameClassicCategoryVotes"
+          )
+          .withIndex(
+            "by_room_user",
+            (q) =>
+              q
+                .eq(
+                  "roomId",
+                  room._id
+                )
+                .eq(
+                  "userId",
+                  user._id
+                )
+          )
+          .first();
+
+      if (categoryVote) {
+        await ctx.db.delete(
+          categoryVote._id
+        );
+      }
+
+      const players =
+        await ctx.db
+          .query(
+            "gameRoomPlayers"
+          )
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                room._id
+              )
+          )
+          .collect();
+
+      const remainingPlayers =
+        players.filter(
+          (item) =>
+            item._id !==
+            player._id
+        );
+
+      /* -------------------------
+         LAST PLAYER
+      ------------------------- */
+
+      if (
+        remainingPlayers.length ===
+        0
+      ) {
+        await ctx.db.delete(
+          player._id
+        );
+
+        await ctx.db.delete(
+          room._id
+        );
+
+        return {
+          success: true,
+          roomDeleted: true,
+        };
+      }
+
+      /* -------------------------
+         HOST TRANSFER
+      ------------------------- */
+
+      if (
+        player.isHost
+      ) {
+        const nextHost =
+          [...remainingPlayers]
+            .sort(
+              (a, b) =>
+                a.joinedAt -
+                b.joinedAt
+            )[0];
+
+        await ctx.db.patch(
+          nextHost._id,
+          {
+            isHost: true,
+          }
+        );
+
+        await ctx.db.patch(
+          room._id,
+          {
+            hostId:
+              nextHost.userId,
+            updatedAt:
+              now,
+          }
+        );
+      }
+
+      await ctx.db.delete(
+        player._id
+      );
+
+      return {
+        success: true,
+        roomDeleted: false,
+      };
+    },
+  });
+
+  /* =========================
+   ⏳ FINALIZE PLAYER EXIT
+   INTERNAL
+========================= */
+
+export const finalizePlayerExit =
+  internalMutation({
+    args: {
+      roomId:
+        v.id("gameRooms"),
+
+      roundId:
+        v.id("gameRounds"),
+
+      playerId:
+        v.id("gameRoomPlayers"),
+    },
+
+    handler: async (
+      ctx,
+      args
+    ) => {
+      const room =
+        await ctx.db.get(
+          args.roomId
+        );
+
+      const player =
+        await ctx.db.get(
+          args.playerId
+        );
+
+      const round =
+        await ctx.db.get(
+          args.roundId
+        );
+
+      if (
+        !room ||
+        !player ||
+        !round
+      ) {
+        return;
+      }
+
+      /*
+       * Another process already
+       * resolved this round.
+       */
+      if (
+        round.phase ===
+          "result" ||
+        round.phase ===
+          "finished"
+      ) {
+        return;
+      }
+
+      const now =
+        Date.now();
+
+      /* =========================
+         ROUND INTRO
+      ========================= */
+
+      if (
+        round.phase ===
+        "roundIntro"
+      ) {
+        await ctx.scheduler.runAt(
+          Math.max(
+            now + 250,
+            round.roundIntroEndsAt ??
+              now + 1000
+          ),
+          internal.games.spy.rooms
+            .finalizePlayerExit,
+          args
+        );
+
+        return;
+      }
+
+      /* =========================
+         NORMAL SPEAKING
+      ========================= */
+
+      if (
+        round.phase ===
+        "speaking"
+      ) {
+        const alivePlayers =
+          await ctx.db
+            .query(
+              "gameRoomPlayers"
+            )
+            .withIndex(
+              "by_room",
+              (q) =>
+                q.eq(
+                  "roomId",
+                  room._id
+                )
+            )
+            .collect()
+            .then(
+              (players) =>
+                players.filter(
+                  (item) =>
+                    item.isAlive
+                )
+            );
+
+        /*
+         * Not everybody alive has
+         * completed their turn yet.
+         */
+        if (
+          round.speakersCompleted <
+          alivePlayers.length
+        ) {
+          await ctx.scheduler.runAt(
+            Math.max(
+              now + 250,
+              round.turnEndsAt ??
+                now + 30_000
+            ),
+            internal.games.spy.rooms
+              .finalizePlayerExit,
+            args
+          );
+
+          return;
+        }
+      }
+
+      /* =========================
+         TIE-BREAK SPEAKING
+      ========================= */
+
+      if (
+        round.phase ===
+        "tieBreak"
+      ) {
+        const order =
+          round.tieBreakOrder ??
+          [];
+
+        const index =
+          round.tieBreakSpeakerIndex;
+
+        if (
+          index ===
+            undefined ||
+          index <
+            order.length - 1
+        ) {
+          await ctx.scheduler.runAt(
+            Math.max(
+              now + 250,
+              round.turnEndsAt ??
+                now + 30_000
+            ),
+            internal.games.spy.rooms
+              .finalizePlayerExit,
+            args
+          );
+
+          return;
+        }
+      }
+
+      /* =========================
+         FIND ACTIVE MATCH
+      ========================= */
+
+      const match =
+        await ctx.db
+          .query(
+            "gameMatches"
+          )
+          .withIndex(
+            "by_room_status",
+            (q) =>
+              q
+                .eq(
+                  "roomId",
+                  room._id
+                )
+                .eq(
+                  "status",
+                  "playing"
+                )
+          )
+          .first();
+
+      if (!match) {
+        return;
+      }
+
+      /*
+       * Make sure the player is
+       * actually recorded as dead.
+       */
+      if (
+        player.isAlive
+      ) {
+        await ctx.db.patch(
+          player._id,
+          {
+            isAlive: false,
+            eliminatedAt: now,
+            isConnected: false,
+          }
+        );
+      }
+
+      /* =========================
+         ALIVE PLAYERS
+      ========================= */
+
+      const allPlayers =
+        await ctx.db
+          .query(
+            "gameRoomPlayers"
+          )
+          .withIndex(
+            "by_room",
+            (q) =>
+              q.eq(
+                "roomId",
+                room._id
+              )
+          )
+          .collect();
+
+      const alivePlayers =
+        allPlayers.filter(
+          (item) =>
+            item.isAlive
+        );
+
+      /* =========================
+         ROLE
+      ========================= */
+
+      const secret =
+        await ctx.db
+          .query(
+            "gamePlayerSecrets"
+          )
+          .withIndex(
+            "by_player",
+            (q) =>
+              q.eq(
+                "playerId",
+                player._id
+              )
+          )
+          .first();
+
+      const spyEliminated =
+        secret?.role ===
+        "spy";
+
+      /* =========================
+         GAME OVER CHECK
+      ========================= */
+
+      const gameOver =
+        spyEliminated ||
+        alivePlayers.length <= 2;
+
+      if (
+        gameOver
+      ) {
+        const winner =
+          spyEliminated
+            ? "villagers"
+            : "spy";
+
+        await ctx.db.patch(
+          match._id,
+          {
+            status:
+              "finished",
+
+            winner,
+
+            finishedAt:
+              now,
+
+            updatedAt:
+              now,
+          }
+        );
+
+        await ctx.db.patch(
+          round._id,
+          {
+            phase:
+              "finished",
+
+            resolution:
+              "game_over",
+
+            eliminatedPlayerId:
+              player._id,
+
+            votingEndsAt:
+              undefined,
+
+            turnEndsAt:
+              undefined,
+
+            updatedAt:
+              now,
+          }
+        );
+
+        await ctx.db.patch(
+          room._id,
+          {
+            status:
+              "finished",
+
+            updatedAt:
+              now,
+          }
+        );
+
+        return;
+      }
+
+      /* =========================
+         NORMAL EXIT ELIMINATION
+      ========================= */
+
+      await ctx.db.patch(
+        round._id,
+        {
+          phase:
+            "result",
+
+          resolution:
+            "eliminated",
+
+          eliminatedPlayerId:
+            player._id,
+
+          votingEndsAt:
+            undefined,
+
+          turnEndsAt:
+            undefined,
+
+          updatedAt:
+            now,
+        }
+      );
     },
   });

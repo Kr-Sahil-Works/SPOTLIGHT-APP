@@ -3,64 +3,81 @@ import { getAuthenticatedUserQuery } from "../users/users.core";
 
 export const getChatList = query({
   handler: async (ctx) => {
-const currentUser = await getAuthenticatedUserQuery(ctx);
-if (!currentUser) return [];
+    const currentUser =
+      await getAuthenticatedUserQuery(ctx);
+
+    if (!currentUser) {
+      return [];
+    }
 
     const conversations =
-  await ctx.db
-    .query("conversations")
-    .collect();
+      await ctx.db
+        .query("conversations")
+        .collect();
 
-    const myConversations = conversations.filter((c) =>
-      c.participants.some(
-        (p) => p === currentUser._id
-      )
-    );
+    const myConversations =
+      conversations.filter((conversation) =>
+        conversation.participants.some(
+          (userId) =>
+            userId === currentUser._id
+        )
+      );
 
     const result = [];
 
-    for (const conv of myConversations) {
-      const otherUserId = conv.participants.find(
-        (p) => p !== currentUser._id
-      );
+    for (const conversation of myConversations) {
+      const otherUserId =
+        conversation.participants.find(
+          (userId) =>
+            userId !== currentUser._id
+        );
 
-      if (!otherUserId) continue;
+      if (!otherUserId) {
+        continue;
+      }
 
-      const user = await ctx.db.get(otherUserId);
-      if (!user) continue;
+      const user =
+        await ctx.db.get(otherUserId);
 
-const lastMessages = await ctx.db
-  .query("messages")
-  .withIndex("by_conversation_time", (q) =>
-    q.eq("conversationId", conv._id)
-  )
-  .order("desc")
-  .take(10);
+      if (!user) {
+        continue;
+      }
 
-const unreadCount = lastMessages.filter(
-  (m) =>
-    m.receiverId === currentUser._id &&
-    !m.seen &&
-    m.senderId === otherUserId
-).length;
+      const unreadCount =
+        conversation.unreadCounts?.find(
+          (entry) =>
+            entry.userId === currentUser._id
+        )?.count ?? 0;
 
       result.push({
         userId: user._id,
         fullname: user.fullname,
         image: user.image,
-        lastMessage: conv.lastMessage || "",
-        createdAt: conv.lastMessageAt || conv.createdAt,
+
+        lastMessage:
+          conversation.lastMessage || "",
+
+        createdAt:
+          conversation.lastMessageAt ||
+          conversation.createdAt,
+
         unreadCount,
+
         isOnline:
-  !!user.showOnline &&
-  !!user.lastActiveAt &&
-Date.now() -
-  (user.lastActiveAt || 0) <
-  70000,
-        showOnline: user.showOnline,
+          !!user.showOnline &&
+          !!user.lastActiveAt &&
+          Date.now() -
+            user.lastActiveAt <
+            70000,
+
+        showOnline:
+          user.showOnline,
       });
     }
 
-    return result.sort((a, b) => b.createdAt - a.createdAt);
+    return result.sort(
+      (a, b) =>
+        b.createdAt - a.createdAt
+    );
   },
 });

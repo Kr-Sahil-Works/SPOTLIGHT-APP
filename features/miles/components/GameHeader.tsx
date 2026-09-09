@@ -1,16 +1,17 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 type Props = {
@@ -52,10 +53,13 @@ function ActionButton({
   );
 }
 
+
 export default function GamesHeader({
   onEventsPress,
   onRoomsPress,
 }: Props) {
+    const router = useRouter();
+
   return (
     <>
       <View style={styles.container}>
@@ -64,20 +68,29 @@ export default function GamesHeader({
         </Text>
 
         <View style={styles.actions}>
-       
+         <ActionButton
+  onPress={() => {
+    if (onRoomsPress) {
+      onRoomsPress();
+      return;
+    }
 
-          <ActionButton onPress={onRoomsPress}>
-             <View style={styles.roomPill}>
- <MaterialCommunityIcons
-  name="door-closed"
-  size={14}
-  color="#B89045"
-/>
-  <Text style={styles.roomText}>
-    Game Room
-  </Text>
-</View>
-           
+    router.push("/games/rooms" as any);
+  }}
+>
+            <View style={styles.roomPill}>
+              <View style={styles.iconWrap}>
+                <MaterialCommunityIcons
+                  name="door-closed"
+                  size={13}
+                  color="#D6A83E"
+                />
+              </View>
+
+              <Text style={styles.roomText}>
+                Game Room
+              </Text>
+            </View>
           </ActionButton>
         </View>
       </View>
@@ -88,102 +101,152 @@ export default function GamesHeader({
 }
 
 const styles = StyleSheet.create({
+  /* =========================
+     HEADER
+  ========================= */
+
   container: {
-    marginTop: 34,
+    marginTop: 30,
 
     paddingHorizontal: 20,
 
     flexDirection: "row",
+
     alignItems: "center",
+
     justifyContent: "space-between",
   },
+
+  /* =========================
+     TITLE
+  ========================= */
 
   title: {
     fontFamily: "Manrope-ExtraBold",
 
-    fontSize: 30,
+    fontSize: 27,
 
-    color: "#e0ba58",
+    color: "#E2C16A",
 
-    letterSpacing: -0.5,
+    letterSpacing: -0.7,
+
+    includeFontPadding: false,
+
+    textShadowColor: "rgba(226,193,106,0.16)",
+
+    textShadowRadius: 5,
+
+    textShadowOffset: {
+      width: 0,
+      height: 1,
+    },
   },
+
+  /* =========================
+     ACTIONS
+  ========================= */
 
   actions: {
     flexDirection: "row",
+
     alignItems: "center",
   },
 
-  pill: {
+  /* =========================
+     GAME ROOM GLASS PILL
+  ========================= */
+
+  roomPill: {
+    height: 27,
+
+    paddingLeft: 5,
+
+    paddingRight: 9,
+
+    borderRadius: 9,
+
     flexDirection: "row",
+
     alignItems: "center",
 
-    height: 26,
+    backgroundColor:
+      "rgba(10,10,12,0.72)",
 
-    paddingHorizontal: 7,
+    borderWidth: 0.8,
 
-    borderRadius: 14,
+    borderColor:
+      "rgba(226,193,106,0.16)",
 
-    backgroundColor: "#161616",
+    shadowColor: "#000",
 
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.07)",
-  },
-roomPill: {
-  flexDirection: "row",
-  alignItems: "center",
+    shadowOpacity: 0.32,
 
-  height: 28,
+    shadowRadius: 7,
 
-  paddingHorizontal: 10,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
 
-  borderRadius: 14,
+    elevation: 4,
 
-  backgroundColor: "#171717",
-
-  borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.08)",
-},
-
-roomText: {
-  marginLeft: 5,
-
-  color: "#B89045",
-
-  fontSize: 11,
-
-  fontWeight: "700",
-},
-
-  icon: {
-    width: 14,
-    height: 14,
-
-    resizeMode: "contain",
-
-    marginRight: 4,
+    overflow: "hidden",
   },
 
-  roomEmoji: {
-    fontSize: 15,
+  /* =========================
+     ICON
+  ========================= */
 
-    marginRight: 5,
+  iconWrap: {
+    width: 19,
+
+    height: 19,
+
+    borderRadius: 6,
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    backgroundColor:
+      "rgba(226,193,106,0.10)",
+
+    borderWidth: 0.7,
+
+    borderColor:
+      "rgba(226,193,106,0.16)",
   },
 
- text: {
-  color: "#B99A62",
+  /* =========================
+     TEXT
+  ========================= */
 
-  fontSize: 11,
+  roomText: {
+    marginLeft: 5,
 
-  fontWeight: "700",
-},
+    color: "#C8AA62",
+
+    fontSize: 9.5,
+
+    fontWeight: "800",
+
+    letterSpacing: 0.15,
+
+    includeFontPadding: false,
+  },
+
+  /* =========================
+     DIVIDER
+  ========================= */
 
   divider: {
     height: 1,
 
-    marginTop: 14,
+    marginTop: 12,
 
     marginHorizontal: 20,
 
-    backgroundColor: "#181818",
+    backgroundColor:
+      "rgba(255,255,255,0.055)",
   },
 });

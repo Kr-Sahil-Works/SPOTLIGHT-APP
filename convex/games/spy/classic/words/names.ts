@@ -1720,5 +1720,10 @@ export const NAME_WORD_PAIRS: ClassicWordPair[] = [
   villager: "Ravi kisan",
   spy: "Manoj Tiwari",
 },
+{
+  id: "name_342",
+  villager: "Sudanshu",
+  spy: "Priyanshu",
+},
   
 ];

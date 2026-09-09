@@ -240,7 +240,7 @@ const title =
         >
           <Image
             source={require(
-              "@/assets/images/games/spy/boards/categoryboard.png"
+              "@/assets/images/games/spy/boards/categoryboard.webp"
             )}
             contentFit="contain"
             style={styles.board}

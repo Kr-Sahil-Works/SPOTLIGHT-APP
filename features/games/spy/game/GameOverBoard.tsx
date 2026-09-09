@@ -1,9 +1,9 @@
 import { Image } from "expo-image";
 import {
-    StyleSheet,
-    Text,
-    View,
-    useWindowDimensions,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
 } from "react-native";
 
 type GameOverPlayer = {
@@ -82,8 +82,8 @@ const showVillagerNames = true;
       <Image
         source={
           winner === "villagers"
-            ? require("@/assets/images/games/spy/boards/villagerWonBoard.png")
-            : require("@/assets/images/games/spy/boards/spyWonBoard.png")
+            ? require("@/assets/images/games/spy/boards/villagerWonBoard.webp")
+            : require("@/assets/images/games/spy/boards/spyWonBoard.webp")
         }
         contentFit="contain"
         style={StyleSheet.absoluteFill}

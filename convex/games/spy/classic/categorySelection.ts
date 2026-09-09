@@ -123,7 +123,7 @@ export const startCategorySelectionInternal =
       Date.now();
 
    const categorySelectionEndsAt =
-  now + 8 * 1000;
+  now + 10 * 1000;
 
     await ctx.db.patch(
       roomId,

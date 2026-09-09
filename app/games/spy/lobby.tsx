@@ -1,12 +1,14 @@
 import { Image } from "expo-image";
 import {
+  Alert,
+  BackHandler,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from "react-native";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import LobbyBottomBar from "@/features/games/spy/lobby/layout/LobbyBottomBar";
@@ -19,8 +21,11 @@ import LobbyChatInput from "@/features/games/spy/lobby/chat/LobbyChatInput";
 import LobbyBackground from "@/features/games/spy/lobby/layout/LobbyBackground";
 import { LobbyChatMessage } from "@/features/games/spy/types/chat";
 import KeyboardComposer from "@/shared/keyboard/KeyboardComposer";
-
-import { useLocalSearchParams } from "expo-router";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
 
 import { useLobby } from "@/features/games/spy/lobby/hooks/useLobby";
 import { useLobbyPlayers } from "@/features/games/spy/lobby/hooks/useLobbyPlayers";
@@ -29,6 +34,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 
+import LeaveRoomDialog from "@/features/games/spy/components/LeaveRoomDialog";
 import RoundIntroCard from "@/features/games/spy/components/RoundIntroCard";
 import CategorySelection from "@/features/games/spy/game/CategorySelection";
 import GameOverBoard from "@/features/games/spy/game/GameOverBoard";
@@ -36,6 +42,7 @@ import PrivateWordReveal from "@/features/games/spy/game/PrivateWordReveal";
 import VotingResultCard from "@/features/games/spy/game/VotingResultCard";
 import LobbyOverlay from "@/features/games/spy/lobby/layout/LobbyOverlay";
 import LobbyTurnIndicator from "@/features/games/spy/lobby/layout/LobbyTurnIndicator";
+import React from "react";
 
 const MOCK_MESSAGES: LobbyChatMessage[] = [
   {
@@ -109,6 +116,11 @@ export default function LobbyScreen() {
 const [chatOpen, setChatOpen] =
   useState(false);
 
+const [
+  showLeaveDialog,
+  setShowLeaveDialog,
+] = useState(false);
+
 const [secretReady, setSecretReady] =
   useState(false);
 
@@ -141,6 +153,11 @@ const { roomId } =
 const validRoomId = roomId
   ? (roomId as Id<"gameRooms">)
   : undefined;
+
+const leaveRoom =
+  useMutation(
+    api.games.spy.rooms.leaveRoom
+  );
 
 const {
   room,
@@ -180,6 +197,60 @@ const allOtherPlayersReady =
     (player) => player.isReady
   );
     
+const handleExitRoom = () => {
+  if (!validRoomId) {
+    return;
+  }
+
+  setShowLeaveDialog(true);
+};
+
+useFocusEffect(
+  useCallback(() => {
+    const subscription =
+      BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          handleExitRoom();
+          return true;
+        }
+      );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [validRoomId])
+);
+
+
+const handleConfirmLeaveRoom = async () => {
+  if (!validRoomId) {
+    return;
+  }
+
+  try {
+    setShowLeaveDialog(false);
+
+    await leaveRoom({
+      roomId: validRoomId,
+    });
+
+    router.replace(
+      "/games/spy"
+    );
+  } catch (error) {
+    console.error(
+      "LEAVE ROOM ERROR:",
+      error
+    );
+
+    Alert.alert(
+      "Unable to leave",
+      "Please try again."
+    );
+  }
+};
+
      /*
  * =========================
  * 💬 RESPONSIVE CHAT HEIGHT
@@ -208,7 +279,7 @@ const classicGame =
   useQuery(
     api.games.spy.classic.uiQueries
       .getClassicGameState,
-    validRoomId
+    validRoomId && currentPlayer
       ? {
           roomId:
             validRoomId,
@@ -216,11 +287,11 @@ const classicGame =
       : "skip"
   );
 
-  const finishedClassicGame =
+const finishedClassicGame =
   useQuery(
     api.games.spy.classic.game
       .getFinishedClassicGame,
-    validRoomId
+    validRoomId && currentPlayer
       ? {
           roomId:
             validRoomId,
@@ -236,9 +307,10 @@ const startGame = useMutation(
   api.games.spy.rooms.startGame
 );
 
+const requiredPlayers = room?.maxPlayers ?? 4;
+
 const allPlayersReady =
-  players.length >= 4 &&
-  players.length <= (room?.maxPlayers ?? 4) &&
+  players.length === requiredPlayers &&
   players.every(
     (player) => player.isReady
   );
@@ -292,11 +364,6 @@ const handleStartGame = async () => {
 
       return;
     }
-
-    console.log(
-      "GAME STARTED:",
-      result
-    );
   } catch (error) {
     console.error(
       "START GAME ERROR:",
@@ -1599,8 +1666,7 @@ useEffect(() => {
           "TURN_NOT_EXPIRED"
       ) {
         console.log(
-          "TURN NOT ADVANCED:",
-          result
+          "TURN NOT ADVANCED:"
         );
       }
     } catch (error) {
@@ -1651,6 +1717,14 @@ useEffect(() => {
       edges={["left", "right"]}
     >
       <LobbyBackground />
+
+<LeaveRoomDialog
+  visible={showLeaveDialog}
+  onStay={() => {
+    setShowLeaveDialog(false);
+  }}
+  onLeave={handleConfirmLeaveRoom}
+/>
 
       {room?.status === "playing" && (
   <View
@@ -1782,10 +1856,23 @@ showRole={
       >
 
 <LobbyHeader
-  onSettings={() => {}}
-  onRules={() => {}}
+  onSettings={() => {
+    if (!validRoomId) {
+      return;
+    }
+
+    router.push({
+      pathname: "/games/spy/settings",
+      params: {
+        roomId: validRoomId,
+      },
+    });
+  }}
+  onRules={() => {
+    router.push("/games/spy/how-to-play");
+  }}
   onVolume={() => {}}
-  onExit={() => {}}
+  onExit={handleExitRoom}
 isTieBreak={isTieBreak}
 roomCode={
   room?.roomCode ?? ""
@@ -2159,7 +2246,7 @@ turnEndsAt={
         >
           <Image
             source={require(
-              "@/assets/images/games/spy/boards/villagersboard.png"
+              "@/assets/images/games/spy/boards/villagersboard.webp"
             )}
             contentFit="contain"
             style={

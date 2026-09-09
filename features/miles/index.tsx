@@ -18,7 +18,7 @@ export default function MilesScreen() {
       <View style={styles.container}>
         {/* Background */}
         <Image
-          source={require("@/assets/images/games/spy/backgrounds/lobby_bg.png")}
+          source={require("@/assets/images/games/spy/backgrounds/miles_bg.png")}
           style={StyleSheet.absoluteFillObject}
           contentFit="cover"
         />
@@ -45,10 +45,11 @@ export default function MilesScreen() {
   image={require("@/assets/images/miles/spy.png")}
   onPress={() => router.push("/games/spy")}
 />
-
+<View style={{paddingHorizontal:4,}}>
           <GameCard
             image={require("@/assets/images/miles/blind_cards.png")}
           />
+          </View>
         </Animated.ScrollView>
          </SafeAreaView>
       </View>

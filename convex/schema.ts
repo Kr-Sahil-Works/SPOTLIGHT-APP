@@ -218,7 +218,19 @@ conversations: defineTable({
   /* 💬 last message (for chat list) */
   lastMessage: v.optional(v.string()),
   lastMessageAt: v.optional(v.number()),
-  lastMessageSenderId: v.optional(v.id("users")),
+  lastMessageSenderId: v.optional(
+  v.id("users")
+),
+
+/* 🔔 unread count per user */
+unreadCounts: v.optional(
+  v.array(
+    v.object({
+      userId: v.id("users"),
+      count: v.number(),
+    })
+  )
+),
 
   pinnedMessageId:
   v.optional(
@@ -296,6 +308,26 @@ pinnedAt:
 .index("by_participants", ["participants"])
 .index("by_key", ["conversationKey"])
 .index("by_lastMessageAt", ["lastMessageAt"]),
+
+
+/* =========================
+   💬 CONVERSATION MEMBERS
+========================= */
+conversationMembers: defineTable({
+  conversationId:
+    v.id("conversations"),
+
+  userId:
+    v.id("users"),
+})
+  .index(
+    "by_user",
+    ["userId"]
+  )
+  .index(
+    "by_conversation",
+    ["conversationId"]
+  ),
 
   /* =========================
      💬 MESSAGES

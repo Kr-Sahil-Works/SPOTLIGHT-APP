@@ -251,7 +251,7 @@ const canVote =
           NAME / VOTE
       ========================= */}
 
- {votingStarted &&
+{votingStarted &&
  !hasVoted &&
  !isEliminated &&
  !isSelf &&
@@ -281,26 +281,24 @@ const canVote =
             styles.nameChip
           }
         >
-<Text
-  numberOfLines={1}
- style={[
-  styles.name,
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.name,
 
-  !isPlaying &&
-    isSelf &&
-    !player.isHost &&
-    styles.selfName,
+              isSelf &&
+                styles.selfName,
 
-  isEliminated &&
-    styles.eliminatedName,
-]}
->
-  {!isPlaying && isSelf && !player.isHost
-    ? "YOU"
-    : player.name.length > 14
-    ? `${player.name.slice(0, 14)}...`
-    : player.name}
-</Text>
+              isEliminated &&
+                styles.eliminatedName,
+            ]}
+          >
+            {isSelf
+              ? "YOU"
+              : player.name.length > 14
+              ? `${player.name.slice(0, 14)}...`
+              : player.name}
+          </Text>
         </View>
       )}
     </View>

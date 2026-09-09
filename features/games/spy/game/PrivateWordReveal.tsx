@@ -59,10 +59,10 @@ export default function PrivateWordReveal({
 
   const boardSource = isSpy
     ? require(
-        "@/assets/images/games/spy/boards/spyboard.png"
+        "@/assets/images/games/spy/boards/spyboard.webp"
       )
     : require(
-        "@/assets/images/games/spy/boards/villagersboard.png"
+        "@/assets/images/games/spy/boards/villagersboard.webp"
       );
 
   return (

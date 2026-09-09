@@ -20,8 +20,13 @@ export async function findConversationByKey(
 ) {
   return await ctx.db
     .query("conversations")
-    .withIndex("by_key", (q: any) =>
-      q.eq("conversationKey", conversationKey)
+    .withIndex(
+      "by_key",
+      (q: any) =>
+        q.eq(
+          "conversationKey",
+          conversationKey
+        )
     )
     .first();
 }
@@ -33,18 +38,63 @@ export async function createConversationInternal(
   ctx: MutationCtx,
   participants: Id<"users">[]
 ) {
-  const conversationKey = participants.sort().join("_");
+  const sortedParticipants =
+    [...participants].sort();
 
-  return await ctx.db.insert("conversations", {
-    participants,
-    conversationKey,
-    createdAt: Date.now(),
+  const now = Date.now();
 
-    // ✅ defaults
-    type: "private",
-    themeIndex: 0,
-    updatedAt: Date.now(),
-  });
+  const conversationId =
+    await ctx.db.insert(
+      "conversations",
+      {
+        participants:
+          sortedParticipants,
+
+        conversationKey:
+          sortedParticipants.join(
+            "_"
+          ),
+
+        createdAt:
+          now,
+
+        // ✅ defaults
+        type: "private",
+
+        themeIndex: 0,
+
+        updatedAt:
+          now,
+
+        // 🔔 unread counters
+        unreadCounts:
+          sortedParticipants.map(
+            (userId) => ({
+              userId,
+              count: 0,
+            })
+          ),
+      }
+    );
+
+  /* =========================
+     👥 CREATE MEMBERS
+  ========================= */
+
+  await Promise.all(
+    sortedParticipants.map(
+      (userId) =>
+        ctx.db.insert(
+          "conversationMembers",
+          {
+            conversationId,
+            userId,
+          }
+        )
+    )
+  );
+
+  return conversationId;
 }
 
 /* =========================
@@ -55,16 +105,108 @@ export async function getOrCreateConversationInternal(
   currentUserId: Id<"users">,
   otherUserId: Id<"users">
 ) {
-  const key = buildConversationKey(currentUserId, otherUserId);
+  const key =
+    buildConversationKey(
+      currentUserId,
+      otherUserId
+    );
 
-  const existing = await findConversationByKey(ctx, key);
+  const existing =
+    await findConversationByKey(
+      ctx,
+      key
+    );
 
-  if (existing) return existing._id;
+  if (existing) {
+    /*
+     * Existing conversations may have
+     * been created before conversationMembers
+     * was introduced.
+     *
+     * Make sure both member rows exist.
+     */
 
-  return await createConversationInternal(ctx, [
-    currentUserId,
-    otherUserId,
-  ]);
+    const existingMembers =
+      await ctx.db
+        .query(
+          "conversationMembers"
+        )
+        .withIndex(
+          "by_conversation",
+          (q) =>
+            q.eq(
+              "conversationId",
+              existing._id
+            )
+        )
+        .collect();
+
+    const existingUserIds =
+      new Set(
+        existingMembers.map(
+          (member) =>
+            String(member.userId)
+        )
+      );
+
+    const missingUsers =
+      existing.participants.filter(
+        (userId) =>
+          !existingUserIds.has(
+            String(userId)
+          )
+      );
+
+    if (
+      missingUsers.length > 0
+    ) {
+      await Promise.all(
+        missingUsers.map(
+          (userId) =>
+            ctx.db.insert(
+              "conversationMembers",
+              {
+                conversationId:
+                  existing._id,
+
+                userId,
+              }
+            )
+        )
+      );
+    }
+
+    /*
+     * Make sure old conversations
+     * also have unreadCounts.
+     */
+    if (
+      !existing.unreadCounts
+    ) {
+      await ctx.db.patch(
+        existing._id,
+        {
+          unreadCounts:
+            existing.participants.map(
+              (userId) => ({
+                userId,
+                count: 0,
+              })
+            ),
+        }
+      );
+    }
+
+    return existing._id;
+  }
+
+  return await createConversationInternal(
+    ctx,
+    [
+      currentUserId,
+      otherUserId,
+    ]
+  );
 }
 
 /* =========================
@@ -75,16 +217,25 @@ export async function clearChatInternal(
   conversationId: Id<"conversations">,
   userId: Id<"users">
 ) {
-  const convo = await ctx.db.get(conversationId);
+  const convo =
+    await ctx.db.get(
+      conversationId
+    );
 
   const updated = [
     ...(convo?.clearedAt || []),
-    { userId, timestamp: Date.now() },
+    {
+      userId,
+      timestamp: Date.now(),
+    },
   ];
 
-  await ctx.db.patch(conversationId, {
-    clearedAt: updated,
-  });
+  await ctx.db.patch(
+    conversationId,
+    {
+      clearedAt: updated,
+    }
+  );
 }
 
 /* =========================
@@ -95,13 +246,22 @@ export async function deleteChatInternal(
   conversationId: Id<"conversations">,
   userId: Id<"users">
 ) {
-  const convo = await ctx.db.get(conversationId);
+  const convo =
+    await ctx.db.get(
+      conversationId
+    );
 
-  const updated = [...(convo?.deletedFor || []), userId];
+  const updated = [
+    ...(convo?.deletedFor || []),
+    userId,
+  ];
 
-  await ctx.db.patch(conversationId, {
-    deletedFor: updated,
-  });
+  await ctx.db.patch(
+    conversationId,
+    {
+      deletedFor: updated,
+    }
+  );
 }
 
 /* =========================
@@ -112,17 +272,28 @@ export async function toggleMuteInternal(
   conversationId: Id<"conversations">,
   userId: Id<"users">
 ) {
-  const convo = await ctx.db.get(conversationId);
+  const convo =
+    await ctx.db.get(
+      conversationId
+    );
 
-  const list = convo?.mutedFor || [];
+  const list =
+    convo?.mutedFor || [];
 
-  const updated = list.includes(userId)
-    ? list.filter((id) => id !== userId)
+  const updated = list.includes(
+    userId
+  )
+    ? list.filter(
+        (id) => id !== userId
+      )
     : [...list, userId];
 
-  await ctx.db.patch(conversationId, {
-    mutedFor: updated,
-  });
+  await ctx.db.patch(
+    conversationId,
+    {
+      mutedFor: updated,
+    }
+  );
 }
 
 /* =========================
@@ -133,17 +304,28 @@ export async function togglePinInternal(
   conversationId: Id<"conversations">,
   userId: Id<"users">
 ) {
-  const convo = await ctx.db.get(conversationId);
+  const convo =
+    await ctx.db.get(
+      conversationId
+    );
 
-  const list = convo?.pinnedFor || [];
+  const list =
+    convo?.pinnedFor || [];
 
-  const updated = list.includes(userId)
-    ? list.filter((id) => id !== userId)
+  const updated = list.includes(
+    userId
+  )
+    ? list.filter(
+        (id) => id !== userId
+      )
     : [...list, userId];
 
-  await ctx.db.patch(conversationId, {
-    pinnedFor: updated,
-  });
+  await ctx.db.patch(
+    conversationId,
+    {
+      pinnedFor: updated,
+    }
+  );
 }
 
 /* =========================
@@ -154,17 +336,28 @@ export async function toggleHiddenInternal(
   conversationId: Id<"conversations">,
   userId: Id<"users">
 ) {
-  const convo = await ctx.db.get(conversationId);
+  const convo =
+    await ctx.db.get(
+      conversationId
+    );
 
-  const list = convo?.hiddenFor || [];
+  const list =
+    convo?.hiddenFor || [];
 
-  const updated = list.includes(userId)
-    ? list.filter((id) => id !== userId)
+  const updated = list.includes(
+    userId
+  )
+    ? list.filter(
+        (id) => id !== userId
+      )
     : [...list, userId];
 
-  await ctx.db.patch(conversationId, {
-    hiddenFor: updated,
-  });
+  await ctx.db.patch(
+    conversationId,
+    {
+      hiddenFor: updated,
+    }
+  );
 }
 
 /* =========================
@@ -175,12 +368,21 @@ export async function getConversationInternal(
   currentUserId: Id<"users">,
   otherUserId: Id<"users">
 ) {
-  const key = buildConversationKey(currentUserId, otherUserId);
+  const key =
+    buildConversationKey(
+      currentUserId,
+      otherUserId
+    );
 
   return await ctx.db
     .query("conversations")
-    .withIndex("by_key", (q: any) =>
-      q.eq("conversationKey", key)
+    .withIndex(
+      "by_key",
+      (q: any) =>
+        q.eq(
+          "conversationKey",
+          key
+        )
     )
     .first();
 }

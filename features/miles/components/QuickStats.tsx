@@ -1,5 +1,13 @@
+import { router } from "expo-router";
 import React from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -17,11 +25,13 @@ function AnimatedStat({
   title,
   color,
   onPress,
+  iconStyle,
 }: {
   image: any;
   title: string;
   color: string;
   onPress?: () => void;
+  iconStyle?: any;
 }) {
   const scale = useSharedValue(1);
 
@@ -30,28 +40,54 @@ function AnimatedStat({
   }));
 
   return (
-    <Animated.View style={[styles.wrapper, animatedStyle]}>
+    <Animated.View
+      style={[
+        styles.wrapper,
+        animatedStyle,
+      ]}
+    >
       <Pressable
         style={styles.item}
         onPress={onPress}
         onPressIn={() => {
-          scale.value = withTiming(0.98, { duration: 90 });
+          scale.value = withTiming(0.97, {
+            duration: 90,
+          });
         }}
         onPressOut={() => {
-          scale.value = withTiming(1, { duration: 90 });
+          scale.value = withTiming(1, {
+            duration: 90,
+          });
         }}
       >
-        <Image source={image} style={styles.icon} />
-
-        <Text style={[styles.label, { color }]}>{title}</Text>
-
-        <View
+        {/* 3D ASSET */}
+        <Image
+          source={image}
           style={[
-            styles.indicator,
-            {
-              backgroundColor: color,
-            },
-          ]}
+  styles.icon,
+  iconStyle,
+]}
+        />
+
+        {/* BOTTOM-LEFT LABEL */}
+        <View style={styles.labelWrapper}>
+          <Text
+            style={[
+              styles.label,
+              {
+                color,
+                textShadowColor: `${color}30`,
+              },
+            ]}
+          >
+            {title}
+          </Text>
+        </View>
+
+        {/* SUBTLE GLASS HIGHLIGHT */}
+        <View
+          pointerEvents="none"
+          style={styles.gloss}
         />
       </Pressable>
     </Animated.View>
@@ -67,102 +103,199 @@ export default function QuickStats({
     <View style={styles.container}>
       <AnimatedStat
         title="Ranking"
-        color="#F6C343"
+        color="#E8B83D"
         image={require("@/assets/images/miles/ranking.png")}
-        onPress={onRankingPress}
+        onPress={() => {
+  router.push("/games/rooms/ranking");
+}}
       />
 
       <AnimatedStat
         title="Tasks"
-        color="#E45A5A"
+        color="#D96868"
         image={require("@/assets/images/miles/tasks.png")}
-        onPress={onTasksPress}
+     onPress={() => {
+  router.push("/games/rooms/tasks");
+}}
       />
 
-      <AnimatedStat
+   <AnimatedStat
         title="Friends"
-        color="#A06E3F"
-        image={require("@/assets/images/miles/friends.png")}
-        onPress={onFriendsPress}
-      />
+        color="#B58A5C"
+        image={require("@/assets/images/spot/moments.png")}
+        iconStyle={styles.friendsIcon}
+        onPress={() => {
+  router.push("/games/rooms/friends");
+}}
+/>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 24,
+  /* =========================
+     CONTAINER
+  ========================= */
 
-    paddingHorizontal: 12,
+container: {
+    marginTop: 40,
+    marginBottom: 20,
+
+    paddingHorizontal: 16,
 
     flexDirection: "row",
 
-    justifyContent: "space-between",
+    justifyContent: "center",
+
+    alignItems: "center",
+
+    gap: 9,
   },
 
-  wrapper: {
-    flex: 1,
+  /* =========================
+     CARD WRAPPER
+  ========================= */
 
-    marginHorizontal: 6,
+wrapper: {
+    width: "28%",
+
+    marginHorizontal: 0,
   },
 
-  item: {
-    height: 90,
+  /* =========================
+     CARD
+  ========================= */
+
+item: {
+    height: 62,
+
+    width: "100%",
+
+    position: "relative",
+
+    overflow: "visible",
 
     alignItems: "center",
 
     justifyContent: "center",
 
-    backgroundColor: "#0A0A0A",
+    borderRadius: 12,
 
-    borderRadius: 18,
+    /*
+     * SAME DARK GLASS BACKGROUND
+     */
 
-    borderWidth: 1,
+    backgroundColor:
+      "rgba(10,10,13,0.58)",
 
-    borderColor: "rgba(255,255,255,0.07)",
+    borderWidth: 0.8,
+
+    borderColor:
+      "rgba(255,255,255,0.09)",
 
     shadowColor: "#000",
 
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.28,
 
-    shadowRadius: 10,
+    shadowRadius: 8,
 
     shadowOffset: {
       width: 0,
-      height: 6,
+      height: 4,
     },
 
-    elevation: 6,
+    elevation: 4,
   },
 
-  icon: {
-    width: 64,
+  /* =========================
+     3D ASSET
+  ========================= */
 
-    height: 64,
+ icon: {
+    position: "absolute",
+
+    width: 74,
+
+    height: 74,
 
     resizeMode: "contain",
 
-    marginBottom: -14,
-    marginTop: -14,
+    right: -8,
+
+    top: -22,
+
+    zIndex: 5,
+
+    transform: [
+      {
+        rotate: "5deg",
+      },
+    ],
   },
 
-  label: {
-    marginTop: 2,
+  /* =========================
+     LABEL
+  ========================= */
 
-    fontSize: 14,
+ labelWrapper: {
+    position: "absolute",
 
-    fontWeight: "800",
+    left: 7,
 
-    letterSpacing: 0.2,
+    bottom: 8,
+
+    zIndex: 10,
+
+    maxWidth: "72%",
   },
 
-  indicator: {
-    marginTop: 2,
+  friendsIcon: {
+    width: 67,
+    height: 67,
+    right: -8,
+    top: -20,
+  },
 
-    width: 18,
 
-    height: 3,
+   label: {
+    fontSize: 9,
+
+    fontWeight: "900",
+
+    letterSpacing: 0.25,
+
+    includeFontPadding: false,
+
+    textAlign: "left",
+
+    textShadowRadius: 4,
+
+    textShadowOffset: {
+      width: 0,
+      height: 1,
+    },
+  },
+
+  /* =========================
+     GLASS HIGHLIGHT
+  ========================= */
+
+  gloss: {
+    position: "absolute",
+
+    top: 1,
+
+    left: 10,
+
+    right: 10,
+
+    height: 1,
 
     borderRadius: 99,
+
+    backgroundColor:
+      "rgba(255,255,255,0.14)",
+
+    zIndex: 20,
   },
 });

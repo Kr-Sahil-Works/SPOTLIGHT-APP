@@ -25,7 +25,7 @@ export default function VotingSkipButton({
 disabled && styles.disabled,
       ]}
     >
-      <Text style={styles.text}>SKIP</Text>
+      <Text style={styles.text}>SKIP VOTING</Text>
     </Pressable>
   );
 }

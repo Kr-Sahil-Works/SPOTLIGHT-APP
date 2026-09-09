@@ -1,10 +1,16 @@
-
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
-import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
+
 import {
   Pressable,
   StyleSheet,
@@ -15,7 +21,10 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import createpagebgc from "@/assets/images/games/spy/backgrounds/createpagebgc.webp";
+import exitIcon from "@/assets/images/games/spy/icons/exit.webp";
+import minusIcon from "@/assets/images/games/spy/icons/minus.webp";
 import notesIcon from "@/assets/images/games/spy/icons/notes.webp";
+import plusIcon from "@/assets/images/games/spy/icons/plus.webp";
 
 import AdvancedOptionsSelector from "@/features/games/spy/create/AdvancedOptionsSelector";
 import GameModeSelector from "@/features/games/spy/create/GameModeSelector";
@@ -89,9 +98,67 @@ const [selectedMode, setSelectedMode] =
   const [expandedFeatures, setExpandedFeatures] =
     useState(false);
 
-  const [expandedModes, setExpandedModes] =
-    useState(false);
+const [expandedModes, setExpandedModes] =
+  useState(false);
 
+const createWave1 = useSharedValue(0);
+const createWave2 = useSharedValue(0);
+const createWave3 = useSharedValue(0);
+
+useEffect(() => {
+  createWave1.value = withRepeat(
+    withTiming(1, {
+      duration: 2400,
+    }),
+    -1,
+    false
+  );
+
+  createWave2.value = withRepeat(
+    withSequence(
+      withTiming(0, { duration: 800 }),
+      withTiming(1, { duration: 2400 }),
+    ),
+    -1,
+    false
+  );
+
+  createWave3.value = withRepeat(
+    withSequence(
+      withTiming(0, { duration: 1600 }),
+      withTiming(1, { duration: 2400 }),
+    ),
+    -1,
+    false
+  );
+}, []);
+
+const createWaveStyle1 = useAnimatedStyle(() => ({
+  opacity: 0.55 * (1 - createWave1.value),
+  transform: [
+    {
+      scale: 1 + createWave1.value * 0.07,
+    },
+  ],
+}));
+
+const createWaveStyle2 = useAnimatedStyle(() => ({
+  opacity: 0.36 * (1 - createWave2.value),
+  transform: [
+    {
+      scale: 1 + createWave2.value * 0.07,
+    },
+  ],
+}));
+
+const createWaveStyle3 = useAnimatedStyle(() => ({
+  opacity: 0.20 * (1 - createWave3.value),
+  transform: [
+    {
+      scale: 1 + createWave3.value * 0.07,
+    },
+  ],
+}));
 
   return (
     <SafeAreaView
@@ -118,12 +185,12 @@ const [selectedMode, setSelectedMode] =
   ]}
   onPress={() => router.back()}
 >
-        <Ionicons
-          name="chevron-back"
-          size={20}
-          color="#F2A900"
-        />
-      </Pressable>
+  <Image
+    source={exitIcon}
+    style={styles.exitIcon}
+    contentFit="contain"
+  />
+</Pressable>
 
       <Pressable
        style={[
@@ -257,39 +324,39 @@ contentFit="contain"
     </View>
 
     <View style={styles.playersRow}>
-      <Pressable
-        style={styles.circle}
-        onPress={() =>
-          setPlayers((p) =>
-            Math.max(4, p - 1)
-          )
-        }
-      >
-        <Ionicons
-          name="chevron-back"
-          size={18}
-          color="#FFF"
-        />
-      </Pressable>
+    <Pressable
+  style={styles.circle}
+  onPress={() =>
+    setPlayers((p) =>
+      Math.max(4, p - 1)
+    )
+  }
+>
+  <Image
+    source={minusIcon}
+    style={styles.playerControlIcon}
+    contentFit="contain"
+  />
+</Pressable>
 
       <Text style={styles.players}>
         {players}
       </Text>
 
-      <Pressable
-        style={styles.circle}
-        onPress={() =>
-          setPlayers((p) =>
-            Math.min(8, p + 1)
-          )
-        }
-      >
-        <Ionicons
-          name="chevron-forward"
-          size={18}
-          color="#FFF"
-        />
-      </Pressable>
+   <Pressable
+  style={styles.circle}
+  onPress={() =>
+    setPlayers((p) =>
+      Math.min(8, p + 1)
+    )
+  }
+>
+  <Image
+    source={plusIcon}
+    style={styles.playerControlIcon}
+    contentFit="contain"
+  />
+</Pressable>
     </View>
   </>
 )}
@@ -348,11 +415,34 @@ contentFit="contain"
           <View style={{ flex: 1 }} />
 
      {!expandedModes && (
-  <View style={styles.buttonWrapper}>
-    <View style={styles.buttonGlow} />
+ <View style={styles.buttonWrapper}>
+ <Animated.View
+  pointerEvents="none"
+  style={[
+    styles.createWave,
+    createWaveStyle1,
+  ]}
+/>
 
-    <Pressable
-      style={styles.createButton}
+<Animated.View
+  pointerEvents="none"
+  style={[
+    styles.createWave,
+    createWaveStyle2,
+  ]}
+/>
+
+<Animated.View
+  pointerEvents="none"
+  style={[
+    styles.createWave,
+    createWaveStyle3,
+  ]}
+/>
+  <View style={styles.buttonGlow} />
+
+  <Pressable
+    style={styles.createButton}
       onPress={async () => {
  try {
   const result = await createRoom({
@@ -381,11 +471,6 @@ contentFit="contain"
 
     return;
   }
-
-  console.log(
-    "ROOM CREATED:",
-    result
-  );
 
   router.push({
     pathname:
@@ -441,27 +526,32 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.42)",
   },
 
-  backButton: {
-    position: "absolute",
+backButton: {
+  position: "absolute",
 
-    top: 18,
-    left: 22,
+  top: 18,
+  left: 22,
 
-    width: 30,
-    height: 30,
+  width: 32,
+  height: 32,
 
-    borderRadius: 10,
+  borderRadius: 10,
 
-    backgroundColor: "#121212E8",
+  backgroundColor: "#151515",
 
-    borderWidth: 1,
-    borderColor: "#2F2F2F",
+  borderWidth: 1,
+  borderColor: "#242424",
 
-    justifyContent: "center",
-    alignItems: "center",
+  justifyContent: "center",
+  alignItems: "center",
 
-    zIndex: 20,
-  },
+  zIndex: 20,
+},
+
+exitIcon: {
+  width: 20,
+  height: 20,
+},
 
  content: {
   flex: 1,
@@ -742,20 +832,28 @@ selectedSubtitle: {
     paddingHorizontal: 18,
   },
 
-  circle: {
-    width: 32,
-    height: 32,
+circle: {
+  width: 42,
+  height: 28,
 
-    borderRadius: 16,
+  borderRadius: 14,
 
-    backgroundColor: "#2C2C2C",
+  backgroundColor: "#2C2C2C",
 
-    borderWidth: 1,
-    borderColor: "#3A3A3A",
+  borderWidth: 1,
+  borderColor: "#3A3A3A",
 
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  justifyContent: "center",
+  alignItems: "center",
+
+  overflow: "visible",
+},
+
+
+playerControlIcon: {
+  width: 24,
+  height: 14,
+},
 
   players: {
     color: "#FFF",
@@ -866,6 +964,25 @@ disabledToggleThumb: {
   justifyContent: "center",
 },
 
+createWave: {
+  position: "absolute",
+
+  width: "100%",
+  height: 48,
+
+  borderRadius: 20,
+
+  borderWidth: 1.2,
+  borderColor: "#9A6500",
+
+  backgroundColor: "transparent",
+},
+
+createWaveOuter: {
+  borderWidth: 1,
+  borderColor: "#FFD76A",
+},
+
 buttonGlow: {
   position: "absolute",
 
@@ -876,7 +993,6 @@ buttonGlow: {
   borderRadius: 40,
 
   backgroundColor: "#F2A900",
-  
 
   opacity: 0.18,
 

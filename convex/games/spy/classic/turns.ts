@@ -871,18 +871,53 @@ export const advanceTieBreakTurn =
          ➡️ NEXT SPEAKER
       ========================= */
 
-      const nextIndex =
-        round.tieBreakSpeakerIndex +
-        1;
+   let nextIndex =
+  round.tieBreakSpeakerIndex +
+  1;
 
-      /* =========================
-         🗳️ ALL TIED PLAYERS SPOKE
-      ========================= */
+let nextPlayerId =
+  undefined;
 
-      if (
-        nextIndex >=
-        round.tieBreakOrder.length
-      ) {
+/* =========================
+   🔎 FIND NEXT ALIVE TIED PLAYER
+========================= */
+
+while (
+  nextIndex <
+  round.tieBreakOrder.length
+) {
+  const candidateId =
+    round.tieBreakOrder[
+      nextIndex
+    ];
+
+  const candidate =
+    await ctx.db.get(
+      candidateId
+    );
+
+  if (
+    candidate &&
+    candidate.isAlive
+  ) {
+    nextPlayerId =
+      candidateId;
+
+    break;
+  }
+
+  nextIndex += 1;
+}
+
+/* =========================
+   🗳️ ALL ALIVE TIED PLAYERS SPOKE
+========================= */
+
+if (
+  !nextPlayerId ||
+  nextIndex >=
+    round.tieBreakOrder.length
+) {
         const votingEndsAt =
           now +
           VOTING_SECONDS *
@@ -928,11 +963,6 @@ votingEndsAt,
       /* =========================
          🎤 NEXT TIED PLAYER
       ========================= */
-
-      const nextPlayerId =
-        round.tieBreakOrder[
-          nextIndex
-        ];
 
       const nextPlayer =
         await ctx.db.get(

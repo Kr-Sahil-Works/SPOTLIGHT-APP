@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
 
     backgroundColor:
-      "rgba(255,255,255,0.065)",
+      "#080808e1",
 
     borderWidth: 1,
 
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    color: "#D09A00",
+    color: "#9b7305",
 
     fontSize: 8,
 

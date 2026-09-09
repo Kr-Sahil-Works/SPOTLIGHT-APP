@@ -109,10 +109,10 @@ const noElimination =
       <Image
       source={
   resultType === "super_tie"
-    ? require("@/assets/images/games/spy/boards/super_tie.png")
+    ? require("@/assets/images/games/spy/boards/super_tie.webp")
     : isTieResult
-      ? require("@/assets/images/games/spy/boards/tie_match.png")
-      : require("@/assets/images/games/spy/boards/votedout.png")
+      ? require("@/assets/images/games/spy/boards/tie_match.webp")
+      : require("@/assets/images/games/spy/boards/votedout.webp")
 }
         contentFit="fill"
        style={[
@@ -230,7 +230,7 @@ const noElimination =
 
   <Image
     source={require(
-      "@/assets/images/games/spy/boards/votedframe.png"
+      "@/assets/images/games/spy/boards/votedframe.webp"
     )}
     contentFit="contain"
     pointerEvents="none"
